@@ -1,2 +1,2 @@
 # Power Dwarf
-Desktop Independent Power Manager
+Lightweight Desktop Independent Power Manager
