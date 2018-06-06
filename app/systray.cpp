@@ -89,9 +89,9 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     /*switch(reason) {
     case QSystemTrayIcon::Context:
     case QSystemTrayIcon::Trigger:
-        //if (menu->actions().size()>0) { menu->popup(QCursor::pos()); }
     default:;
     }*/
+    QProcess::startDetached(QString(qApp->applicationFilePath()).arg("powerdwarf-config"));
 }
 
 void SysTray::checkDevices()
@@ -219,6 +219,7 @@ void SysTray::loadSettings()
         disableLidACOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_ac_external_monitor").toBool();
     }
 
+    qDebug() << "====> Loaded values:";
     qDebug() << "no lid action ac external monitor" << disableLidACOnExternalMonitors;
     qDebug() << "no lid action battery external monitor" << disableLidBatteryOnExternalMonitors;
     qDebug() << "show tray" << showTray;
@@ -419,10 +420,11 @@ void SysTray::handleDisplay(QString display, bool connected)
         qDebug() << "remove screen" << display;
         QProcess::startDetached(QString(TURN_OFF_MONITOR).arg(display));
     } else if (!wasConnected && connected) {
-        // Turn on monitor using xrandr, then launch lumina-xconfig
+        // Turn on monitor using xrandr
         qDebug() << "add screen" << display;
         QProcess::startDetached(QString(TURN_ON_MONITOR).arg(display));
-        QProcess::startDetached(XCONFIG);
+        //TODO add detect for lumina
+        //QProcess::startDetached(LUMINA_XCONFIG);
     }
 }
 
