@@ -91,7 +91,10 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::Trigger:
     default:;
     }*/
-    QProcess::startDetached(QString(qApp->applicationFilePath()).arg("powerdwarf-config"));
+    QString config = QString("%1-config").arg(qApp->applicationFilePath());
+    qDebug() << "start config?" << config;
+    if (!QFile::exists(config)) { return; }
+    QProcess::startDetached(config);
 }
 
 void SysTray::checkDevices()
