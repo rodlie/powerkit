@@ -1,4 +1,5 @@
 #
+# Power Dwarf <powerdwarf.dracolinux.org>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -13,8 +14,8 @@ TARGET = PowerDwarf
 VERSION = 1.0.0
 
 TEMPLATE = lib
-SOURCES += power.cpp
-HEADERS += power.h upower.h powermanagement.h screensaver.h
+SOURCES += power.cpp hotplug.cpp
+HEADERS += power.h upower.h powermanagement.h screensaver.h common.h hotplug.h
 
 exists(../powerdwarf.pri) {
     include(../powerdwarf.pri)

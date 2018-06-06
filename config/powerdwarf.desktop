@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Power Dwarf Settings
+Comment=Power Dwarf Settings
+Icon=battery
+Exec=powerdwarf-config
+Terminal=false
+Type=Application
+Categories=Settings;
+NotShowIn=GNOME;KDE;LXDE;LXQt;MATE;Razor;ROX;TDE;Unity;XFCE;Cinnamon;
+StartupNotify=false
