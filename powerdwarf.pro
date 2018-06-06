@@ -9,6 +9,7 @@
 TEMPLATE = subdirs
 CONFIG -= ordered
 SUBDIRS += lib config app
+OTHER_FILES += README.md
 
 app.depends += lib
 config.depends += lib

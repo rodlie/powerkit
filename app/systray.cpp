@@ -179,11 +179,11 @@ void SysTray::handleOnAC()
 // load default settings
 void SysTray::loadSettings()
 {
-    if (Common::validPowerSettings("autoSleepBattery")) {
-        autoSleepBattery = Common::loadPowerSettings("autoSleepBattery").toInt();
+    if (Common::validPowerSettings("suspend_battery_timeout")) {
+        autoSleepBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
     }
-    if (Common::validPowerSettings("autoSleepAC")) {
-        autoSleepAC = Common::loadPowerSettings("autoSleepAC").toInt();
+    if (Common::validPowerSettings("suspend_ac_timeout")) {
+        autoSleepAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
     }
     if (Common::validPowerSettings("lowBattery")) {
         lowBatteryValue = Common::loadPowerSettings("lowBattery").toInt();
@@ -222,20 +222,20 @@ void SysTray::loadSettings()
         disableLidACOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_ac_external_monitor").toBool();
     }
 
-    qDebug() << "====> Loaded values:";
+    qDebug() << "====> powerdwarf settings:";
     qDebug() << "no lid action ac external monitor" << disableLidACOnExternalMonitors;
     qDebug() << "no lid action battery external monitor" << disableLidBatteryOnExternalMonitors;
-    qDebug() << "show tray" << showTray;
-    qDebug() << "battery percent" << showBatteryPercent;
-    qDebug() << "tray notify" << showNotifications;
-    qDebug() << "desktop ss" << desktopSS;
-    qDebug() << "desktop pm" << desktopPM;
-    qDebug() << "auto sleep battery" << autoSleepBattery;
-    qDebug() << "auto sleep ac" << autoSleepAC;
+    qDebug() << "show_tray" << showTray;
+    qDebug() << "battery_percent" << showBatteryPercent;
+    qDebug() << "tray_notify" << showNotifications;
+    qDebug() << "desktop_ss" << desktopSS;
+    qDebug() << "desktop_pm" << desktopPM;
+    qDebug() << "suspend_battery_timeout" << autoSleepBattery;
+    qDebug() << "suspend_ac_timeout" << autoSleepAC;
     qDebug() << "low battery setting" << lowBatteryValue;
     qDebug() << "critical battery setting" << critBatteryValue;
-    qDebug() << "lid battery" << lidActionBattery;
-    qDebug() << "lid ac" << lidActionAC;
+    qDebug() << "lid_battery" << lidActionBattery;
+    qDebug() << "lid_ac" << lidActionAC;
     qDebug() << "critical action" << criticalAction;
 }
 

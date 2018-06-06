@@ -36,6 +36,7 @@ private:
     QCheckBox *showSystemTray;
     QCheckBox *disableLidActionAC;
     QCheckBox *disableLidActionBattery;
+    QComboBox *autoSleepBatteryAction;
 
 private slots:
     void populate();
@@ -57,6 +58,7 @@ private slots:
     void handleShowSystemTray(bool triggered);
     void handleDisableLidActionAC(bool triggered);
     void handleDisableLidActionBattery(bool triggered);
+    void handleAutoSleepBatteryAction(int index);
 };
 
 #endif // DIALOG_H

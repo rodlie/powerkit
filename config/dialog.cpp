@@ -34,12 +34,13 @@ Dialog::Dialog(QWidget *parent)
     , showSystemTray(0)
     , disableLidActionAC(0)
     , disableLidActionBattery(0)
+    , autoSleepBatteryAction(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(QString("Power Dwarf"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png")));
-    setMinimumSize(QSize(400,200));
+    setMinimumSize(QSize(480,360));
 
     // setup widgets
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -49,14 +50,29 @@ Dialog::Dialog(QWidget *parent)
     QHBoxLayout *wrapperLayout = new QHBoxLayout(wrapper);
     layout->addWidget(wrapper);
 
+    QWidget *powerContainer = new QWidget(this);
+    powerContainer->setContentsMargins(0,0,0,0);
+    QVBoxLayout *powerContainerLayout = new QVBoxLayout(powerContainer);
+    powerContainerLayout->setMargin(0);
+    powerContainerLayout->setSpacing(0);
+
     QLabel *powerLabel = new QLabel(this);
-    QIcon powerIcon = QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png"));
-    powerLabel->setPixmap(powerIcon.pixmap(QSize(64, 64)));
-    powerLabel->setMinimumSize(QSize(64, 64));
-    powerLabel->setMaximumSize(QSize(64, 64));
+    QIcon powerIcon = QIcon::fromTheme("powerdwarf", QIcon(":/icons/powerdwarf.png"));
+    powerLabel->setPixmap(powerIcon.pixmap(QSize(128, 128)));
+    powerLabel->setMinimumSize(QSize(128, 128));
+    powerLabel->setMaximumSize(QSize(128, 128));
+
+    QLabel *powerBatteryLabel = new QLabel(this);
+    QIcon powerIconBattery = QIcon(":/icons/battery128.png");
+    powerBatteryLabel->setPixmap(powerIconBattery.pixmap(QSize(128, 128)));
+    powerBatteryLabel->setMinimumSize(QSize(128, 128));
+    powerBatteryLabel->setMaximumSize(QSize(128, 128));
+
+    powerContainerLayout->addWidget(powerLabel);
+    powerContainerLayout->addWidget(powerBatteryLabel);
 
     //layout->setSizeConstraint(QLayout::SetFixedSize); // lock dialog size
-    wrapperLayout->addWidget(powerLabel);
+    wrapperLayout->addWidget(powerContainer);
     wrapperLayout->addWidget(containerWidget);
 
     QWidget *batteryContainer = new QWidget(this);
@@ -70,32 +86,35 @@ Dialog::Dialog(QWidget *parent)
     QLabel *lidActionBatteryLabel = new QLabel(this);
 
     disableLidActionBattery = new QCheckBox(this);
+    disableLidActionBattery->setIcon(QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")));
+    disableLidActionBattery->setStyleSheet("margin:10px; font-style: italic;");
     disableLidActionBattery->setText(tr("Disable if external monitor is connected."));
 
-    lidActionBatteryLabel->setText(tr("Lid Action"));
+    QLabel *lidActionBatteryIcon = new QLabel(this);
+    lidActionBatteryIcon->setMaximumSize(24,24);
+    lidActionBatteryIcon->setMinimumSize(24,24);
+    lidActionBatteryIcon->setPixmap(QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")).pixmap(QSize(24,24)));
+    lidActionBatteryLabel->setText(tr("<strong>Lid Action</strong>"));
+    lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
     batteryContainerLayout->addWidget(lidActionBatteryContainer);
     batteryContainerLayout->addWidget(disableLidActionBattery);
-
-    QWidget *criticalActionBatteryContainer = new QWidget(this);
-    QHBoxLayout *criticalActionBatteryContainerLayout = new QHBoxLayout(criticalActionBatteryContainer);
-    criticalActionBattery = new QComboBox(this);
-    QLabel *criticalActionBatteryLabel = new QLabel(this);
-
-    criticalActionBatteryLabel->setText(tr("Critical Action"));
-    criticalActionBatteryContainerLayout->addWidget(criticalActionBatteryLabel);
-    criticalActionBatteryContainerLayout->addWidget(criticalActionBattery);
-    batteryContainerLayout->addWidget(criticalActionBatteryContainer);
 
     QWidget *lowBatteryContainer = new QWidget(this);
     QHBoxLayout *lowBatteryContainerLayout = new QHBoxLayout(lowBatteryContainer);
     lowBattery = new QSpinBox(this);
     lowBattery->setMinimum(0);
     lowBattery->setMaximum(99);
+    lowBattery->setSuffix(tr(" %"));
     QLabel *lowBatteryLabel = new QLabel(this);
 
-    lowBatteryLabel->setText(tr("Low battery (%)"));
+    QLabel *lowBatteryIcon = new QLabel(this);
+    lowBatteryIcon->setMaximumSize(24,24);
+    lowBatteryIcon->setMinimumSize(24,24);
+    lowBatteryIcon->setPixmap(QIcon::fromTheme("battery-low-charging", QIcon(":/icons/battery-low-charging.png")).pixmap(QSize(24,24)));
+    lowBatteryLabel->setText(tr("<strong>Low battery</strong>"));
+    lowBatteryContainerLayout->addWidget(lowBatteryIcon);
     lowBatteryContainerLayout->addWidget(lowBatteryLabel);
     lowBatteryContainerLayout->addWidget(lowBattery);
     batteryContainerLayout->addWidget(lowBatteryContainer);
@@ -105,11 +124,26 @@ Dialog::Dialog(QWidget *parent)
     criticalBattery = new QSpinBox(this);
     criticalBattery->setMinimum(0);
     criticalBattery->setMaximum(99);
+    criticalBattery->setSuffix(tr(" %"));
     QLabel *criticalBatteryLabel = new QLabel(this);
 
-    criticalBatteryLabel->setText(tr("Critical battery (%)"));
+    QWidget *criticalActionBatteryContainer = new QWidget(this);
+    criticalActionBatteryContainer->setContentsMargins(0,0,0,0);
+    QVBoxLayout *criticalActionBatteryContainerLayout = new QVBoxLayout(criticalActionBatteryContainer);
+    criticalActionBatteryContainerLayout->setMargin(0);
+    criticalActionBatteryContainerLayout->setSpacing(0);
+    criticalActionBattery = new QComboBox(this);
+    criticalActionBatteryContainerLayout->addWidget(criticalBattery);
+    criticalActionBatteryContainerLayout->addWidget(criticalActionBattery);
+
+    QLabel *criticalBatteryIcon = new QLabel(this);
+    criticalBatteryIcon->setMaximumSize(24,24);
+    criticalBatteryIcon->setMinimumSize(24,24);
+    criticalBatteryIcon->setPixmap(QIcon::fromTheme("battery-caution", QIcon(":/icons/battery-caution.png")).pixmap(QSize(24,24)));
+    criticalBatteryLabel->setText(tr("<strong>Critical battery</strong>"));
+    criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
-    criticalBatteryContainerLayout->addWidget(criticalBattery);
+    criticalBatteryContainerLayout->addWidget(criticalActionBatteryContainer);
     batteryContainerLayout->addWidget(criticalBatteryContainer);
 
     QWidget *sleepBatteryContainer = new QWidget(this);
@@ -117,15 +151,30 @@ Dialog::Dialog(QWidget *parent)
     autoSleepBattery = new QSpinBox(this);
     autoSleepBattery->setMinimum(0);
     autoSleepBattery->setMaximum(1000);
+    autoSleepBattery->setSuffix(tr(" min"));
     QLabel *sleepBatteryLabel = new QLabel(this);
 
-    sleepBatteryLabel->setText(tr("Auto sleep (min)"));
+    QWidget *sleepActionBatteryContainer = new QWidget(this);
+    sleepActionBatteryContainer->setContentsMargins(0,0,0,0);
+    QVBoxLayout *sleepActionBatteryContainerLayout = new QVBoxLayout(sleepActionBatteryContainer);
+    sleepActionBatteryContainerLayout->setMargin(0);
+    sleepActionBatteryContainerLayout->setSpacing(0);
+    autoSleepBatteryAction = new QComboBox(this);
+    sleepActionBatteryContainerLayout->addWidget(autoSleepBattery);
+    sleepActionBatteryContainerLayout->addWidget(autoSleepBatteryAction);
+
+    QLabel *sleepBatteryIcon = new QLabel(this);
+    sleepBatteryIcon->setMaximumSize(24,24);
+    sleepBatteryIcon->setMinimumSize(24,24);
+    sleepBatteryIcon->setPixmap(QIcon::fromTheme("system-suspend", QIcon(":/icons/system-suspend.png")).pixmap(QSize(24,24)));
+    sleepBatteryLabel->setText(tr("<strong>Suspend after</strong>"));
+    sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
-    sleepBatteryContainerLayout->addWidget(autoSleepBattery);
+    sleepBatteryContainerLayout->addWidget(sleepActionBatteryContainer);
     batteryContainerLayout->addWidget(sleepBatteryContainer);
 
     batteryContainerLayout->addStretch();
-    containerWidget->addTab(batteryContainer, tr("On Battery"));
+    containerWidget->addTab(batteryContainer, QIcon::fromTheme("battery", QIcon(":/icons/battery.png")), tr("On Battery"));
 
     QWidget *acContainer = new QWidget(this);
     QVBoxLayout *acContainerLayout = new QVBoxLayout(acContainer);
@@ -138,9 +187,10 @@ Dialog::Dialog(QWidget *parent)
     QLabel *lidActionACLabel = new QLabel(this);
 
     disableLidActionAC = new QCheckBox(this);
+    disableLidActionAC->setStyleSheet("margin: 10px; font-style: italic;");
     disableLidActionAC->setText(tr("Disable if external monitor is connected."));
 
-    lidActionACLabel->setText(tr("Lid Action"));
+    lidActionACLabel->setText(tr("<strong>Lid Action</strong>"));
     lidActionACContainerLayout->addWidget(lidActionACLabel);
     lidActionACContainerLayout->addWidget(lidActionAC);
     acContainerLayout->addWidget(lidActionACContainer);
@@ -151,9 +201,10 @@ Dialog::Dialog(QWidget *parent)
     autoSleepAC = new QSpinBox(this);
     autoSleepAC->setMinimum(0);
     autoSleepAC->setMaximum(1000);
+    autoSleepAC->setSuffix(tr(" min"));
     QLabel *sleepACLabel = new QLabel(this);
 
-    sleepACLabel->setText(tr("Auto sleep (min)"));
+    sleepACLabel->setText(tr("<strong>Suspend after</strong>"));
     sleepACContainerLayout->addWidget(sleepACLabel);
     sleepACContainerLayout->addWidget(autoSleepAC);
     acContainerLayout->addWidget(sleepACContainer);
@@ -179,15 +230,15 @@ Dialog::Dialog(QWidget *parent)
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
 
     showSystemTray  = new QCheckBox(this);
-    showSystemTray->setText(tr("System tray"));
+    showSystemTray->setText(tr("Show System tray"));
     extraContainerLayout->addWidget(showSystemTray);
 
     showNotifications = new QCheckBox(this);
-    showNotifications->setText(tr("Notifications"));
+    showNotifications->setText(tr("Show Notifications"));
     extraContainerLayout->addWidget(showNotifications);
 
     showBatteryPercent = new QCheckBox(this);
-    showBatteryPercent->setText(tr("Battery percent"));
+    showBatteryPercent->setText(tr("Show Battery percent"));
     extraContainerLayout->addWidget(showBatteryPercent);
 
     layout->addWidget(extraContainer);
@@ -210,6 +261,7 @@ Dialog::Dialog(QWidget *parent)
     connect(showSystemTray, SIGNAL(toggled(bool)), this, SLOT(handleShowSystemTray(bool)));
     connect(disableLidActionAC, SIGNAL(toggled(bool)), this, SLOT(handleDisableLidActionAC(bool)));
     connect(disableLidActionBattery, SIGNAL(toggled(bool)), this, SLOT(handleDisableLidActionBattery(bool)));
+    connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)), this, SLOT(handleAutoSleepBatteryAction(int)));
 }
 
 // populate widgets with default values
@@ -231,20 +283,32 @@ void Dialog::populate()
     criticalActionBattery->addItem(tr("None"), criticalNone);
     criticalActionBattery->addItem(tr("Hibernate"), criticalHibernate);
     criticalActionBattery->addItem(tr("Shutdown"), criticalShutdown);
+
+    autoSleepBatteryAction->clear();
+    autoSleepBatteryAction->addItem(tr("None"), suspendNone);
+    autoSleepBatteryAction->addItem(tr("Sleep"), suspendSleep);
+    autoSleepBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
+    autoSleepBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
 }
 
 // load settings and set as default in widgets
 void Dialog::loadSettings()
 {
     int defaultAutoSleepBattery = AUTO_SLEEP_BATTERY;
-    if (Common::validPowerSettings("autoSleepBattery")) {
-        defaultAutoSleepBattery = Common::loadPowerSettings("autoSleepBattery").toInt();
+    if (Common::validPowerSettings("suspend_battery_timeout")) {
+        defaultAutoSleepBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
     }
     setDefaultAction(autoSleepBattery, defaultAutoSleepBattery);
 
-    int defaultAutoSleepAC = 0; // don't add default on AC, not all (normal) machines support suspend.
-    if (Common::validPowerSettings("autoSleepAC")) {
-        defaultAutoSleepAC = Common::loadPowerSettings("autoSleepAC").toInt();
+    int defaultAutoSleepBatteryAction = DEFAULT_SUSPEND_BATTERY_ACTION;
+    if (Common::validPowerSettings("suspend_battery_action")) {
+        defaultAutoSleepBatteryAction = Common::loadPowerSettings("suspend_battery_action").toInt();
+    }
+    setDefaultAction(autoSleepBatteryAction, defaultAutoSleepBatteryAction);
+
+    int defaultAutoSleepAC = 0; // don't add default on AC
+    if (Common::validPowerSettings("suspend_ac_timeout")) {
+        defaultAutoSleepAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
     }
     setDefaultAction(autoSleepAC, defaultAutoSleepAC);
 
@@ -379,13 +443,13 @@ void Dialog::handleCriticalBattery(int value)
 
 void Dialog::handleAutoSleepBattery(int value)
 {
-    Common::savePowerSettings("autoSleepBattery", value);
+    Common::savePowerSettings("suspend_battery_timeout", value);
     updatePM();
 }
 
 void Dialog::handleAutoSleepAC(int value)
 {
-    Common::savePowerSettings("autoSleepAC", value);
+    Common::savePowerSettings("suspend_ac_timeout", value);
     updatePM();
 }
 
@@ -430,5 +494,11 @@ void Dialog::handleDisableLidActionAC(bool triggered)
 void Dialog::handleDisableLidActionBattery(bool triggered)
 {
     Common::savePowerSettings("disable_lid_action_battery_external_monitor", triggered);
+    updatePM();
+}
+
+void Dialog::handleAutoSleepBatteryAction(int index)
+{
+    Common::savePowerSettings("suspend_battery_action", index);
     updatePM();
 }

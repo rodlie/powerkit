@@ -12,12 +12,21 @@
 #include <QSettings>
 #include <QVariant>
 
+enum suspendAction
+{
+    suspendNone,
+    suspendSleep,
+    suspendHibernate,
+    suspendShutdown
+};
+
 enum lidAction
 {
     lidNone,
     lidLock,
     lidSleep,
-    lidHibernate
+    lidHibernate,
+    lidShutdown
 };
 
 enum criticalAction
@@ -46,6 +55,9 @@ enum criticalAction
 #define DEFAULT_BATTERY_ICON_CHARGED "battery-full-charged"
 #define DEFAULT_BATTERY_EMPTY "battery-empty"
 #define DEFAULT_BATTERY_MISSING "battery-missing"
+
+#define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
+#define DEFAULT_SUSPEND_AC_ACTION suspendNone
 
 #define PM_SERVICE "org.freedesktop.PowerManagement"
 #define PM_PATH "/PowerManagement"
