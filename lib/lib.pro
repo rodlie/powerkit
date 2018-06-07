@@ -15,7 +15,7 @@ VERSION = 1.0.0
 
 TEMPLATE = lib
 SOURCES += power.cpp hotplug.cpp
-HEADERS += power.h upower.h powermanagement.h screensaver.h common.h hotplug.h
+HEADERS += power.h upower.h powermanagement.h screensaver.h common.h hotplug.h monitor.h
 
 exists(../powerdwarf.pri) {
     include(../powerdwarf.pri)

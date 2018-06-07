@@ -425,7 +425,7 @@ void SysTray::handleDisplay(QString display, bool connected)
     } else if (!wasConnected && connected) {
         // Turn on monitor using xrandr
         qDebug() << "add screen" << display;
-        QProcess::startDetached(QString(TURN_ON_MONITOR).arg(display));
+        QProcess::startDetached(QString(TURN_ON_MONITOR_AUTO).arg(display));
         //TODO add detect for lumina
         //QProcess::startDetached(LUMINA_XCONFIG);
     }

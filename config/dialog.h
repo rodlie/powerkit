@@ -13,6 +13,29 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QCheckBox>
+#include <QVBoxLayout>
+#include <QIcon>
+#include <QDebug>
+#include <QLabel>
+#include <QPixmap>
+#include <QTabWidget>
+#include <QDBusConnection>
+#include <QDBusInterface>
+#include <QMessageBox>
+
+#include "common.h"
+#include "monitor.h"
+// fix X11 inc
+#undef CursorShape
+#undef Bool
+#undef Status
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
 
 class Dialog : public QDialog
 {

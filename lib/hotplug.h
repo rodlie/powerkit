@@ -15,6 +15,7 @@
 #include <QMap>
 #include <QDebug>
 
+#include "monitor.h"
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/Xinerama.h>
 
@@ -23,7 +24,7 @@
 #define INTERNAL_MONITOR "LVDS"
 #define VIRTUAL_MONITOR "VIRTUAL"
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
-#define TURN_ON_MONITOR "xrandr --output %1 --auto"
+#define TURN_ON_MONITOR_AUTO "xrandr --output %1 --auto"
 #define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
 
 #define OCNE(X) ((XRROutputChangeNotifyEvent*)X)

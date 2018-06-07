@@ -73,38 +73,7 @@ void HotPlug::requestSetScan(bool scanning)
 void HotPlug::getScreens(Display *dpy)
 {
     if (dpy == NULL) { return; }
-    QMap<QString,bool> result;
-
-    XRRMonitorInfo *mi;
-    XRRScreenResources *sr;
-    XineramaScreenInfo *si;
-    XRROutputInfo *info;
-    int i, j, k, monitors, screens = -1;
-
-    si = XineramaQueryScreens(dpy, &screens);
-    mi = XRRGetMonitors(dpy, DefaultRootWindow(dpy), True, &monitors);
-    sr = XRRGetScreenResourcesCurrent(dpy, DefaultRootWindow(dpy));
-    if (si && mi) {
-        for (i = 0; i < screens; ++i) {
-            for (j = 0; j < monitors; ++j) {
-                for (k = 0; k < mi[j].noutput; ++k) {
-                    info = XRRGetOutputInfo(dpy, sr, mi[j].outputs[k]);
-                    if (info == NULL) {
-                        continue;
-                        XRRFreeOutputInfo(info);
-                    }
-                    QString screenName = info->name;
-                    bool screenConnected = false;
-                    if (info->connection == RR_Connected) { screenConnected = true; }
-                    result[screenName] = screenConnected;
-                    XRRFreeOutputInfo(info);
-                }
-            }
-        }
-        XFree(si);
-        XRRFreeMonitors(mi);
-    }
-    XRRFreeScreenResources(sr);
+    QMap<QString,bool> result = Monitor::get(dpy);
     emit found(result);
 }
 
@@ -112,4 +81,3 @@ void HotPlug::setScan(bool scanning)
 {
     _scanning = scanning;
 }
-

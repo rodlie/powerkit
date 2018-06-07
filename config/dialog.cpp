@@ -7,16 +7,6 @@
 */
 
 #include "dialog.h"
-#include <QVBoxLayout>
-#include <QIcon>
-#include <QDebug>
-#include <QLabel>
-#include <QPixmap>
-#include <QTabWidget>
-#include "common.h"
-#include <QDBusConnection>
-#include <QDBusInterface>
-#include <QMessageBox>
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
@@ -250,6 +240,8 @@ Dialog::Dialog(QWidget *parent)
 
     populate(); // populate boxes
     loadSettings(); // load settings
+
+    qDebug() << Monitor::getX();
 
     // connect varius widgets
     connect(lidActionBattery, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionBattery(int)));
