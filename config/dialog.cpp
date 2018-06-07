@@ -210,7 +210,7 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(sleepACContainer);
 
     acContainerLayout->addStretch();
-    containerWidget->addTab(acContainer, tr("On AC"));
+    containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("On AC"));
 
     QWidget *desktopContainer = new QWidget(this);
     QVBoxLayout *desktopContainerLayout = new QVBoxLayout(desktopContainer);
@@ -224,22 +224,27 @@ Dialog::Dialog(QWidget *parent)
     desktopContainerLayout->addWidget(desktopPM);
 
     desktopContainerLayout->addStretch();
-    containerWidget->addTab(desktopContainer, tr("Desktop Integration"));
+    containerWidget->addTab(desktopContainer, QIcon::fromTheme("user-desktop", QIcon(":/icons/user-desktop.png")), tr("Desktop Integration"));
 
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
+    extraContainerLayout->addStretch();
 
     showSystemTray  = new QCheckBox(this);
+    showSystemTray->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
     showSystemTray->setText(tr("Show System tray"));
     extraContainerLayout->addWidget(showSystemTray);
 
     showNotifications = new QCheckBox(this);
+    showNotifications->setIcon(QIcon::fromTheme("user-available", QIcon(":/icons/user-available.png")));
     showNotifications->setText(tr("Show Notifications"));
     extraContainerLayout->addWidget(showNotifications);
 
     showBatteryPercent = new QCheckBox(this);
-    showBatteryPercent->setText(tr("Show Battery percent"));
-    extraContainerLayout->addWidget(showBatteryPercent);
+    showBatteryPercent->setStyleSheet("margin: 10px;");
+    showBatteryPercent->setIcon(QIcon::fromTheme("battery", QIcon(":/icons/battery.png")));
+    showBatteryPercent->setText(tr("Show Battery percent in system tray."));
+    batteryContainerLayout->addWidget(showBatteryPercent);
 
     layout->addWidget(extraContainer);
 

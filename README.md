@@ -1,3 +1,5 @@
+![screenshot](icons/screenshot.png)
+
 Power Dwarf is an power manager for Linux/BSD systems running alternative desktop environments/managers.
 
 ## Features

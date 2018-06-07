@@ -17,5 +17,9 @@
         <file>icons/video-display.png</file>
         <file>icons/system-suspend.png</file>
         <file>icons/battery128.png</file>
+        <file>icons/preferences-other.png</file>
+        <file>icons/user-available.png</file>
+        <file>icons/ac-adapter.png</file>
+        <file>icons/user-desktop.png</file>
     </qresource>
 </RCC>
