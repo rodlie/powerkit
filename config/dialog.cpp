@@ -31,6 +31,7 @@ Dialog::Dialog(QWidget *parent)
     , hibernateButton(0)
     , poweroffButton(0)
     , lowBatteryAction(0)
+    , monitorList(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -284,6 +285,10 @@ Dialog::Dialog(QWidget *parent)
     QWidget *monitorContainer = new QWidget(this);
     QVBoxLayout *monitorContainerLayout = new QVBoxLayout(monitorContainer);
 
+    monitorList = new QListWidget(this);
+    monitorList->setIconSize(QSize(24,24));
+    monitorContainerLayout->addWidget(monitorList);
+
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
 
@@ -353,6 +358,8 @@ void Dialog::populate()
     lowBatteryAction->addItem(tr("Sleep"), suspendSleep);
     lowBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
     lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+
+    handleUpdatedMonitors();
 }
 
 // load settings and set as default in widgets
@@ -578,31 +585,34 @@ void Dialog::handleAutoSleepBatteryAction(int index)
 
 void Dialog::handleUpdatedMonitors()
 {
-    qDebug() << "monitors changed";
-    qDebug() << Monitor::getX();
+    QMapIterator<QString, bool> i(Monitor::getX());
+    while (i.hasNext()) {
+        i.next();
+        if (monitorExists(i.key())) { continue; }
+        QListWidgetItem *item = new QListWidgetItem(monitorList);
+        item->setText(i.key());
+        item->setData(MONITOR_DATA_CONNECTED, i.value());
+        item->setIcon(QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")));
+    }
 }
 
 void Dialog::handleLockscreenButton()
 {
-    qDebug() << "lock screen";
     QProcess::startDetached(XSCREENSAVER_LOCK);
 }
 
 void Dialog::handleSleepButton()
 {
-    qDebug() << "sleep";
     if (UPower::canSuspend()) { UPower::suspend(); }
 }
 
 void Dialog::handleHibernateButton()
 {
-    qDebug() << "hibernate";
     if (UPower::canHibernate()) { UPower::hibernate(); }
 }
 
 void Dialog::handlePoweroffButton()
 {
-    qDebug() << "power off";
     if (UPower::canPowerOff()) { UPower::poweroff(); }
 }
 
@@ -610,4 +620,14 @@ void Dialog::handleLowBatteryAction(int value)
 {
     Common::savePowerSettings("low_battery_action", value);
     updatePM();
+}
+
+bool Dialog::monitorExists(QString display)
+{
+    for (int i=0;i<monitorList->count();++i) {
+        QListWidgetItem *item = monitorList->item(i);
+        if (!item) { continue; }
+        if (item->text() == display) { return true; }
+    }
+    return false;
 }

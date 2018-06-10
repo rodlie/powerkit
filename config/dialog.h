@@ -25,10 +25,13 @@
 #include <QPushButton>
 #include <QProcess>
 #include <QTimer>
+#include <QListWidget>
+#include <QListWidgetItem>
 
 #include "common.h"
 #include "upower.h"
 #include "monitor.h"
+
 // fix X11 inc
 #undef CursorShape
 #undef Bool
@@ -44,6 +47,8 @@
 #ifndef XSCREENSAVER_LOCK
 #define XSCREENSAVER_LOCK "xscreensaver-command -lock"
 #endif
+
+#define MONITOR_DATA_CONNECTED Qt::UserRole+1
 
 class Dialog : public QDialog
 {
@@ -78,6 +83,7 @@ private:
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
     QComboBox *lowBatteryAction;
+    QListWidget *monitorList;
 
 private slots:
     void populate();
@@ -106,6 +112,7 @@ private slots:
     void handleHibernateButton();
     void handlePoweroffButton();
     void handleLowBatteryAction(int value);
+    bool monitorExists(QString display);
 };
 
 #endif // DIALOG_H
