@@ -77,7 +77,7 @@ public slots:
     bool canHibernate();
     bool canSuspend();
     double batteryLeft();
-    void suspend();
+    void sleep();
     void hibernate();
     void lockScreen();
 

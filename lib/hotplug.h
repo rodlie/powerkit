@@ -20,13 +20,6 @@
 #include <X11/extensions/Xinerama.h>
 
 #undef Bool // fix X11 inc
-
-#define INTERNAL_MONITOR "LVDS"
-#define VIRTUAL_MONITOR "VIRTUAL"
-#define TURN_OFF_MONITOR "xrandr --output %1 --off"
-#define TURN_ON_MONITOR_AUTO "xrandr --output %1 --auto"
-#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
-
 #define OCNE(X) ((XRROutputChangeNotifyEvent*)X)
 
 class HotPlug : public QObject

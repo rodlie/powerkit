@@ -22,8 +22,8 @@ SysTray::SysTray(QObject *parent)
     , lidActionBattery(LID_BATTERY_DEFAULT)
     , lidActionAC(LID_AC_DEFAULT)
     , criticalAction(CRITICAL_DEFAULT)
-    , autoSleepBattery(AUTO_SLEEP_BATTERY)
-    , autoSleepAC(0)
+    , autoSuspendBattery(AUTO_SLEEP_BATTERY)
+    , autoSuspendAC(0)
     , timer(0)
     , timeouts(0)
     , showNotifications(true)
@@ -33,6 +33,8 @@ SysTray::SysTray(QObject *parent)
     , showTray(true)
     , disableLidACOnExternalMonitors(true)
     , disableLidBatteryOnExternalMonitors(true)
+    , autoSuspendBatteryAction(suspendSleep)
+    , autoSuspendACAction(suspendNone)
 {
     // setup tray
     tray = new QSystemTrayIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(QString(":/icons/%1.png").arg(DEFAULT_BATTERY_ICON))), this);
@@ -71,7 +73,7 @@ SysTray::SysTray(QObject *parent)
     // load settings and register service
     loadSettings();
     registerService();
-    QTimer::singleShot(1000, this, SLOT(checkDevices()));
+    QTimer::singleShot(10000, this, SLOT(checkDevices()));
 }
 
 SysTray::~SysTray()
@@ -82,7 +84,7 @@ SysTray::~SysTray()
     ht->deleteLater();
 }
 
-// what to do when user clicks systray, at the moment nothing
+// what to do when user clicks systray
 void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
@@ -92,7 +94,6 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     default:;
     }*/
     QString config = QString("%1-config").arg(qApp->applicationFilePath());
-    qDebug() << "start config?" << config;
     if (!QFile::exists(config)) { return; }
     QProcess::startDetached(config);
 }
@@ -112,7 +113,9 @@ void SysTray::checkDevices()
     drawBattery(batteryLeft);
 
     // critical battery?
-    if (batteryLeft<=(double)critBatteryValue && man->onBattery()) { handleCritical(); }
+    if (batteryLeft>0 &&
+        batteryLeft<=(double)critBatteryValue &&
+        man->onBattery()) { handleCritical(); }
 
     // Register service if not already registered
     if (!hasService) { registerService(); }
@@ -122,7 +125,7 @@ void SysTray::checkDevices()
 void SysTray::handleClosedLid()
 {
 
-    qDebug() << "enabled video output" << monitors;
+    qDebug() << "monitors?" << monitors;
     qDebug() << "internal monitor connected?" << internalMonitorIsConnected();
     qDebug() << "has external monitor?" << externalMonitorIsConnected();
 
@@ -145,7 +148,7 @@ void SysTray::handleClosedLid()
         man->lockScreen();
         break;
     case lidSleep:
-        man->suspend();
+        man->sleep();
         break;
     case lidHibernate:
         man->hibernate();
@@ -157,7 +160,7 @@ void SysTray::handleClosedLid()
 // do something when lid is opened
 void SysTray::handleOpenedLid()
 {
-    // do nothing
+    // do nothing?
 }
 
 // do something when switched to battery power
@@ -180,10 +183,16 @@ void SysTray::handleOnAC()
 void SysTray::loadSettings()
 {
     if (Common::validPowerSettings("suspend_battery_timeout")) {
-        autoSleepBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
+        autoSuspendBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
     }
     if (Common::validPowerSettings("suspend_ac_timeout")) {
-        autoSleepAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
+        autoSuspendAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
+    }
+    if (Common::validPowerSettings("suspend_battery_action")) {
+        autoSuspendBatteryAction = Common::loadPowerSettings("suspend_battery_action").toInt();
+    }
+    if (Common::validPowerSettings("suspend_ac_action")) {
+        autoSuspendACAction = Common::loadPowerSettings("suspend_ac_action").toInt();
     }
     if (Common::validPowerSettings("lowBattery")) {
         lowBatteryValue = Common::loadPowerSettings("lowBattery").toInt();
@@ -230,8 +239,10 @@ void SysTray::loadSettings()
     qDebug() << "tray_notify" << showNotifications;
     qDebug() << "desktop_ss" << desktopSS;
     qDebug() << "desktop_pm" << desktopPM;
-    qDebug() << "suspend_battery_timeout" << autoSleepBattery;
-    qDebug() << "suspend_ac_timeout" << autoSleepAC;
+    qDebug() << "suspend_battery_timeout" << autoSuspendBattery;
+    qDebug() << "suspend_ac_timeout" << autoSuspendAC;
+    qDebug() << "suspend_battery_action" << autoSuspendBatteryAction;
+    qDebug() << "suspend_ac_action" << autoSuspendACAction;
     qDebug() << "low battery setting" << lowBatteryValue;
     qDebug() << "critical battery setting" << critBatteryValue;
     qDebug() << "lid_battery" << lidActionBattery;
@@ -239,7 +250,7 @@ void SysTray::loadSettings()
     qDebug() << "critical action" << criticalAction;
 }
 
-// register session service
+// register session services
 void SysTray::registerService()
 {
     if (hasService) { return; }
@@ -362,7 +373,7 @@ void SysTray::drawBattery(double left)
 }
 
 // timeout, check if idle
-// timeouts and xss must be >= user value and service has to be empty before auto sleep
+// timeouts and xss must be >= user value and service has to be empty before suspend
 void SysTray::timeout()
 {
     if (!showTray && tray->isVisible()) { tray->hide(); }
@@ -372,16 +383,38 @@ void SysTray::timeout()
     qDebug() << "XSS?" << xIdle();
     qDebug() << "inhibit?" << pm->HasInhibit();
 
-    int autoSleep = 0;
-    if (man->onBattery()) { autoSleep = autoSleepBattery; }
-    else { autoSleep = autoSleepAC; }
+    int autoSuspend = 0;
+    int autoSuspendAction = suspendNone;
+    if (man->onBattery()) {
+        autoSuspend = autoSuspendBattery;
+        autoSuspendAction = autoSuspendBatteryAction;
+    }
+    else {
+        autoSuspend = autoSuspendAC;
+        autoSuspendAction = autoSuspendACAction;
+    }
 
-    bool doSleep = false;
-    if (autoSleep>0 && timeouts>=autoSleep && xIdle()>=autoSleep && !pm->HasInhibit()) { doSleep = true; }
-    if (!doSleep) { timeouts++; }
+    bool doSuspend = false;
+    if (autoSuspend>0 &&
+        timeouts>=autoSuspend &&
+        xIdle()>=autoSuspend &&
+        !pm->HasInhibit()) { doSuspend = true; }
+    if (!doSuspend) { timeouts++; }
     else {
         timeouts = 0;
-        man->suspend();
+        qDebug() << "auto suspend activated";
+        switch (autoSuspendAction) {
+        case suspendSleep:
+            man->sleep();
+            break;
+        case suspendHibernate:
+            man->hibernate();
+            break;
+        case suspendShutdown:
+            // TODO
+            break;
+        default: break;
+        }
     }
 }
 
@@ -410,6 +443,8 @@ void SysTray::resetTimer()
     timeouts = 0;
 }
 
+// handle connected and disconnected monitors
+// Uses xrandr to turn on/off
 void SysTray::handleDisplay(QString display, bool connected)
 {
     qDebug() << display << connected;
@@ -419,24 +454,27 @@ void SysTray::handleDisplay(QString display, bool connected)
     monitors[display] = connected;
     if (wasConnected && !connected) {
         // Turn off monitor using xrandr when disconnected.
-        // This is needed else we end up with a virtual screen with the apps from that screen.
         qDebug() << "remove screen" << display;
         QProcess::startDetached(QString(TURN_OFF_MONITOR).arg(display));
     } else if (!wasConnected && connected) {
-        // Turn on monitor using xrandr
+        // Turn on monitor using xrandr when connected
         qDebug() << "add screen" << display;
-        QProcess::startDetached(QString(TURN_ON_MONITOR_AUTO).arg(display));
+        QString turnOn = Monitor::turnOnMonitorUsingXrandr(display);
+        qDebug() << "running xrandr" << turnOn;
+        QProcess::startDetached(turnOn);
         //TODO add detect for lumina
         //QProcess::startDetached(LUMINA_XCONFIG);
     }
 }
 
+// update monitor list
 void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
 {
     qDebug() << displays;
     monitors = displays;
 }
 
+// is "internal" monitor connected? Anything starting with LVDS is ok.
 bool SysTray::internalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(monitors);
@@ -450,6 +488,7 @@ bool SysTray::internalMonitorIsConnected()
     return false;
 }
 
+// is "external" monitor(s) connected? This means anything not LVDS is ok.
 bool SysTray::externalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(monitors);

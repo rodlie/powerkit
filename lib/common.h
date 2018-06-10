@@ -12,6 +12,16 @@
 #include <QSettings>
 #include <QVariant>
 
+enum randrAction
+{
+    randrAuto,
+    randrLeftOf,
+    randrRightOf,
+    randrAbove,
+    randrBelow,
+    randrSameAs
+};
+
 enum suspendAction
 {
     suspendNone,

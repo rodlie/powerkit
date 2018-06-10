@@ -140,7 +140,7 @@ double Power::batteryLeft()
 }
 
 // do suspend if available
-void Power::suspend()
+void Power::sleep()
 {
     if (canSuspend()) { UPower::suspend(); }
 }

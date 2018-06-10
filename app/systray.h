@@ -56,8 +56,8 @@ private:
     int lidActionBattery;
     int lidActionAC;
     int criticalAction;
-    int autoSleepBattery;
-    int autoSleepAC;
+    int autoSuspendBattery;
+    int autoSuspendAC;
     QTimer *timer;
     int timeouts;
     bool showNotifications;
@@ -68,6 +68,8 @@ private:
     QMap<QString, bool> monitors;
     bool disableLidACOnExternalMonitors;
     bool disableLidBatteryOnExternalMonitors;
+    int autoSuspendBatteryAction;
+    int autoSuspendACAction;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
