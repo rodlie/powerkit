@@ -36,6 +36,8 @@
 //#undef Bool // done in hotplug.h
 #undef Status
 
+#define XSCREENSAVER_RUN "xscreensaver -no-splash"
+
 class SysTray : public QObject
 {
     Q_OBJECT
@@ -74,6 +76,8 @@ private:
     bool disableLidBatteryOnExternalMonitors;
     int autoSuspendBatteryAction;
     int autoSuspendACAction;
+    QProcess *xscreensaver;
+    bool startupScreensaver;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -96,6 +100,7 @@ private slots:
     bool externalMonitorIsConnected();
     void handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie);
     void handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie);
+    void handleScrensaverFinished(int exitcode);
 };
 
 #endif // SYSTRAY_H

@@ -22,8 +22,12 @@
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QProcess>
+#include <QTimer>
 
 #include "common.h"
+#include "upower.h"
 #include "monitor.h"
 // fix X11 inc
 #undef CursorShape
@@ -36,6 +40,10 @@
 #undef FocusOut
 #undef FontChange
 #undef Expose
+
+#ifndef XSCREENSAVER_LOCK
+#define XSCREENSAVER_LOCK "xscreensaver-command -lock"
+#endif
 
 class Dialog : public QDialog
 {
@@ -64,6 +72,10 @@ private:
     QCheckBox *disableLidActionAC;
     QCheckBox *disableLidActionBattery;
     QComboBox *autoSleepBatteryAction;
+    QPushButton *lockscreenButton;
+    QPushButton *sleepButton;
+    QPushButton *hibernateButton;
+    QPushButton *poweroffButton;
 
 private slots:
     void populate();
@@ -87,6 +99,10 @@ private slots:
     void handleDisableLidActionBattery(bool triggered);
     void handleAutoSleepBatteryAction(int index);
     void handleUpdatedMonitors();
+    void handleLockscreenButton();
+    void handleSleepButton();
+    void handleHibernateButton();
+    void handlePoweroffButton();
 };
 
 #endif // DIALOG_H

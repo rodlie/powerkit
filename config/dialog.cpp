@@ -26,6 +26,10 @@ Dialog::Dialog(QWidget *parent)
     , disableLidActionAC(0)
     , disableLidActionBattery(0)
     , autoSleepBatteryAction(0)
+    , lockscreenButton(0)
+    , sleepButton(0)
+    , hibernateButton(0)
+    , poweroffButton(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -38,6 +42,9 @@ Dialog::Dialog(QWidget *parent)
     dbus = new QDBusInterface("org.freedesktop.PowerDwarf", "/PowerDwarf", "org.freedesktop.PowerDwarf", session, this);
     if (dbus->isValid()) {
         session.connect(dbus->service(), dbus->path(), dbus->service(), "updatedMonitors", this, SLOT(handleUpdatedMonitors()));
+    } else {
+        QMessageBox::warning(this, tr("Power Dwarf not running"), tr("Power Dwarf is not running, please start it before running settings."));
+        QTimer::singleShot(100, this, SLOT(close()));
     }
 
     // setup widgets
@@ -68,6 +75,7 @@ Dialog::Dialog(QWidget *parent)
 
     powerContainerLayout->addWidget(powerLabel);
     powerContainerLayout->addWidget(powerBatteryLabel);
+    powerContainerLayout->addStretch();
 
     //layout->setSizeConstraint(QLayout::SetFixedSize); // lock dialog size
     wrapperLayout->addWidget(powerContainer);
@@ -210,46 +218,77 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addStretch();
     containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("On AC"));
 
-    QWidget *desktopContainer = new QWidget(this);
-    QVBoxLayout *desktopContainerLayout = new QVBoxLayout(desktopContainer);
+    //QWidget *desktopContainer = new QWidget(this);
+    //QVBoxLayout *desktopContainerLayout = new QVBoxLayout(desktopContainer);
+
+
+
+    //desktopContainerLayout->addStretch();
+    //containerWidget->addTab(desktopContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other")), tr("Services"));
+
+    QWidget *advContainer = new QWidget(this);
+    QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
+
+    containerWidget->addTab(advContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other")), tr("Advanced"));
+
+    showSystemTray  = new QCheckBox(this);
+    showSystemTray->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
+    showSystemTray->setText(tr("Show system tray"));
+
+    showNotifications = new QCheckBox(this);
+    showNotifications->setIcon(QIcon::fromTheme("user-available", QIcon(":/icons/user-available.png")));
+    showNotifications->setText(tr("Show system tray notifications"));
+
+    showBatteryPercent = new QCheckBox(this);
+    showBatteryPercent->setIcon(QIcon::fromTheme("battery", QIcon(":/icons/battery.png")));
+    showBatteryPercent->setText(tr("Show battery percent in system tray."));
 
     desktopSS = new QCheckBox(this);
+    desktopSS->setIcon(QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")));
     desktopSS->setText("org.freedesktop.ScreenSaver");
+
     desktopPM = new QCheckBox(this);
+    desktopPM->setIcon(QIcon::fromTheme("battery", QIcon(":/icons/battery.png")));
     desktopPM->setText("org.freedesktop.PowerManagement");
 
-    desktopContainerLayout->addWidget(desktopSS);
-    desktopContainerLayout->addWidget(desktopPM);
-
-    desktopContainerLayout->addStretch();
-    containerWidget->addTab(desktopContainer, QIcon::fromTheme("user-desktop", QIcon(":/icons/user-desktop.png")), tr("Desktop Integration"));
+    advContainerLayout->addWidget(showSystemTray);
+    advContainerLayout->addWidget(showNotifications);
+    advContainerLayout->addWidget(showBatteryPercent);
+    advContainerLayout->addWidget(desktopSS);
+    advContainerLayout->addWidget(desktopPM);
+    advContainerLayout->addStretch();
 
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
     extraContainerLayout->addStretch();
 
-    showSystemTray  = new QCheckBox(this);
-    showSystemTray->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
-    showSystemTray->setText(tr("Show System tray"));
-    extraContainerLayout->addWidget(showSystemTray);
+    lockscreenButton = new QPushButton(this);
+    lockscreenButton->setText(tr("Lock screen"));
+    connect(lockscreenButton, SIGNAL(released()), this, SLOT(handleLockscreenButton()));
 
-    showNotifications = new QCheckBox(this);
-    showNotifications->setIcon(QIcon::fromTheme("user-available", QIcon(":/icons/user-available.png")));
-    showNotifications->setText(tr("Show Notifications"));
-    extraContainerLayout->addWidget(showNotifications);
+    sleepButton = new QPushButton(this);
+    sleepButton->setText(tr("Sleep"));
+    connect(sleepButton, SIGNAL(released()), this, SLOT(handleSleepButton()));
 
-    showBatteryPercent = new QCheckBox(this);
-    showBatteryPercent->setStyleSheet("margin: 10px;");
-    showBatteryPercent->setIcon(QIcon::fromTheme("battery", QIcon(":/icons/battery.png")));
-    showBatteryPercent->setText(tr("Show Battery percent in system tray."));
-    batteryContainerLayout->addWidget(showBatteryPercent);
+    hibernateButton = new QPushButton(this);
+    hibernateButton->setText(tr("Hibernate"));
+    connect(hibernateButton, SIGNAL(released()), this, SLOT(handleHibernateButton()));
+
+    poweroffButton = new QPushButton(this);
+    poweroffButton->setText(tr("Power Off"));
+    connect(poweroffButton, SIGNAL(released()), this, SLOT(handlePoweroffButton()));
+
+    extraContainerLayout->addWidget(lockscreenButton);
+    extraContainerLayout->addWidget(sleepButton);
+    extraContainerLayout->addWidget(hibernateButton);
+    extraContainerLayout->addWidget(poweroffButton);
 
     layout->addWidget(extraContainer);
 
     populate(); // populate boxes
     loadSettings(); // load settings
 
-    // connect varius widgets
+    // connect various widgets
     connect(lidActionBattery, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionBattery(int)));
     connect(lidActionAC, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionAC(int)));
     connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)), this, SLOT(handleCriticalAction(int)));
@@ -511,4 +550,28 @@ void Dialog::handleUpdatedMonitors()
 {
     qDebug() << "monitors changed";
     qDebug() << Monitor::getX();
+}
+
+void Dialog::handleLockscreenButton()
+{
+    qDebug() << "lock screen";
+    QProcess::startDetached(XSCREENSAVER_LOCK);
+}
+
+void Dialog::handleSleepButton()
+{
+    qDebug() << "sleep";
+    if (UPower::canSuspend()) { UPower::suspend(); }
+}
+
+void Dialog::handleHibernateButton()
+{
+    qDebug() << "hibernate";
+    if (UPower::canHibernate()) { UPower::hibernate(); }
+}
+
+void Dialog::handlePoweroffButton()
+{
+    qDebug() << "power off";
+    if (UPower::canPowerOff()) { UPower::poweroff(); }
 }

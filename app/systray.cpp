@@ -36,6 +36,8 @@ SysTray::SysTray(QObject *parent)
     , disableLidBatteryOnExternalMonitors(true)
     , autoSuspendBatteryAction(suspendSleep)
     , autoSuspendACAction(suspendNone)
+    , xscreensaver(0)
+    , startupScreensaver(true)
 {
     // setup tray
     tray = new QSystemTrayIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(QString(":/icons/%1.png").arg(DEFAULT_BATTERY_ICON))), this);
@@ -72,6 +74,10 @@ SysTray::SysTray(QObject *parent)
     connect(this, SIGNAL(updatedMonitors()), pd, SLOT(updateMonitors()));
     connect(pd, SIGNAL(update()), this, SLOT(loadSettings()));
 
+    // setup xscreensaver
+    xscreensaver = new QProcess(this);
+    connect(xscreensaver, SIGNAL(finished(int)), this, SLOT(handleScrensaverFinished(int)));
+
     // setup timer
     timer = new QTimer(this);
     timer->setInterval(60000);
@@ -86,6 +92,7 @@ SysTray::SysTray(QObject *parent)
 
 SysTray::~SysTray()
 {
+    xscreensaver->close();
     man->deleteLater();
     pm->deleteLater();
     ss->deleteLater();
@@ -198,6 +205,9 @@ void SysTray::handleOnAC()
 // load default settings
 void SysTray::loadSettings()
 {
+    if (Common::validPowerSettings("startup_xscreensaver")) {
+        startupScreensaver = Common::loadPowerSettings("startup_xscreensaver").toInt();
+    }
     if (Common::validPowerSettings("suspend_battery_timeout")) {
         autoSuspendBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
     }
@@ -248,6 +258,7 @@ void SysTray::loadSettings()
     }
 
     qDebug() << "====> powerdwarf settings:";
+    qDebug() << "startup_xscreensaver" << startupScreensaver;
     qDebug() << "disable_lid_action_ac_external_monitor" << disableLidACOnExternalMonitors;
     qDebug() << "disable_lid_action_battery_external_monitor" << disableLidBatteryOnExternalMonitors;
     qDebug() << "show_tray" << showTray;
@@ -264,6 +275,11 @@ void SysTray::loadSettings()
     qDebug() << "lid_battery" << lidActionBattery;
     qDebug() << "lid_ac" << lidActionAC;
     qDebug() << "critical action" << criticalAction;
+
+    if (startupScreensaver && !xscreensaver->isReadable()) {
+        qDebug() << "run xscreensaver";
+        xscreensaver->start(XSCREENSAVER_RUN);
+    }
 }
 
 // register session services
@@ -428,7 +444,7 @@ void SysTray::timeout()
     if (!doSuspend) { timeouts++; }
     else {
         timeouts = 0;
-        qDebug() << "auto suspend activated";
+        qDebug() << "auto suspend activated" << autoSuspendAction;
         switch (autoSuspendAction) {
         case suspendSleep:
             man->sleep();
@@ -538,4 +554,13 @@ void SysTray::handleNewInhibitScreenSaver(QString application, QString reason, q
 void SysTray::handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie)
 {
     qDebug() << "new powermanagement inhibit" << application << reason << cookie;
+}
+
+void SysTray::handleScrensaverFinished(int exitcode)
+{
+    qDebug() << "xscreensaver closed, was this on purpose?" << exitcode;
+    /*if (startupScreensaver) {
+        qDebug() << "restart xscreensaver";
+        xscreensaver->start(XSCREENSAVER_RUN);
+    }*/
 }
