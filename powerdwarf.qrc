@@ -21,5 +21,8 @@
         <file>icons/user-available.png</file>
         <file>icons/ac-adapter.png</file>
         <file>icons/user-desktop.png</file>
+        <file>icons/system-shutdown.png</file>
+        <file>icons/system-lock-screen.png</file>
+        <file>icons/system-hibernate.png</file>
     </qresource>
 </RCC>

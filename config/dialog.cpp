@@ -30,12 +30,13 @@ Dialog::Dialog(QWidget *parent)
     , sleepButton(0)
     , hibernateButton(0)
     , poweroffButton(0)
+    , lowBatteryAction(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(QString("Power Dwarf"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png")));
-    setMinimumSize(QSize(480,360));
+    setMinimumSize(QSize(550,400));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -53,7 +54,6 @@ Dialog::Dialog(QWidget *parent)
 
     QWidget *wrapper = new QWidget(this);
     QHBoxLayout *wrapperLayout = new QHBoxLayout(wrapper);
-    layout->addWidget(wrapper);
 
     QWidget *powerContainer = new QWidget(this);
     powerContainer->setContentsMargins(0,0,0,0);
@@ -115,6 +115,16 @@ Dialog::Dialog(QWidget *parent)
     lowBattery->setSuffix(tr(" %"));
     QLabel *lowBatteryLabel = new QLabel(this);
 
+    QWidget *lowActionBatteryContainer = new QWidget(this);
+    lowActionBatteryContainer->setContentsMargins(0,0,0,0);
+    QVBoxLayout *lowActionBatteryContainerLayout = new QVBoxLayout(lowActionBatteryContainer);
+    lowActionBatteryContainerLayout->setMargin(0);
+    lowActionBatteryContainerLayout->setSpacing(0);
+    lowBatteryAction = new QComboBox(this);
+    connect(lowBatteryAction, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLowBatteryAction(int)));
+    lowActionBatteryContainerLayout->addWidget(lowBattery);
+    lowActionBatteryContainerLayout->addWidget(lowBatteryAction);
+
     QLabel *lowBatteryIcon = new QLabel(this);
     lowBatteryIcon->setMaximumSize(24,24);
     lowBatteryIcon->setMinimumSize(24,24);
@@ -122,7 +132,7 @@ Dialog::Dialog(QWidget *parent)
     lowBatteryLabel->setText(tr("<strong>Low battery</strong>"));
     lowBatteryContainerLayout->addWidget(lowBatteryIcon);
     lowBatteryContainerLayout->addWidget(lowBatteryLabel);
-    lowBatteryContainerLayout->addWidget(lowBattery);
+    lowBatteryContainerLayout->addWidget(lowActionBatteryContainer);
     batteryContainerLayout->addWidget(lowBatteryContainer);
 
     QWidget *criticalBatteryContainer = new QWidget(this);
@@ -180,7 +190,6 @@ Dialog::Dialog(QWidget *parent)
     batteryContainerLayout->addWidget(sleepBatteryContainer);
 
     batteryContainerLayout->addStretch();
-    containerWidget->addTab(batteryContainer, QIcon::fromTheme("battery", QIcon(":/icons/battery.png")), tr("On Battery"));
 
     QWidget *acContainer = new QWidget(this);
     QVBoxLayout *acContainerLayout = new QVBoxLayout(acContainer);
@@ -216,20 +225,9 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(sleepACContainer);
 
     acContainerLayout->addStretch();
-    containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("On AC"));
-
-    //QWidget *desktopContainer = new QWidget(this);
-    //QVBoxLayout *desktopContainerLayout = new QVBoxLayout(desktopContainer);
-
-
-
-    //desktopContainerLayout->addStretch();
-    //containerWidget->addTab(desktopContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other")), tr("Services"));
 
     QWidget *advContainer = new QWidget(this);
     QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
-
-    containerWidget->addTab(advContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other")), tr("Advanced"));
 
     showSystemTray  = new QCheckBox(this);
     showSystemTray->setIcon(QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")));
@@ -263,32 +261,45 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addStretch();
 
     lockscreenButton = new QPushButton(this);
+    lockscreenButton->setIcon(QIcon::fromTheme("system-lock-screen", QIcon(":/icons/system-lock-screen.png")));
     lockscreenButton->setText(tr("Lock screen"));
-    connect(lockscreenButton, SIGNAL(released()), this, SLOT(handleLockscreenButton()));
 
     sleepButton = new QPushButton(this);
+    sleepButton->setIcon(QIcon::fromTheme("system-suspend", QIcon(":/icons/system-suspend.png")));
     sleepButton->setText(tr("Sleep"));
-    connect(sleepButton, SIGNAL(released()), this, SLOT(handleSleepButton()));
 
     hibernateButton = new QPushButton(this);
+    hibernateButton->setIcon(QIcon::fromTheme("system-hibernate", QIcon(":/icons/system-hibernate.png")));
     hibernateButton->setText(tr("Hibernate"));
-    connect(hibernateButton, SIGNAL(released()), this, SLOT(handleHibernateButton()));
 
     poweroffButton = new QPushButton(this);
-    poweroffButton->setText(tr("Power Off"));
-    connect(poweroffButton, SIGNAL(released()), this, SLOT(handlePoweroffButton()));
+    poweroffButton->setIcon(QIcon::fromTheme("system-shutdown", QIcon(":/icons/system-shutdown.png")));
+    poweroffButton->setText(tr("Shutdown"));
 
     extraContainerLayout->addWidget(lockscreenButton);
     extraContainerLayout->addWidget(sleepButton);
     extraContainerLayout->addWidget(hibernateButton);
     extraContainerLayout->addWidget(poweroffButton);
 
+    QWidget *monitorContainer = new QWidget(this);
+    QVBoxLayout *monitorContainerLayout = new QVBoxLayout(monitorContainer);
+
+    layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
+
+    containerWidget->addTab(batteryContainer, QIcon::fromTheme("battery", QIcon(":/icons/battery.png")), tr("On Battery"));
+    containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("On AC"));
+    containerWidget->addTab(monitorContainer, QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")), tr("Monitors"));
+    containerWidget->addTab(advContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")), tr("Advanced"));
 
     populate(); // populate boxes
     loadSettings(); // load settings
 
     // connect various widgets
+    connect(lockscreenButton, SIGNAL(released()), this, SLOT(handleLockscreenButton()));
+    connect(sleepButton, SIGNAL(released()), this, SLOT(handleSleepButton()));
+    connect(hibernateButton, SIGNAL(released()), this, SLOT(handleHibernateButton()));
+    connect(poweroffButton, SIGNAL(released()), this, SLOT(handlePoweroffButton()));
     connect(lidActionBattery, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionBattery(int)));
     connect(lidActionAC, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionAC(int)));
     connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)), this, SLOT(handleCriticalAction(int)));
@@ -304,6 +315,11 @@ Dialog::Dialog(QWidget *parent)
     connect(disableLidActionAC, SIGNAL(toggled(bool)), this, SLOT(handleDisableLidActionAC(bool)));
     connect(disableLidActionBattery, SIGNAL(toggled(bool)), this, SLOT(handleDisableLidActionBattery(bool)));
     connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)), this, SLOT(handleAutoSleepBatteryAction(int)));
+}
+
+Dialog::~Dialog()
+{
+    Common::savePowerSettings("dialog_geometry", saveGeometry());
 }
 
 // populate widgets with default values
@@ -331,11 +347,27 @@ void Dialog::populate()
     autoSleepBatteryAction->addItem(tr("Sleep"), suspendSleep);
     autoSleepBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
     autoSleepBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+
+    lowBatteryAction->clear();
+    lowBatteryAction->addItem(tr("Notify"), suspendNone);
+    lowBatteryAction->addItem(tr("Sleep"), suspendSleep);
+    lowBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
+    lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
 }
 
 // load settings and set as default in widgets
 void Dialog::loadSettings()
 {
+    if (Common::validPowerSettings("dialog_geometry")) {
+        restoreGeometry(Common::loadPowerSettings("dialog_geometry").toByteArray());
+    }
+
+    int defaultLowBatteryAction = suspendNone;
+    if (Common::validPowerSettings("low_battery_action")) {
+        defaultLowBatteryAction = Common::loadPowerSettings("low_battery_action").toInt();
+    }
+    setDefaultAction(lowBatteryAction, defaultLowBatteryAction);
+
     int defaultAutoSleepBattery = AUTO_SLEEP_BATTERY;
     if (Common::validPowerSettings("suspend_battery_timeout")) {
         defaultAutoSleepBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
@@ -430,10 +462,8 @@ void Dialog::loadSettings()
 // tell power manager to update settings
 void Dialog::updatePM()
 {
-    qDebug() << dbus->isValid();
-    qDebug() << dbus->call("refresh");
-//    if (!dbus->isValid()) { return; }
-  //  dbus->call("refresh");
+    if (!dbus->isValid()) { return; }
+    dbus->call("refresh");
 }
 
 // set default action in combobox
@@ -574,4 +604,10 @@ void Dialog::handlePoweroffButton()
 {
     qDebug() << "power off";
     if (UPower::canPowerOff()) { UPower::poweroff(); }
+}
+
+void Dialog::handleLowBatteryAction(int value)
+{
+    Common::savePowerSettings("low_battery_action", value);
+    updatePM();
 }

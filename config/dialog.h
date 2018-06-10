@@ -51,6 +51,7 @@ class Dialog : public QDialog
 
 public:
    explicit Dialog(QWidget *parent = NULL);
+   ~Dialog();
 
 signals:
     void refresh();
@@ -76,6 +77,7 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
+    QComboBox *lowBatteryAction;
 
 private slots:
     void populate();
@@ -103,6 +105,7 @@ private slots:
     void handleSleepButton();
     void handleHibernateButton();
     void handlePoweroffButton();
+    void handleLowBatteryAction(int value);
 };
 
 #endif // DIALOG_H
