@@ -25,6 +25,7 @@
 
 #include "common.h"
 #include "power.h"
+#include "service.h"
 #include "powermanagement.h"
 #include "screensaver.h"
 
@@ -43,12 +44,15 @@ public:
     explicit SysTray(QObject *parent = NULL);
     ~SysTray();
 
+signals:
+    void updatedMonitors();
 private:
     QSystemTrayIcon *tray;
     Power *man;
     PowerManagement *pm;
     ScreenSaver *ss;
     HotPlug *ht;
+    PowerDwarf *pd;
     bool wasLowBattery;
     int lowBatteryValue;
     int critBatteryValue;

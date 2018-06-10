@@ -13,7 +13,8 @@ TARGET = powerdwarf
 TEMPLATE = app
 
 SOURCES += main.cpp systray.cpp
-HEADERS += systray.h
+HEADERS += systray.h \
+    service.h
 RESOURCES += ../$${TARGET}.qrc
 LIBS += -L../lib -lPowerDwarf
 INCLUDEPATH += ../lib

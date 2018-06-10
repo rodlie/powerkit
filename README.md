@@ -1,6 +1,6 @@
 ![screenshot](icons/screenshot.png)
 
-Power Dwarf is an power manager for Linux/BSD systems running alternative desktop environments/managers.
+Power Dwarf is an power manager for Linux systems running alternative desktop environments/managers.
 
 ## Features
 
@@ -32,13 +32,14 @@ Power Dwarf should be started during desktop startup, if your desktop environmen
 
 Power Dwarf requires the following dependencies to build:
 
- * Qt 4/5 core/gui/dbus
+ * Qt 4/5 core/gui/dbus/xml
  * XSS (X11 Screen Saver extension client library)
  * RandR
  * Xinerama
 
 And the following during run-time:
 
+ * ConsoleKit (optional, needed for power off)
  * UPower
  * xscreensaver
  * xrandr

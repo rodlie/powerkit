@@ -10,6 +10,7 @@
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
+    , dbus(0)
     , lidActionBattery(0)
     , lidActionAC(0)
     , criticalActionBattery(0)
@@ -31,6 +32,13 @@ Dialog::Dialog(QWidget *parent)
     setWindowTitle(QString("Power Dwarf"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png")));
     setMinimumSize(QSize(480,360));
+
+    // setup dbus
+    QDBusConnection session = QDBusConnection::sessionBus();
+    dbus = new QDBusInterface("org.freedesktop.PowerDwarf", "/PowerDwarf", "org.freedesktop.PowerDwarf", session, this);
+    if (dbus->isValid()) {
+        session.connect(dbus->service(), dbus->path(), dbus->service(), "updatedMonitors", this, SLOT(handleUpdatedMonitors()));
+    }
 
     // setup widgets
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -241,8 +249,6 @@ Dialog::Dialog(QWidget *parent)
     populate(); // populate boxes
     loadSettings(); // load settings
 
-    qDebug() << Monitor::getX();
-
     // connect varius widgets
     connect(lidActionBattery, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionBattery(int)));
     connect(lidActionAC, SIGNAL(currentIndexChanged(int)), this, SLOT(handleLidActionAC(int)));
@@ -385,9 +391,10 @@ void Dialog::loadSettings()
 // tell power manager to update settings
 void Dialog::updatePM()
 {
-    QDBusInterface iface(PM_SERVICE, PM_PATH, PM_SERVICE, QDBusConnection::sessionBus());
-    if (!iface.isValid()) { return; }
-    iface.call("refresh");
+    qDebug() << dbus->isValid();
+    qDebug() << dbus->call("refresh");
+//    if (!dbus->isValid()) { return; }
+  //  dbus->call("refresh");
 }
 
 // set default action in combobox
@@ -498,4 +505,10 @@ void Dialog::handleAutoSleepBatteryAction(int index)
 {
     Common::savePowerSettings("suspend_battery_action", index);
     updatePM();
+}
+
+void Dialog::handleUpdatedMonitors()
+{
+    qDebug() << "monitors changed";
+    qDebug() << Monitor::getX();
 }

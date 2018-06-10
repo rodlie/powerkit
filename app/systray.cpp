@@ -15,6 +15,7 @@ SysTray::SysTray(QObject *parent)
     , pm(0)
     , ss(0)
     , ht(0)
+    , pd(0)
     , wasLowBattery(false)
     , lowBatteryValue(LOW_BATTERY)
     , critBatteryValue(CRITICAL_BATTERY)
@@ -52,7 +53,7 @@ SysTray::SysTray(QObject *parent)
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
     connect(pm, SIGNAL(HasInhibitChanged(bool)), this, SLOT(handleHasInhibitChanged(bool)));
-    connect(pm, SIGNAL(update()), this, SLOT(loadSettings()));
+    //connect(pm, SIGNAL(update()), this, SLOT(loadSettings()));
     connect(pm, SIGNAL(newInhibit(QString,QString,quint32)), this, SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
 
     // setup org.freedesktop.ScreenSaver
@@ -65,6 +66,11 @@ SysTray::SysTray(QObject *parent)
     connect(ht, SIGNAL(status(QString,bool)), this, SLOT(handleDisplay(QString,bool)));
     connect(ht, SIGNAL(found(QMap<QString,bool>)), this, SLOT(handleFoundDisplays(QMap<QString,bool>)));
     ht->requestScan();
+
+    // setup org.freedesktop.PowerDwarf
+    pd = new PowerDwarf();
+    connect(this, SIGNAL(updatedMonitors()), pd, SLOT(updateMonitors()));
+    connect(pd, SIGNAL(update()), this, SLOT(loadSettings()));
 
     // setup timer
     timer = new QTimer(this);
@@ -84,6 +90,7 @@ SysTray::~SysTray()
     pm->deleteLater();
     ss->deleteLater();
     ht->deleteLater();
+    pd->deleteLater();
 }
 
 // what to do when user clicks systray
@@ -109,7 +116,9 @@ void SysTray::checkDevices()
     double batteryLeft = man->batteryLeft();
     tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
     if (batteryLeft==100) { tray->setToolTip(tr("Charged")); }
-    if (!man->onBattery() && batteryLeft<100) { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
+
+    // TODO: what is user don't have battery?
+    if (!man->onBattery() && man->batteryLeft()<100) { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
 
     // draw battery systray
     drawBattery(batteryLeft);
@@ -123,7 +132,7 @@ void SysTray::checkDevices()
     if (!hasService) { registerService(); }
 }
 
-// what to do when user open/close lid
+// what to do when user close lid
 void SysTray::handleClosedLid()
 {
 
@@ -155,14 +164,17 @@ void SysTray::handleClosedLid()
     case lidHibernate:
         man->hibernate();
         break;
+    case lidShutdown:
+        man->shutdown();
+        break;
     default: ;
     }
 }
 
-// do something when lid is opened
+// what to do when user open lid
 void SysTray::handleOpenedLid()
 {
-    // do nothing?
+    qDebug() << "lid is open";
 }
 
 // do something when switched to battery power
@@ -171,6 +183,7 @@ void SysTray::handleOnBattery()
     if (showNotifications && tray->isVisible()) {
         tray->showMessage(tr("On Battery"), tr("Switched to battery power."));
     }
+    // TODO: add brightness
 }
 
 // do something when switched to ac power
@@ -179,6 +192,7 @@ void SysTray::handleOnAC()
     if (showNotifications && tray->isVisible()) {
         tray->showMessage(tr("On AC"), tr("Switched to AC power."));
     }
+    // TODO: add brightness
 }
 
 // load default settings
@@ -234,8 +248,8 @@ void SysTray::loadSettings()
     }
 
     qDebug() << "====> powerdwarf settings:";
-    qDebug() << "no lid action ac external monitor" << disableLidACOnExternalMonitors;
-    qDebug() << "no lid action battery external monitor" << disableLidBatteryOnExternalMonitors;
+    qDebug() << "disable_lid_action_ac_external_monitor" << disableLidACOnExternalMonitors;
+    qDebug() << "disable_lid_action_battery_external_monitor" << disableLidBatteryOnExternalMonitors;
     qDebug() << "show_tray" << showTray;
     qDebug() << "battery_percent" << showBatteryPercent;
     qDebug() << "tray_notify" << showNotifications;
@@ -282,6 +296,15 @@ void SysTray::registerService()
         }
         qDebug() << "Enabled org.freedesktop.ScreenSaver";
     }
+    if (!QDBusConnection::sessionBus().registerService(PD_SERVICE)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        return;
+    }
+    if (!QDBusConnection::sessionBus().registerObject(PD_PATH, pd, QDBusConnection::ExportAllContents)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        return;
+    }
+    qDebug() << "Enabled org.freedesktop.PowerDwarf";
     hasService = true;
 }
 
@@ -475,6 +498,7 @@ void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
 {
     qDebug() << displays;
     monitors = displays;
+    emit updatedMonitors();
 }
 
 // is "internal" monitor connected? Anything starting with LVDS is ok.

@@ -149,6 +149,7 @@ void Power::sleep()
 // TODO:
 // Some distros (Slackware) uses Lilo, if lilo.conf don't have resume=swap_partition then hibernate will fail
 // add a check for resume= in lilo.conf
+// also check for elilo.conf
 void Power::hibernate()
 {
     if (canHibernate()) { UPower::hibernate(); }

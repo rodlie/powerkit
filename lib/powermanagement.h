@@ -41,7 +41,7 @@ private:
 
 signals:
     void HasInhibitChanged(bool has_inhibit);
-    void update();
+    //void update();
     void newInhibit(QString application, QString reason, quint32 cookie);
 
 private slots:
@@ -104,10 +104,10 @@ public slots:
     {
         return canInhibit();
     }
-    void refresh()
+    /*void refresh()
     {
         emit update();
-    }
+    }*/
 };
 
 #endif // POWERMANAGEMENT_H

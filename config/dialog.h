@@ -44,7 +44,11 @@ class Dialog : public QDialog
 public:
    explicit Dialog(QWidget *parent = NULL);
 
+signals:
+    void refresh();
+
 private:
+    QDBusInterface *dbus;
     QComboBox *lidActionBattery;
     QComboBox *lidActionAC;
     QComboBox *criticalActionBattery;
@@ -82,6 +86,7 @@ private slots:
     void handleDisableLidActionAC(bool triggered);
     void handleDisableLidActionBattery(bool triggered);
     void handleAutoSleepBatteryAction(int index);
+    void handleUpdatedMonitors();
 };
 
 #endif // DIALOG_H
