@@ -53,9 +53,11 @@ SysTray::SysTray(QObject *parent)
     pm = new PowerManagement();
     connect(pm, SIGNAL(HasInhibitChanged(bool)), this, SLOT(handleHasInhibitChanged(bool)));
     connect(pm, SIGNAL(update()), this, SLOT(loadSettings()));
+    connect(pm, SIGNAL(newInhibit(QString,QString,quint32)), this, SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
 
     // setup org.freedesktop.ScreenSaver
     ss = new ScreenSaver();
+    connect(ss, SIGNAL(newInhibit(QString,QString,quint32)), this, SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
 
     // setup monitor hotplug watcher
     ht = new HotPlug();
@@ -263,7 +265,7 @@ void SysTray::registerService()
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-        if (!QDBusConnection::sessionBus().registerObject(PM_PATH, pm, QDBusConnection::ExportAllContents)) {
+        if (!QDBusConnection::sessionBus().registerObject(PM_PATH, pm, /*QDBusConnection::ExportAllContents*/QDBusConnection::ExportAllSlots)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
@@ -274,7 +276,7 @@ void SysTray::registerService()
             qWarning() << QDBusConnection::sessionBus().lastError().message();
             return;
         }
-        if (!QDBusConnection::sessionBus().registerObject(SS_PATH, ss, QDBusConnection::ExportAllContents)) {
+        if (!QDBusConnection::sessionBus().registerObject(SS_PATH, ss, /*QDBusConnection::ExportAllContents*/QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
             return;
         }
@@ -299,13 +301,13 @@ void SysTray::handleCritical()
         man->hibernate();
         break;
     case criticalShutdown:
-        qDebug() << "feature not added!"; // TODO!!!!
+        man->shutdown();
         break;
     default: ;
     }
 }
 
-// draw battery percent over tray icon
+// draw battery tray icon
 void SysTray::drawBattery(double left)
 {
     if (!showTray && tray->isVisible()) {
@@ -369,6 +371,7 @@ void SysTray::drawBattery(double left)
     painter.drawText(pixmap.rect().adjusted(1, 1, 1, 1), Qt::AlignCenter, QString("%1").arg(left));
     painter.setPen(QColor(Qt::white));
     painter.drawText(pixmap.rect(), Qt::AlignCenter, QString("%1").arg(left));
+    painter.setPen(QColor(Qt::transparent));
     tray->setIcon(pixmap);
 }
 
@@ -411,7 +414,7 @@ void SysTray::timeout()
             man->hibernate();
             break;
         case suspendShutdown:
-            // TODO
+            man->shutdown();
             break;
         default: break;
         }
@@ -500,4 +503,15 @@ bool SysTray::externalMonitorIsConnected()
         }
     }
     return false;
+}
+
+// handle new inhibits
+void SysTray::handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie)
+{
+    qDebug() << "new screensaver inhibit" << application << reason << cookie;
+}
+
+void SysTray::handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie)
+{
+    qDebug() << "new powermanagement inhibit" << application << reason << cookie;
 }

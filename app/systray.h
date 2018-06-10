@@ -90,6 +90,8 @@ private slots:
     void handleFoundDisplays(QMap<QString,bool> displays);
     bool internalMonitorIsConnected();
     bool externalMonitorIsConnected();
+    void handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie);
+    void handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie);
 };
 
 #endif // SYSTRAY_H

@@ -42,6 +42,7 @@ private:
 signals:
     void HasInhibitChanged(bool has_inhibit);
     void update();
+    void newInhibit(QString application, QString reason, quint32 cookie);
 
 private slots:
     int randInt(int low, int high)
@@ -85,10 +86,11 @@ public slots:
     {
         emit HasInhibitChanged(true);
     }
-    quint32 Inhibit(QString /*application*/, QString /*reason*/)
+    quint32 Inhibit(QString application, QString reason)
     {
         quint32 cookie = genCookie();
         timeOut();
+        emit newInhibit(application, reason, cookie);
         emit HasInhibitChanged(canInhibit());
         return cookie;
     }

@@ -26,9 +26,27 @@
 #define DBUS_DEVICE_ADDED "DeviceAdded"
 #define DBUS_DEVICE_REMOVED "DeviceRemoved"
 
+#define CKIT_SERVICE "org.freedesktop.ConsoleKit"
+#define CKIT_PATH "/org/freedesktop/ConsoleKit/Manager"
+#define CKIT_MANAGER "org.freedesktop.ConsoleKit.Manager"
+
 class UPower
 {
 public:
+    static bool canPowerOff()
+    {
+        QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+        if (!iface.isValid()) { return false; }
+        QDBusMessage reply = iface.call("CanPowerOff");
+        return reply.arguments().first().toBool();
+    }
+    static QString poweroff()
+    {
+        QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+        if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
+        QDBusMessage reply = iface.call("PowerOff");
+        return reply.arguments().first().toString();
+    }
     static bool canSuspend()
     {
         QDBusInterface iface(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, QDBusConnection::systemBus());

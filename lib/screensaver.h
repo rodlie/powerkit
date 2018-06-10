@@ -49,6 +49,9 @@ private:
     QTimer timer;
     QMap<quint32, QTime> clients;
 
+signals:
+    void newInhibit(QString application, QString reason, quint32 cookie);
+
 private slots:
     int randInt(int low, int high)
     {
@@ -83,10 +86,10 @@ private slots:
     }
     void checkForDBusSession()
     {
-        if (!QDBusConnection::sessionBus().isConnected()) {
+        //if (!QDBusConnection::sessionBus().isConnected()) {
             // DBus session has probably ended(?), so quit ...
             //qApp->quit();
-        }
+        //}
     }
     void timeOut()
     {
@@ -107,9 +110,10 @@ public slots:
         QProcess::startDetached(XSCREENSAVER);
         pingPM();
     }
-    quint32 Inhibit(QString /*application*/, QString /*reason*/)
+    quint32 Inhibit(QString application, QString reason)
     {
         quint32 cookie = genCookie();
+        emit newInhibit(application, reason, cookie);
         timeOut();
         return cookie;
     }

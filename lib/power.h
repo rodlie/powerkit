@@ -80,6 +80,7 @@ public slots:
     void sleep();
     void hibernate();
     void lockScreen();
+    void shutdown();
 
 private slots:
     void setupDBus();

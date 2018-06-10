@@ -160,6 +160,11 @@ void Power::lockScreen()
     QProcess::startDetached(XSCREENSAVER_LOCK);
 }
 
+void Power::shutdown()
+{
+    if (UPower::canPowerOff()) { UPower::poweroff(); }
+}
+
 // setup dbus connections
 void Power::setupDBus()
 {
