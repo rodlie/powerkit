@@ -497,13 +497,19 @@ void SysTray::handleDisplay(QString display, bool connected)
     if (wasConnected && !connected) {
         // Turn off monitor using xrandr when disconnected.
         qDebug() << "remove screen" << display;
-        QProcess::startDetached(QString(TURN_OFF_MONITOR).arg(display));
+        QProcess proc;
+        proc.start(QString(TURN_OFF_MONITOR).arg(display));
+        proc.waitForFinished();
+        emit updatedMonitors();
     } else if (!wasConnected && connected) {
         // Turn on monitor using xrandr when connected
         qDebug() << "add screen" << display;
         QString turnOn = Monitor::turnOnMonitorUsingXrandr(display);
-        qDebug() << "running xrandr" << turnOn;
-        QProcess::startDetached(turnOn);
+        qDebug() << "running" << turnOn;
+        QProcess proc;
+        proc.start(turnOn);
+        proc.waitForFinished();
+        emit updatedMonitors();
         //TODO add detect for lumina
         //QProcess::startDetached(LUMINA_XCONFIG);
     }
@@ -512,9 +518,10 @@ void SysTray::handleDisplay(QString display, bool connected)
 // update monitor list
 void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
 {
-    qDebug() << displays;
+    qDebug() << "handle found displays" << displays;
     monitors = displays;
-    emit updatedMonitors();
+    //qDebug() << "emit updatedMonitors";
+    //emit updatedMonitors();
 }
 
 // is "internal" monitor connected? Anything starting with LVDS is ok.
@@ -558,7 +565,7 @@ void SysTray::handleNewInhibitPowerManagement(QString application, QString reaso
 
 void SysTray::handleScrensaverFinished(int exitcode)
 {
-    qDebug() << "xscreensaver closed, was this on purpose?" << exitcode;
+    qDebug() << "xscreensaver closed, was this on purpose?" << exitcode << xscreensaver->readAll();
     /*if (startupScreensaver) {
         qDebug() << "restart xscreensaver";
         xscreensaver->start(XSCREENSAVER_RUN);

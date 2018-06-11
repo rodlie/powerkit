@@ -585,7 +585,9 @@ void Dialog::handleAutoSleepBatteryAction(int index)
 
 void Dialog::handleUpdatedMonitors()
 {
-    QMapIterator<QString, bool> i(Monitor::getX());
+    qDebug() << "monitors changed";
+    QMap<QString,bool> map = Monitor::getX();
+    QMapIterator<QString, bool> i(map);
     while (i.hasNext()) {
         i.next();
         if (monitorExists(i.key())) { continue; }
@@ -593,6 +595,12 @@ void Dialog::handleUpdatedMonitors()
         item->setText(i.key());
         item->setData(MONITOR_DATA_CONNECTED, i.value());
         item->setIcon(QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")));
+    }
+    for (int i=0;i<monitorList->count();++i) {
+        QListWidgetItem *item = monitorList->item(i);
+        if (!item) { continue; }
+        if (map.contains(item->text())) { continue; }
+        else { delete monitorList->takeItem(i); }
     }
 }
 
