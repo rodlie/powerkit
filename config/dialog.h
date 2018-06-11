@@ -84,6 +84,12 @@ private:
     QPushButton *poweroffButton;
     QComboBox *lowBatteryAction;
     QListWidget *monitorList;
+    QComboBox *monitorModes;
+    QComboBox *monitorRates;
+    QCheckBox *monitorPrimary;
+    monitorInfo currentMonitorInfo;
+    QPushButton *monitorSaveButton;
+    QPushButton *monitorApplyButton;
 
 private slots:
     void populate();
@@ -91,6 +97,7 @@ private slots:
     void updatePM();
     void setDefaultAction(QComboBox *box, int action);
     void setDefaultAction(QSpinBox *box, int action);
+    void setDefaultAction(QComboBox *box, QString value);
     void handleLidActionBattery(int index);
     void handleLidActionAC(int index);
     void handleCriticalAction(int index);
@@ -113,6 +120,10 @@ private slots:
     void handlePoweroffButton();
     void handleLowBatteryAction(int value);
     bool monitorExists(QString display);
+    void handleMonitorListItemChanged(QListWidgetItem *item);
+    void handleMonitorModeChanged(QString mode);
+    void monitorSaveSettings();
+    void monitorApplySettings();
 };
 
 #endif // DIALOG_H

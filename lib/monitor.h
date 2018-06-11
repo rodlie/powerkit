@@ -2,15 +2,30 @@
 #define MONITOR_H
 
 #include <QMap>
+#include <QStringList>
+#include <QProcess>
+#include <QVector>
+
 #include "common.h"
 #include <X11/extensions/Xrandr.h>
 #include <X11/extensions/Xinerama.h>
 
+#define XRANDR "xrandr"
 #define INTERNAL_MONITOR "LVDS"
 #define VIRTUAL_MONITOR "VIRTUAL"
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
 #define TURN_ON_MONITOR "xrandr --output %1"
 #define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
+
+struct monitorInfo
+{
+    QString display;
+    QString currentMode;
+    QString currentRate;
+    QString preferredRate;
+    QVector<QStringList> modes;
+    bool isPrimary;
+}; Q_DECLARE_METATYPE(monitorInfo)
 
 class Monitor
 {
@@ -105,6 +120,58 @@ public:
             turnOn.append(" --primary");
         }
         return turnOn;
+    }
+    static monitorInfo getMonitorInfo(QString display)
+    {
+        monitorInfo result;
+        result.isPrimary = false;
+        if (display.isEmpty()) { return result; }
+        QProcess proc;
+        proc.start(XRANDR);
+        proc.waitForFinished();
+        QString xrandr = proc.readAll();
+        QStringList xrandrList = xrandr.split("\n");
+
+       /* QString currentMode;
+        QString currentRate;
+        QString preferredRate;
+        QVector<QStringList> availableModes;
+        bool isPrimary = false;*/
+
+        bool foundDisplay = false;
+        for (int i=0;i<xrandrList.size();++i) {
+            QString line =  xrandrList.at(i);
+            if (line.startsWith(display)) { foundDisplay = true; }
+            if (foundDisplay &&
+                line.contains("connected") &&
+                !line.contains(display)) { foundDisplay = false; }
+            if (foundDisplay) {
+                if (line.contains(display)) {
+                    if (line.contains("primary")) { result.isPrimary = true; }
+                    QStringList info = line.split(" ", QString::SkipEmptyParts);
+                    for (int z=0;z<info.size();++z) {
+                        QString spec = info.at(z);
+                        if (spec.count("x")==1 && spec.count("+")==2) {
+                            result.currentMode = spec.split("+").takeFirst();
+                        }
+                    }
+                    continue;
+                }
+                QStringList screenMode = line.split(" ", QString::SkipEmptyParts);
+                for (int y=0;y<screenMode.size();++y) {
+                    QString rate = screenMode.at(y);
+                    if (rate.contains("*")) { result.currentRate = QString(rate).replace("*","").replace("+",""); }
+                    if (rate.contains("+")) { result.preferredRate = QString(rate).replace("*","").replace("+",""); }
+                }
+                result.modes.append(screenMode);
+            }
+        }
+        /*qDebug() << "is primary?" << result.isPrimary;
+        qDebug() << "current mode" << result.currentMode;
+        qDebug() << "current rate" << result.currentRate;
+        qDebug() << "preferred rate" << result.preferredRate;
+        qDebug() << "available modes" << result.modes;*/
+        return result;
     }
 };
 

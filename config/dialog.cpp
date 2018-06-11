@@ -32,6 +32,11 @@ Dialog::Dialog(QWidget *parent)
     , poweroffButton(0)
     , lowBatteryAction(0)
     , monitorList(0)
+    , monitorModes(0)
+    , monitorRates(0)
+    , monitorPrimary(0)
+    , monitorSaveButton(0)
+    , monitorApplyButton(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -287,7 +292,50 @@ Dialog::Dialog(QWidget *parent)
 
     monitorList = new QListWidget(this);
     monitorList->setIconSize(QSize(24,24));
+
+    QWidget *monitorModesContainer = new QWidget(this);
+    QHBoxLayout *monitorModesContainerLayout = new QHBoxLayout(monitorModesContainer);
+
+    QLabel *monitorModesLabel = new QLabel(this);
+    monitorModesLabel->setText(tr("Screen resolution"));
+    monitorModes = new QComboBox(this);
+
+    monitorModesContainerLayout->addWidget(monitorModesLabel);
+    monitorModesContainerLayout->addWidget(monitorModes);
+
+    QWidget *monitorRatesContainer = new QWidget(this);
+    QHBoxLayout *monitorRatesContainerLayout = new QHBoxLayout(monitorRatesContainer);
+
+    QLabel *monitorRatesLabel = new QLabel(this);
+    monitorRatesLabel->setText(tr("Screen refresh rate"));
+    monitorRates = new QComboBox(this);
+
+    monitorRatesContainerLayout->addWidget(monitorRatesLabel);
+    monitorRatesContainerLayout->addWidget(monitorRates);
+
+    monitorPrimary = new QCheckBox(this);
+    monitorPrimary->setText(tr("Primary screen"));
+
+    QWidget *monitorButtonsContainer = new QWidget(this);
+    QHBoxLayout *monitorButtonsContainerLayout = new QHBoxLayout(monitorButtonsContainer);
+    monitorButtonsContainerLayout->addStretch();
+
+    monitorApplyButton = new QPushButton(this);
+    monitorApplyButton->setText(tr("Apply monitor changes"));
+    //monitorApplyButton->setEnabled(false);
+
+    monitorSaveButton = new QPushButton(this);
+    monitorSaveButton->setText(tr("Save monitor settings"));
+    //monitorSaveButton->setEnabled(false);
+
+    monitorButtonsContainerLayout->addWidget(monitorApplyButton);
+    monitorButtonsContainerLayout->addWidget(monitorSaveButton);
+
     monitorContainerLayout->addWidget(monitorList);
+    monitorContainerLayout->addWidget(monitorModesContainer);
+    monitorContainerLayout->addWidget(monitorRatesContainer);
+    monitorContainerLayout->addWidget(monitorPrimary);
+    monitorContainerLayout->addWidget(monitorButtonsContainer);
 
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
@@ -301,6 +349,10 @@ Dialog::Dialog(QWidget *parent)
     loadSettings(); // load settings
 
     // connect various widgets
+    connect(monitorApplyButton, SIGNAL(released()), this, SLOT(monitorApplySettings()));
+    connect(monitorModes, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleMonitorModeChanged(QString)));
+    connect(monitorList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
+    connect(monitorList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
     connect(lockscreenButton, SIGNAL(released()), this, SLOT(handleLockscreenButton()));
     connect(sleepButton, SIGNAL(released()), this, SLOT(handleSleepButton()));
     connect(hibernateButton, SIGNAL(released()), this, SLOT(handleHibernateButton()));
@@ -490,6 +542,16 @@ void Dialog::setDefaultAction(QSpinBox *box, int action)
     box->setValue(action);
 }
 
+void Dialog::setDefaultAction(QComboBox *box, QString value)
+{
+    for (int i=0;i<box->count();i++) {
+        if (box->itemText(i) == value) {
+            box->setCurrentIndex(i);
+            return;
+        }
+    }
+}
+
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
 {
@@ -638,4 +700,73 @@ bool Dialog::monitorExists(QString display)
         if (item->text() == display) { return true; }
     }
     return false;
+}
+
+void Dialog::handleMonitorListItemChanged(QListWidgetItem *item)
+{
+    if (!item) { return; }
+
+    monitorModes->clear();
+    monitorRates->clear();
+    monitorPrimary->setChecked(false);
+
+    currentMonitorInfo = Monitor::getMonitorInfo(item->text());
+    qDebug() << item->text() << currentMonitorInfo.currentMode << currentMonitorInfo.currentRate << currentMonitorInfo.isPrimary;
+    monitorPrimary->setChecked(currentMonitorInfo.isPrimary);
+
+    for (int i=0;i<currentMonitorInfo.modes.size();++i) {
+        QString mode = currentMonitorInfo.modes.at(i).at(0);
+        if (mode.isEmpty()) { continue; }
+        monitorModes->addItem(mode);
+    }
+    setDefaultAction(monitorModes, currentMonitorInfo.currentMode);
+}
+
+void Dialog::handleMonitorModeChanged(QString mode)
+{
+    if (mode.isEmpty()) { return; }
+    monitorRates->clear();
+    QString currentRate;
+    for (int i=0;i<currentMonitorInfo.modes.size();++i) {
+        if (currentMonitorInfo.modes.at(i).at(0) == mode) {
+            QStringList rates = currentMonitorInfo.modes.at(i);
+            for (int y=0;y<rates.size();++y) {
+                QString rate = rates.at(y);
+                if (rate.isEmpty() || rate == mode) { continue; }
+                if (rate.contains("*")) { currentRate = rate.replace("*","");}
+                if (rate.contains("+")) { rate.replace("+",""); }
+                monitorRates->addItem(rate);
+            }
+        }
+    }
+    if (!currentRate.isEmpty()) {
+        setDefaultAction(monitorRates, currentRate);
+    }
+}
+
+void Dialog::monitorSaveSettings()
+{
+
+}
+
+void Dialog::monitorApplySettings()
+{
+    QListWidgetItem *item = monitorList->currentItem();
+    if (!item) { return; }
+    if (item->text().isEmpty()) { return; }
+    QString xrandr = QString("%1 --output %2").arg(XRANDR).arg(item->text());
+    if (!monitorModes->currentText().isEmpty()) {
+        xrandr.append(QString(" --mode %1").arg(monitorModes->currentText()));
+    }
+    if (!monitorRates->currentText().isEmpty()) {
+        xrandr.append(QString(" --rate %1").arg(monitorRates->currentText()));
+    }
+    if (monitorPrimary->isChecked()) {
+        xrandr.append(" --primary");
+    }
+    qDebug() << "run" << xrandr;
+    QProcess proc;
+    proc.start(xrandr);
+    proc.waitForFinished();
+    handleMonitorListItemChanged(item);
 }
