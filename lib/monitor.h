@@ -79,6 +79,10 @@ public:
         XCloseDisplay(dpy);
         return result;
     }
+    static QString turnOffMonitorUsingXrandr(QString display)
+    {
+        return QString(TURN_OFF_MONITOR).arg(display);
+    }
     static QString turnOnMonitorUsingXrandr(QString display)
     {
         QString turnOn = QString(TURN_ON_MONITOR).arg(display);
@@ -172,12 +176,12 @@ public:
                 result.modes.append(screenMode);
             }
         }
-        qDebug() << "is primary?" << result.isPrimary;
+        /*qDebug() << "is primary?" << result.isPrimary;
         qDebug() << "current mode" << result.currentMode;
         qDebug() << "current rate" << result.currentRate;
         qDebug() << "preferred rate" << result.preferredRate;
         qDebug() << "available modes" << result.modes;
-        qDebug() << "rotation" << result.rotate;
+        qDebug() << "rotation" << result.rotate;*/
         return result;
     }
 };

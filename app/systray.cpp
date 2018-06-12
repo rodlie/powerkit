@@ -88,6 +88,7 @@ SysTray::SysTray(QObject *parent)
     loadSettings();
     registerService();
     QTimer::singleShot(10000, this, SLOT(checkDevices()));
+    QTimer::singleShot(5000, this, SLOT(setupMonitors()));
 }
 
 SysTray::~SysTray()
@@ -565,9 +566,25 @@ void SysTray::handleNewInhibitPowerManagement(QString application, QString reaso
 
 void SysTray::handleScrensaverFinished(int exitcode)
 {
-    qDebug() << "xscreensaver closed, was this on purpose?" << exitcode << xscreensaver->readAll();
-    /*if (startupScreensaver) {
-        qDebug() << "restart xscreensaver";
-        xscreensaver->start(XSCREENSAVER_RUN);
-    }*/
+    qDebug() << "xscreensaver closed, was this on purpose?" << exitcode;
+}
+
+void SysTray::setupMonitors()
+{
+    QMapIterator<QString, bool> monitors(Monitor::getX());
+    while (monitors.hasNext()) {
+        monitors.next();
+        QString cmd = Monitor::turnOnMonitorUsingXrandr(monitors.key());
+        if (Common::validPowerSettings(QString("%1_enabled").arg(monitors.key()))) {
+            if (!Common::loadPowerSettings(QString("%1_enabled").arg(monitors.key())).toBool()) {
+                cmd = Monitor::turnOffMonitorUsingXrandr(monitors.key());
+            }
+        }
+        if (cmd.isEmpty()) { continue; }
+        qDebug() << cmd;
+        QProcess proc;
+        proc.start(cmd);
+        proc.waitForFinished();
+        proc.close();
+    }
 }

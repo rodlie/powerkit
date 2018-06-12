@@ -101,6 +101,7 @@ private slots:
     void handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie);
     void handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie);
     void handleScrensaverFinished(int exitcode);
+    void setupMonitors();
 };
 
 #endif // SYSTRAY_H
