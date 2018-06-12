@@ -25,6 +25,9 @@ struct monitorInfo
     QString preferredRate;
     QVector<QStringList> modes;
     bool isPrimary;
+    QString rotate;
+    int position;
+    QString positionOther;
 }; Q_DECLARE_METATYPE(monitorInfo)
 
 class Monitor
@@ -110,8 +113,9 @@ public:
                 turnOn.append(" --auto");
                 break;
             }
-            if (!turnOn.contains("--auto")) {
-                turnOn.append(QString(" %1").arg(Common::loadPowerSettings(QString("%1_option_value").arg(display)).toString()));
+            QString otherScreen = Common::loadPowerSettings(QString("%1_option_value").arg(display)).toString();
+            if (!turnOn.contains("--auto") && otherScreen != QObject::tr("None")) {
+                turnOn.append(QString(" %1").arg(otherScreen));
             }
         } else {
             turnOn.append(" --auto");
@@ -125,19 +129,13 @@ public:
     {
         monitorInfo result;
         result.isPrimary = false;
+        result.position = randrAuto;
         if (display.isEmpty()) { return result; }
         QProcess proc;
         proc.start(XRANDR);
         proc.waitForFinished();
         QString xrandr = proc.readAll();
         QStringList xrandrList = xrandr.split("\n");
-
-       /* QString currentMode;
-        QString currentRate;
-        QString preferredRate;
-        QVector<QStringList> availableModes;
-        bool isPrimary = false;*/
-
         bool foundDisplay = false;
         for (int i=0;i<xrandrList.size();++i) {
             QString line =  xrandrList.at(i);
@@ -149,10 +147,18 @@ public:
                 if (line.contains(display)) {
                     if (line.contains("primary")) { result.isPrimary = true; }
                     QStringList info = line.split(" ", QString::SkipEmptyParts);
+                    int foundRotation = 0;
                     for (int z=0;z<info.size();++z) {
                         QString spec = info.at(z);
                         if (spec.count("x")==1 && spec.count("+")==2) {
                             result.currentMode = spec.split("+").takeFirst();
+                            foundRotation = z+1;
+                        }
+                    }
+                    if (foundRotation>0) {
+                        QString rotation = info.at(foundRotation);
+                        if (!rotation.isEmpty() && !rotation.startsWith("(")) {
+                            result.rotate = rotation;
                         }
                     }
                     continue;
@@ -166,11 +172,12 @@ public:
                 result.modes.append(screenMode);
             }
         }
-        /*qDebug() << "is primary?" << result.isPrimary;
+        qDebug() << "is primary?" << result.isPrimary;
         qDebug() << "current mode" << result.currentMode;
         qDebug() << "current rate" << result.currentRate;
         qDebug() << "preferred rate" << result.preferredRate;
-        qDebug() << "available modes" << result.modes;*/
+        qDebug() << "available modes" << result.modes;
+        qDebug() << "rotation" << result.rotate;
         return result;
     }
 };

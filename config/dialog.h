@@ -90,6 +90,9 @@ private:
     monitorInfo currentMonitorInfo;
     QPushButton *monitorSaveButton;
     QPushButton *monitorApplyButton;
+    QComboBox *monitorRotation;
+    QComboBox *monitorPosition;
+    QComboBox *monitorPositionOther;
 
 private slots:
     void populate();
@@ -98,6 +101,7 @@ private slots:
     void setDefaultAction(QComboBox *box, int action);
     void setDefaultAction(QSpinBox *box, int action);
     void setDefaultAction(QComboBox *box, QString value);
+    void setDefaultRotation(QString value);
     void handleLidActionBattery(int index);
     void handleLidActionAC(int index);
     void handleCriticalAction(int index);
@@ -121,6 +125,7 @@ private slots:
     void handleLowBatteryAction(int value);
     bool monitorExists(QString display);
     void handleMonitorListItemChanged(QListWidgetItem *item);
+    void handleMonitorListICurrentitemChanged(QListWidgetItem *item, QListWidgetItem *item2);
     void handleMonitorModeChanged(QString mode);
     void monitorSaveSettings();
     void monitorApplySettings();

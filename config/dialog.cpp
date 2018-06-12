@@ -37,6 +37,9 @@ Dialog::Dialog(QWidget *parent)
     , monitorPrimary(0)
     , monitorSaveButton(0)
     , monitorApplyButton(0)
+    , monitorRotation(0)
+    , monitorPosition(0)
+    , monitorPositionOther(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -313,6 +316,28 @@ Dialog::Dialog(QWidget *parent)
     monitorRatesContainerLayout->addWidget(monitorRatesLabel);
     monitorRatesContainerLayout->addWidget(monitorRates);
 
+    QWidget *monitorRotateContainer = new QWidget(this);
+    QHBoxLayout *monitorRotateContainerLayout = new QHBoxLayout(monitorRotateContainer);
+
+    QLabel *monitorRotateLabel = new QLabel(this);
+    monitorRotateLabel->setText(tr("Screen rotation"));
+    monitorRotation = new QComboBox(this);
+
+    monitorRotateContainerLayout->addWidget(monitorRotateLabel);
+    monitorRotateContainerLayout->addWidget(monitorRotation);
+
+    QWidget *monitorPosContainer = new QWidget(this);
+    QHBoxLayout *monitorPosContainerLayout = new QHBoxLayout(monitorPosContainer);
+
+    QLabel *monitorPosLabel = new QLabel(this);
+    monitorPosLabel->setText(tr("Screen position"));
+    monitorPosition = new QComboBox(this);
+    monitorPositionOther = new QComboBox(this);
+
+    monitorPosContainerLayout->addWidget(monitorPosLabel);
+    monitorPosContainerLayout->addWidget(monitorPosition);
+    monitorPosContainerLayout->addWidget(monitorPositionOther);
+
     monitorPrimary = new QCheckBox(this);
     monitorPrimary->setText(tr("Primary screen"));
 
@@ -322,11 +347,9 @@ Dialog::Dialog(QWidget *parent)
 
     monitorApplyButton = new QPushButton(this);
     monitorApplyButton->setText(tr("Apply monitor changes"));
-    //monitorApplyButton->setEnabled(false);
 
     monitorSaveButton = new QPushButton(this);
     monitorSaveButton->setText(tr("Save monitor settings"));
-    //monitorSaveButton->setEnabled(false);
 
     monitorButtonsContainerLayout->addWidget(monitorApplyButton);
     monitorButtonsContainerLayout->addWidget(monitorSaveButton);
@@ -334,6 +357,8 @@ Dialog::Dialog(QWidget *parent)
     monitorContainerLayout->addWidget(monitorList);
     monitorContainerLayout->addWidget(monitorModesContainer);
     monitorContainerLayout->addWidget(monitorRatesContainer);
+    monitorContainerLayout->addWidget(monitorRotateContainer);
+    monitorContainerLayout->addWidget(monitorPosContainer);
     monitorContainerLayout->addWidget(monitorPrimary);
     monitorContainerLayout->addWidget(monitorButtonsContainer);
 
@@ -349,10 +374,14 @@ Dialog::Dialog(QWidget *parent)
     loadSettings(); // load settings
 
     // connect various widgets
+    connect(monitorSaveButton, SIGNAL(released()), this, SLOT(monitorSaveSettings()));
     connect(monitorApplyButton, SIGNAL(released()), this, SLOT(monitorApplySettings()));
     connect(monitorModes, SIGNAL(currentIndexChanged(QString)), this, SLOT(handleMonitorModeChanged(QString)));
-    connect(monitorList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
+    connect(monitorList, SIGNAL(itemActivated(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
+    connect(monitorList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)), this, SLOT(handleMonitorListICurrentitemChanged(QListWidgetItem*,QListWidgetItem*)));
+    //connect(monitorList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
     connect(monitorList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
+    connect(monitorList, SIGNAL(itemPressed(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
     connect(lockscreenButton, SIGNAL(released()), this, SLOT(handleLockscreenButton()));
     connect(sleepButton, SIGNAL(released()), this, SLOT(handleSleepButton()));
     connect(hibernateButton, SIGNAL(released()), this, SLOT(handleHibernateButton()));
@@ -410,6 +439,20 @@ void Dialog::populate()
     lowBatteryAction->addItem(tr("Sleep"), suspendSleep);
     lowBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
     lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+
+    monitorRotation->clear();
+    monitorRotation->addItem(tr("Normal"), "normal");
+    monitorRotation->addItem(tr("Left"), "left");
+    monitorRotation->addItem(tr("Right"), "right");
+    monitorRotation->addItem(tr("Inverted"), "inverted");
+
+    monitorPosition->clear();
+    monitorPosition->addItem(tr("Auto"), randrAuto);
+    monitorPosition->addItem(tr("Left Of"), randrLeftOf);
+    monitorPosition->addItem(tr("Right Of"), randrRightOf);
+    monitorPosition->addItem(tr("Above"), randrAbove);
+    monitorPosition->addItem(tr("Below"), randrBelow);
+    monitorPosition->addItem(tr("Same As"), randrSameAs);
 
     handleUpdatedMonitors();
 }
@@ -552,6 +595,16 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
     }
 }
 
+void Dialog::setDefaultRotation(QString value)
+{
+    for (int i=0;i<monitorRotation->count();i++) {
+        if (monitorRotation->itemData(i) == value) {
+            monitorRotation->setCurrentIndex(i);
+            return;
+        }
+    }
+}
+
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
 {
@@ -657,12 +710,15 @@ void Dialog::handleUpdatedMonitors()
         item->setText(i.key());
         item->setData(MONITOR_DATA_CONNECTED, i.value());
         item->setIcon(QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")));
+        monitorList->setCurrentItem(item);
     }
     for (int i=0;i<monitorList->count();++i) {
         QListWidgetItem *item = monitorList->item(i);
         if (!item) { continue; }
         if (map.contains(item->text())) { continue; }
-        else { delete monitorList->takeItem(i); }
+        else {
+            delete monitorList->takeItem(i);
+        }
     }
 }
 
@@ -709,9 +765,10 @@ void Dialog::handleMonitorListItemChanged(QListWidgetItem *item)
     monitorModes->clear();
     monitorRates->clear();
     monitorPrimary->setChecked(false);
+    monitorPositionOther->clear();
+    monitorPositionOther->addItem(tr("None"));
 
     currentMonitorInfo = Monitor::getMonitorInfo(item->text());
-    qDebug() << item->text() << currentMonitorInfo.currentMode << currentMonitorInfo.currentRate << currentMonitorInfo.isPrimary;
     monitorPrimary->setChecked(currentMonitorInfo.isPrimary);
 
     for (int i=0;i<currentMonitorInfo.modes.size();++i) {
@@ -719,7 +776,31 @@ void Dialog::handleMonitorListItemChanged(QListWidgetItem *item)
         if (mode.isEmpty()) { continue; }
         monitorModes->addItem(mode);
     }
+    for (int i=0;i<monitorList->count();++i) {
+        QListWidgetItem *monitor = monitorList->item(i);
+        if (!monitor) { continue; }
+        if (monitor->text() == item->text() || monitor->text().isEmpty()) { continue; }
+        monitorPositionOther->addItem(monitor->text());
+    }
+
+    int pos = randrAuto;
+    QString posOther = tr("None");
+    if (Common::validPowerSettings(QString("%1_option").arg(item->text()))) {
+        pos = Common::loadPowerSettings(QString("%1_option").arg(item->text())).toInt();
+    }
+    if (Common::validPowerSettings(QString("%1_option_value").arg(item->text()))) {
+        posOther = Common::loadPowerSettings(QString("%1_option_value").arg(item->text())).toString();
+    }
+    monitorPosition->setCurrentIndex(pos);
+    monitorPositionOther->setCurrentIndex(monitorPositionOther->findText(posOther));
     setDefaultAction(monitorModes, currentMonitorInfo.currentMode);
+    setDefaultRotation(currentMonitorInfo.rotate);
+}
+
+void Dialog::handleMonitorListICurrentitemChanged(QListWidgetItem *item, QListWidgetItem *item2)
+{
+    Q_UNUSED(item2)
+    handleMonitorListItemChanged(item);
 }
 
 void Dialog::handleMonitorModeChanged(QString mode)
@@ -746,7 +827,16 @@ void Dialog::handleMonitorModeChanged(QString mode)
 
 void Dialog::monitorSaveSettings()
 {
+    QListWidgetItem *item = monitorList->currentItem();
+    if (!item) { return; }
+    if (item->text().isEmpty()) { return; }
 
+    Common::savePowerSettings(QString("%1_mode").arg(item->text()), monitorModes->currentText());
+    Common::savePowerSettings(QString("%1_rate").arg(item->text()), monitorRates->currentText());
+    Common::savePowerSettings(QString("%1_rotate").arg(item->text()),monitorRotation->currentData().toString());
+    Common::savePowerSettings(QString("%1_option").arg(item->text()), monitorPosition->currentData().toInt());
+    Common::savePowerSettings(QString("%1_option_value").arg(item->text()), monitorPositionOther->currentText());
+    //Common::savePowerSettings(QString("%1_").arg(item->text()),"");
 }
 
 void Dialog::monitorApplySettings()
@@ -763,6 +853,35 @@ void Dialog::monitorApplySettings()
     }
     if (monitorPrimary->isChecked()) {
         xrandr.append(" --primary");
+    }
+    if (!monitorRotation->currentText().isEmpty()) {
+        xrandr.append(QString(" --rotate %1").arg(monitorRotation->currentData().toString()));
+    }
+    if (!monitorPosition->currentText().isEmpty() && !monitorPositionOther->currentText().isEmpty()) {
+        QString pos;
+        switch(monitorPosition->currentData().toInt()) {
+        case randrLeftOf:
+            pos.append(" --left-of ");
+            break;
+        case randrRightOf:
+            pos.append(" --right-of ");
+            break;
+        case randrAbove:
+            pos.append(" --above ");
+            break;
+        case randrBelow:
+            pos.append(" --below ");
+            break;
+        case randrSameAs:
+            pos.append(" --same-as ");
+            break;
+        default:
+            break;
+        }
+        if (!pos.isEmpty() && monitorPositionOther->currentText() != tr("None")) {
+            pos.append(monitorPositionOther->currentText());
+            xrandr.append(pos);
+        }
     }
     qDebug() << "run" << xrandr;
     QProcess proc;
