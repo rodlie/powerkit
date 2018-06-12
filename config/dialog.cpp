@@ -833,8 +833,8 @@ void Dialog::monitorSaveSettings()
 
     Common::savePowerSettings(QString("%1_mode").arg(item->text()), monitorModes->currentText());
     Common::savePowerSettings(QString("%1_rate").arg(item->text()), monitorRates->currentText());
-    Common::savePowerSettings(QString("%1_rotate").arg(item->text()),monitorRotation->currentData().toString());
-    Common::savePowerSettings(QString("%1_option").arg(item->text()), monitorPosition->currentData().toInt());
+    Common::savePowerSettings(QString("%1_rotate").arg(item->text()),monitorRotation->itemData(monitorRotation->currentIndex()).toString());
+    Common::savePowerSettings(QString("%1_option").arg(item->text()), monitorPosition->itemData(monitorPosition->currentIndex()).toInt());
     Common::savePowerSettings(QString("%1_option_value").arg(item->text()), monitorPositionOther->currentText());
     //Common::savePowerSettings(QString("%1_").arg(item->text()),"");
 }
@@ -855,11 +855,11 @@ void Dialog::monitorApplySettings()
         xrandr.append(" --primary");
     }
     if (!monitorRotation->currentText().isEmpty()) {
-        xrandr.append(QString(" --rotate %1").arg(monitorRotation->currentData().toString()));
+        xrandr.append(QString(" --rotate %1").arg(monitorRotation->itemData(monitorRotation->currentIndex()).toString()));
     }
     if (!monitorPosition->currentText().isEmpty() && !monitorPositionOther->currentText().isEmpty()) {
         QString pos;
-        switch(monitorPosition->currentData().toInt()) {
+        switch(monitorPosition->itemData(monitorPosition->currentIndex()).toInt()) {
         case randrLeftOf:
             pos.append(" --left-of ");
             break;
