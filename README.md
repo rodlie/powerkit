@@ -7,10 +7,10 @@ PowerDwarf is a power manager created for Slackware for use with alternative des
 Some of the features included in PowerDwarf:
 
  * Implements org.freedesktop.ScreenSaver daemon specification
-   * Enables applications to inhibit the screen saver
+   * Enables applications to inhibit the screen saver (video player)
    * Supports XScreenSaver
  * Implements org.freedesktop.PowerManagement daemon specification
-   * Enables applications to inhibit suspend actions
+   * Enables applications to inhibit suspend actions (music player)
  * Supports lid and suspend actions
    * Lock screen
    * Sleep
@@ -31,7 +31,7 @@ On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file. 
 
 PowerDwarf requires the following dependencies to build:
 
- * Qt 4/5 core/gui/dbus/xml
+ * Qt 4.8+ core/gui/dbus/xml
  * XSS (X11 Screen Saver extension client library)
  * RandR
  * Xinerama
@@ -50,19 +50,52 @@ PowerDwarf is relativity easy to build, just:
 
 ```
 mkdir build && cd build
-qmake CONFIG+=release CONFIG+=staticlib .. && make
+qmake CONFIG+=release .. && make
 sudo make install
 ```
 
 For packaging use:
 
 ```
-qmake CONFIG+=release CONFIG+=staticlib PREFIX=/usr
+qmake CONFIG+=release PREFIX=/usr
 make
 make INSTALL_ROOT=/pkg/path install
+```
+```
+pkg/
+├── etc
+│   └── xdg
+│       └── autostart
+│           └── powerdwarf.desktop
+└── usr
+    ├── bin
+    │   ├── powerdwarf
+    │   └── powerdwarf-config
+    ├── include
+    │   └── powerdwarf
+    │       ├── common.h
+    │       ├── hotplug.h
+    │       ├── monitor.h
+    │       ├── power.h
+    │       ├── powermanagement.h
+    │       ├── screensaver.h
+    │       └── upower.h
+    ├── lib
+    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9.0
+    │   └── pkgconfig
+    │       └── PowerDwarf.pc
+    └── share
+        ├── applications
+        │   └── powerdwarf.desktop
+        └── doc
+            └── powerdwarf-0.9.0
+                ├── LICENSE
+                └── README.md
 ```
 
  * The XDG destination can be customized with ``XDGDIR=</etc/xdg>``
  * The documentation path can be customized with ``DOCDIR=<PREFIX/usr/share>``
  * Shared library is enabled by default, this can be disabled with ``CONFIG+=staticlib``
- * Library and headers are not installed by default, enable with ``CONFIG+=install_lib``
