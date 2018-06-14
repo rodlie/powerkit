@@ -22,6 +22,7 @@ Some of the features included in PowerDwarf:
  * Monitor hot-plug support
    * Save/Restore monitor states automatically
  * Flexible configuration GUI
+ * Small (under 400k)
 
 ## Compatibilty
 
@@ -29,19 +30,19 @@ On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file. 
 
 ## Requirements
 
-PowerDwarf requires the following dependencies to build:
+PowerDwarf requires the following dependencies:
 
- * Qt 4.8+ core/gui/dbus/xml
- * XSS (X11 Screen Saver extension client library)
- * RandR
+ * X11
+ * Xss
+ * Xrandr
  * Xinerama
-
-And the following during run-time:
-
+ * QtDBus
+ * QtXml
+ * QtGui
+ * QtCore
  * ConsoleKit (optional, needed for power off)
  * UPower
- * xscreensaver
- * xrandr
+ * XScreenSaver
  * adwaita-icon-theme (or similar)
 
 ## Build
@@ -99,3 +100,4 @@ pkg/
  * The XDG destination can be customized with ``XDGDIR=</etc/xdg>``
  * The documentation path can be customized with ``DOCDIR=<PREFIX/usr/share>``
  * Shared library is enabled by default, this can be disabled with ``CONFIG+=staticlib``
+ * Library installation can be disabled with ``echo "CONFIG-=install_lib" > local.pri``
