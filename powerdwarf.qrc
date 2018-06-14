@@ -12,11 +12,9 @@
         <file>icons/battery-missing.png</file>
         <file>icons/battery-caution.png</file>
         <file>icons/battery.png</file>
-        <file>icons/powerdwarf.png</file>
         <file>icons/computer.png</file>
         <file>icons/video-display.png</file>
         <file>icons/system-suspend.png</file>
-        <file>icons/battery128.png</file>
         <file>icons/preferences-other.png</file>
         <file>icons/user-available.png</file>
         <file>icons/ac-adapter.png</file>
@@ -24,5 +22,7 @@
         <file>icons/system-shutdown.png</file>
         <file>icons/system-lock-screen.png</file>
         <file>icons/system-hibernate.png</file>
+        <file>icons/vendors/slackware-black.png</file>
+        <file>icons/vendors/slackware-white.png</file>
     </qresource>
 </RCC>

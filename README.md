@@ -42,6 +42,7 @@ And the following during run-time:
  * UPower
  * xscreensaver
  * xrandr
+ * adwaita-icon-theme (or similar)
 
 ## Build
 

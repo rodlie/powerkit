@@ -1,10 +1,12 @@
 #
-# Power Dwarf <powerdwarf.dracolinux.org>
+# PowerDwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
 #
+
+VERSION = 0.9.0
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -21,9 +23,9 @@ isEmpty(XDGDIR) {
 
 CONFIG(release, debug|release): DEFINES += QT_NO_DEBUG_OUTPUT
 
-#CONFIG -= install_lib
-#CONFIG += staticlib
 CONFIG += link_pkgconfig
 PKGCONFIG += x11 xscrnsaver xrandr xinerama
 
-VERSION = 0.9.0
+exists(local.pri) {
+    include(local.pri)
+}

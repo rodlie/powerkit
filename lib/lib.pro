@@ -1,46 +1,47 @@
 #
-# Power Dwarf <powerdwarf.dracolinux.org>
+# PowerDwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
 #
 
-QT += dbus
-QT -= gui
-#CONFIG += install_lib
+QT += dbus gui
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = PowerDwarf
-VERSION = 1.0.0
-
+CONFIG += install_lib
 TEMPLATE = lib
-SOURCES += power.cpp hotplug.cpp
-HEADERS += power.h upower.h powermanagement.h screensaver.h common.h hotplug.h monitor.h
+SOURCES += \
+    common.cpp \
+    power.cpp \
+    upower.cpp \
+    powermanagement.cpp \
+    screensaver.cpp \
+    monitor.cpp \
+    hotplug.cpp
+HEADERS += \
+    common.h \
+    power.h \
+    upower.h \
+    powermanagement.h \
+    screensaver.h \
+    monitor.h \
+    hotplug.h
 
-exists(../powerdwarf.pri) {
-    include(../powerdwarf.pri)
-}
+include(../powerdwarf.pri)
 
 CONFIG(install_lib) {
     CONFIG += create_prl no_install_prl create_pc
-    isEmpty(PREFIX) {
-        PREFIX = /usr/local
-    }
-    isEmpty(DOCDIR) {
-        DOCDIR = $$PREFIX/share/doc
-    }
-
     target.path = $${PREFIX}/lib$${LIBSUFFIX}
     target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}
     target_docs.files = ../LICENSE ../README.md
     target_inc.path = $${PREFIX}/include/powerdwarf
     target_inc.files = $${HEADERS}
-
     QMAKE_PKGCONFIG_NAME = $${TARGET}
-    QMAKE_PKGCONFIG_DESCRIPTION = Power Dwarf Library
+    QMAKE_PKGCONFIG_DESCRIPTION = PowerDwarf
     QMAKE_PKGCONFIG_LIBDIR = $$target.path
     QMAKE_PKGCONFIG_INCDIR = $$target_inc.path
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-
     INSTALLS += target target_docs target_inc
 }

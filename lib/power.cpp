@@ -1,9 +1,10 @@
 /*
-# Power Dwarf <powerdwarf.dracolinux.org>
+# PowerDwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
+#
 */
 
 #include "power.h"
@@ -33,8 +34,8 @@ Device::Device(const QString block, QObject *parent)
 {
     // setup device dbus connection
     QDBusConnection system = QDBusConnection::systemBus();
-    dbus = new QDBusInterface(DBUS_SERVICE, path, QString("%1.Device").arg(DBUS_SERVICE), system, parent);
-    system.connect(dbus->service(), dbus->path(), QString("%1.Device").arg(DBUS_SERVICE), "Changed", this, SLOT(handlePropertiesChanged()));
+    dbus = new QDBusInterface(UP_SERVICE, path, QString("%1.Device").arg(UP_SERVICE), system, parent);
+    system.connect(dbus->service(), dbus->path(), QString("%1.Device").arg(UP_SERVICE), "Changed", this, SLOT(handlePropertiesChanged()));
     if (name.isEmpty()) { name = path.split("/").takeLast(); }
     updateDeviceProperties();
 }
@@ -171,13 +172,13 @@ void Power::setupDBus()
 {
     QDBusConnection system = QDBusConnection::systemBus();
     if (system.isConnected()) {
-        system.connect(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, DBUS_DEVICE_ADDED, this, SLOT(deviceAdded(const QDBusObjectPath&)));
-        system.connect(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, DBUS_DEVICE_REMOVED, this, SLOT(deviceRemoved(const QDBusObjectPath&)));
-        system.connect(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, "Changed", this, SLOT(deviceChanged()));
-        system.connect(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, "DeviceChanged", this, SLOT(deviceChanged()));
-        system.connect(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, "NotifyResume", this, SLOT(notifyResume()));
-        system.connect(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, "NotifySleep", this, SLOT(notifySleep()));
-        if (dbus==NULL) { dbus = new QDBusInterface(DBUS_SERVICE, DBUS_PATH, DBUS_SERVICE, system); }
+        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, DBUS_DEVICE_ADDED, this, SLOT(deviceAdded(const QDBusObjectPath&)));
+        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, DBUS_DEVICE_REMOVED, this, SLOT(deviceRemoved(const QDBusObjectPath&)));
+        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "Changed", this, SLOT(deviceChanged()));
+        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "DeviceChanged", this, SLOT(deviceChanged()));
+        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "NotifyResume", this, SLOT(notifyResume()));
+        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "NotifySleep", this, SLOT(notifySleep()));
+        if (dbus==NULL) { dbus = new QDBusInterface(UP_SERVICE, UP_PATH, UP_SERVICE, system); }
         scanDevices();
     }
 }
@@ -202,7 +203,7 @@ void Power::deviceAdded(const QDBusObjectPath &obj)
     qDebug() << "device added?";
     if (!dbus->isValid()) { return; }
     QString path = obj.path();
-    if (path.startsWith(QString("%1/jobs").arg(DBUS_PATH))) { return; }
+    if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
 
     scanDevices();
 }
@@ -213,7 +214,7 @@ void Power::deviceRemoved(const QDBusObjectPath &obj)
     if (!dbus->isValid()) { return; }
     QString path = obj.path();
     bool deviceExists = devices.contains(path);
-    if (path.startsWith(QString("%1/jobs").arg(DBUS_PATH))) { return; }
+    if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
 
     if (deviceExists) {
         if (UPower::getDevices().contains(path)) { return; }

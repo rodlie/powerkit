@@ -1,9 +1,10 @@
 /*
-# Power Dwarf <powerdwarf.dracolinux.org>
+# PowerDwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
+#
 */
 
 #ifndef DIALOG_H
@@ -27,6 +28,7 @@
 #include <QTimer>
 #include <QListWidget>
 #include <QListWidgetItem>
+#include <QApplication>
 
 #include "common.h"
 #include "upower.h"
@@ -43,12 +45,6 @@
 #undef FocusOut
 #undef FontChange
 #undef Expose
-
-#ifndef XSCREENSAVER_LOCK
-#define XSCREENSAVER_LOCK "xscreensaver-command -lock"
-#endif
-
-#define MONITOR_DATA_CONNECTED Qt::UserRole+1
 
 class Dialog : public QDialog
 {

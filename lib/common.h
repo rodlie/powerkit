@@ -1,5 +1,5 @@
 /*
-# Power Dwarf <powerdwarf.dracolinux.org>
+# PowerDwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -9,7 +9,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <QSettings>
 #include <QVariant>
 
 enum randrAction
@@ -46,6 +45,14 @@ enum criticalAction
     criticalShutdown
 };
 
+#define PD "powerdwarf"
+#define XRANDR "xrandr"
+#define INTERNAL_MONITOR "LVDS"
+#define VIRTUAL_MONITOR "VIRTUAL"
+#define TURN_OFF_MONITOR "xrandr --output %1 --off"
+#define TURN_ON_MONITOR "xrandr --output %1"
+#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
+
 #define LID_BATTERY_DEFAULT lidSleep
 #define LID_AC_DEFAULT lidLock
 #define CRITICAL_DEFAULT criticalNone
@@ -71,25 +78,43 @@ enum criticalAction
 
 #define PM_SERVICE "org.freedesktop.PowerManagement"
 #define PM_PATH "/PowerManagement"
+#define PM_TIMEOUT 60000
+#define PM_MAX_INHIBIT 18000
+
+#define SS_SERVICE "org.freedesktop.ScreenSaver"
+#define SS_PATH "/ScreenSaver"
+#define SS_TIMEOUT 30000
+#define SS_MAX_INHIBIT 18000
+
+#define UP_SERVICE "org.freedesktop.UPower"
+#define UP_PATH "/org/freedesktop/UPower"
+
+#define DBUS_OBJMANAGER "org.freedesktop.DBus.ObjectManager"
+#define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
+#define DBUS_INTROSPECTABLE "org.freedesktop.DBus.Introspectable"
+#define DBUS_DEVICE_ADDED "DeviceAdded"
+#define DBUS_DEVICE_REMOVED "DeviceRemoved"
+
+#define CKIT_SERVICE "org.freedesktop.ConsoleKit"
+#define CKIT_PATH "/org/freedesktop/ConsoleKit/Manager"
+#define CKIT_MANAGER "org.freedesktop.ConsoleKit.Manager"
+
+#define XSCREENSAVER "xscreensaver-command -deactivate"
+#define XSCREENSAVER_LOCK "xscreensaver-command -lock"
+
+#define MONITOR_DATA_CONNECTED Qt::UserRole+1
 
 class Common
 {
 public:
-    static void savePowerSettings(QString type, QVariant value)
-    {
-        QSettings settings("powerdwarf", "powerdwarf");
-        settings.setValue(type, value);
-    }
-    static QVariant loadPowerSettings(QString type)
-    {
-        QSettings settings("powerdwarf", "powerdwarf");
-        return settings.value(type);
-    }
-    static bool validPowerSettings(QString type)
-    {
-        QSettings settings("powerdwarf", "powerdwarf");
-        return settings.value(type).isValid();
-    }
+    static void savePowerSettings(QString type, QVariant value);
+    static QVariant loadPowerSettings(QString type);
+    static bool validPowerSettings(QString type);
+    static QString vendor();
+    static bool isDarkTheme();
+    static void setDarkTheme();
+    static void setNormalTheme();
+    static void setIconTheme();
 };
 
 #endif // COMMON_H

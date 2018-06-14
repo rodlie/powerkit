@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=Power Dwarf
-Comment=Desktop Independent Power Manager
+Name=PowerDwarf
+Comment=Power Manager
 Icon=battery
 Exec=powerdwarf
 Terminal=false
 Type=Application
-NotShowIn=GNOME;KDE;LXDE;LXQt;MATE;Razor;ROX;TDE;Unity;XFCE;Cinnamon;
+NotShowIn=GNOME;KDE;LXDE;LXQt;MATE;TDE;Unity;XFCE;Cinnamon;
 StartupNotify=false

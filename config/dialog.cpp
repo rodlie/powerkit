@@ -1,9 +1,10 @@
 /*
-# Power Dwarf <powerdwarf.dracolinux.org>
+# PowerDwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
+#
 */
 
 #include "dialog.h"
@@ -43,9 +44,9 @@ Dialog::Dialog(QWidget *parent)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
-    setWindowTitle(QString("Power Dwarf"));
+    setWindowTitle(tr("Power Manager"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png")));
-    setMinimumSize(QSize(550,400));
+    //setMinimumSize(QSize(550,400));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -53,41 +54,50 @@ Dialog::Dialog(QWidget *parent)
     if (dbus->isValid()) {
         session.connect(dbus->service(), dbus->path(), dbus->service(), "updatedMonitors", this, SLOT(handleUpdatedMonitors()));
     } else {
-        QMessageBox::warning(this, tr("Power Dwarf not running"), tr("Power Dwarf is not running, please start it before running settings."));
+        QMessageBox::warning(this, tr("Power manager not running"), tr("Power manager is not running, please start it before running settings."));
         QTimer::singleShot(100, this, SLOT(close()));
     }
 
     // setup widgets
     QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->setMargin(5);
+    layout->setSpacing(0);
+
     QTabWidget *containerWidget = new QTabWidget(this);
 
     QWidget *wrapper = new QWidget(this);
-    QHBoxLayout *wrapperLayout = new QHBoxLayout(wrapper);
+    wrapper->setContentsMargins(0,0,0,0);
+
+    QVBoxLayout *wrapperLayout = new QVBoxLayout(wrapper);
+    wrapperLayout->setMargin(0);
+    wrapperLayout->setSpacing(0);
 
     QWidget *powerContainer = new QWidget(this);
     powerContainer->setContentsMargins(0,0,0,0);
-    QVBoxLayout *powerContainerLayout = new QVBoxLayout(powerContainer);
-    powerContainerLayout->setMargin(0);
-    powerContainerLayout->setSpacing(0);
 
-    QLabel *powerLabel = new QLabel(this);
-    QIcon powerIcon = QIcon::fromTheme("powerdwarf", QIcon(":/icons/powerdwarf.png"));
-    powerLabel->setPixmap(powerIcon.pixmap(QSize(128, 128)));
-    powerLabel->setMinimumSize(QSize(128, 128));
-    powerLabel->setMaximumSize(QSize(128, 128));
+    if (!Common::vendor().isEmpty()) {
+        containerWidget->setTabPosition(QTabWidget::South);
+        QHBoxLayout *powerContainerLayout = new QHBoxLayout(powerContainer);
+        powerContainerLayout->setMargin(0);
+        powerContainerLayout->setSpacing(0);
 
-    QLabel *powerBatteryLabel = new QLabel(this);
-    QIcon powerIconBattery = QIcon(":/icons/battery128.png");
-    powerBatteryLabel->setPixmap(powerIconBattery.pixmap(QSize(128, 128)));
-    powerBatteryLabel->setMinimumSize(QSize(128, 128));
-    powerBatteryLabel->setMaximumSize(QSize(128, 128));
+        QLabel *powerLabel = new QLabel(this);
+        QIcon powerIcon = QIcon(QString(":/icons/vendors/%1-black.png").arg(Common::vendor()));
 
-    powerContainerLayout->addWidget(powerLabel);
-    powerContainerLayout->addWidget(powerBatteryLabel);
-    powerContainerLayout->addStretch();
+        powerLabel->setPixmap(powerIcon.pixmap(QSize(350, 75)));
+        powerLabel->setMinimumSize(350, 75);
+        powerLabel->setMaximumSize(powerLabel->minimumSize());
 
-    //layout->setSizeConstraint(QLayout::SetFixedSize); // lock dialog size
-    wrapperLayout->addWidget(powerContainer);
+        QLabel *powerBatteryLabel = new QLabel(this);
+        powerBatteryLabel->setStyleSheet("padding:10px;");
+        powerBatteryLabel->setText(tr("<h1>Power Manager</h1><p>Configuration tool version %1</p>").arg(QApplication::applicationVersion()));
+
+        powerContainerLayout->addWidget(powerLabel);
+        powerContainerLayout->addStretch();
+        powerContainerLayout->addWidget(powerBatteryLabel);
+        powerContainerLayout->addStretch();
+        wrapperLayout->addWidget(powerContainer);
+    }
     wrapperLayout->addWidget(containerWidget);
 
     QWidget *batteryContainer = new QWidget(this);
@@ -342,7 +352,10 @@ Dialog::Dialog(QWidget *parent)
     monitorPrimary->setText(tr("Primary screen"));
 
     QWidget *monitorButtonsContainer = new QWidget(this);
+    monitorButtonsContainer->setContentsMargins(0,0,0,0);
+
     QHBoxLayout *monitorButtonsContainerLayout = new QHBoxLayout(monitorButtonsContainer);
+    monitorButtonsContainerLayout->setMargin(0);
     monitorButtonsContainerLayout->addStretch();
 
     monitorApplyButton = new QPushButton(this);
@@ -365,8 +378,8 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
 
-    containerWidget->addTab(batteryContainer, QIcon::fromTheme("battery", QIcon(":/icons/battery.png")), tr("On Battery"));
-    containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("On AC"));
+    containerWidget->addTab(batteryContainer, QIcon::fromTheme("battery", QIcon(":/icons/battery.png")), tr("Battery"));
+    containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("AC"));
     containerWidget->addTab(monitorContainer, QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")), tr("Monitors"));
     containerWidget->addTab(advContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")), tr("Advanced"));
 
