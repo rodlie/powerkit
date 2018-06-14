@@ -8,7 +8,7 @@
 
 QT += dbus
 QT -= gui
-CONFIG += install_lib
+#CONFIG += install_lib
 
 TARGET = PowerDwarf
 VERSION = 1.0.0
@@ -34,7 +34,7 @@ CONFIG(install_lib) {
     target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}
     target_docs.files = ../LICENSE ../README.md
     target_inc.path = $${PREFIX}/include/powerdwarf
-    target_inc.files = power.h powermanagement.h screensaver.h
+    target_inc.files = $${HEADERS}
 
     QMAKE_PKGCONFIG_NAME = $${TARGET}
     QMAKE_PKGCONFIG_DESCRIPTION = Power Dwarf Library

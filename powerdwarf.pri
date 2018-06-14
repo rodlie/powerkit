@@ -21,8 +21,8 @@ isEmpty(XDGDIR) {
 
 CONFIG(release, debug|release): DEFINES += QT_NO_DEBUG_OUTPUT
 
-CONFIG -= install_lib
-CONFIG += staticlib
+#CONFIG -= install_lib
+#CONFIG += staticlib
 CONFIG += link_pkgconfig
 PKGCONFIG += x11 xscrnsaver xrandr xinerama
 

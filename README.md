@@ -1,36 +1,35 @@
-![screenshot](icons/screenshot.png)
+# PowerDwarf
 
-Power Dwarf is an power manager for Linux systems running alternative desktop environments/managers.
+PowerDwarf is a power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, FVWM, WindowMaker, Openbox, Lumina and others.
 
 ## Features
 
-Some of the features included in Power Dwarf:
+Some of the features included in PowerDwarf:
 
- * Implements the org.freedesktop.ScreenSaver daemon specification
- * Implements the org.freedesktop.PowerManagement daemon specification
- * Supports UPower
- * Supports monitor lid actions
- * Hibernate, suspend, shutdown on critical battery
- * Automatically suspend/hibernate
+ * Implements org.freedesktop.ScreenSaver daemon specification
+   * Enables applications to inhibit the screen saver
+   * Supports XScreenSaver
+ * Implements org.freedesktop.PowerManagement daemon specification
+   * Enables applications to inhibit suspend actions
+ * Supports lid and suspend actions
+   * Lock screen
+   * Sleep
+   * Hibernate
+   * Shutdown
+   * Inhibit if external monitor connected
+   * Automatically suspend based on timer/idle
+ * Low and critical battery actions
  * Monitor hot-plug support
+   * Save/Restore monitor states automatically
+ * Flexible configuration GUI
 
 ## Compatibilty
 
-Power Dwarf should work on any desktop environment/manager, system tray is recommended, but it's not required. The following desktops environments/managers are guaranteed to work:
-
- * Lumina
- * Fluxbox
- * Openbox
-
-Lumina has the best integration, Power Dwarf will just work out-of-the-box. On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file. On Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file. If your desktop environment/manager supports XDG then Power Dwarf should just work.
-
-## Usage
-
-Power Dwarf should be started during desktop startup, if your desktop environment/manager don't have any automatic function for startup applications just start ``powerdwarf`` manually.
+On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file. On Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file. If your desktop environment or window manager supports XDG auto start then PowerDwarf should just work. PowerDwarf should not be used in GNOME (and forks), KDE or Xfce.
 
 ## Requirements
 
-Power Dwarf requires the following dependencies to build:
+PowerDwarf requires the following dependencies to build:
 
  * Qt 4/5 core/gui/dbus/xml
  * XSS (X11 Screen Saver extension client library)
@@ -46,21 +45,23 @@ And the following during run-time:
 
 ## Build
 
-Power Dwarf is relativity easy to build, just:
+PowerDwarf is relativity easy to build, just:
 
 ```
 mkdir build && cd build
-qmake CONFIG+=release .. && make
+qmake CONFIG+=release CONFIG+=staticlib .. && make
 sudo make install
 ```
 
 For packaging use:
 
 ```
-qmake CONFIG+=release PREFIX=/usr
+qmake CONFIG+=release CONFIG+=staticlib PREFIX=/usr
 make
 make INSTALL_ROOT=/pkg/path install
 ```
 
- * The XDG destination can be customized with ``XDGDIR=``
- * The doc destination can be customized with ``DOCDIR=``
+ * The XDG destination can be customized with ``XDGDIR=</etc/xdg>``
+ * The documentation path can be customized with ``DOCDIR=<PREFIX/usr/share>``
+ * Shared library is enabled by default, this can be disabled with ``CONFIG+=staticlib``
+ * Library and headers are not installed by default, enable with ``CONFIG+=install_lib``

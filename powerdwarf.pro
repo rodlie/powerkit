@@ -9,7 +9,11 @@
 TEMPLATE = subdirs
 CONFIG -= ordered
 SUBDIRS += lib config app
-OTHER_FILES += README.md
-
+OTHER_FILES += \
+    README.md \
+    LICENSE \
+    slack-desc \
+    powerdwarf.info \
+    powerdwarf.SlackBuild
 app.depends += lib
 config.depends += lib
