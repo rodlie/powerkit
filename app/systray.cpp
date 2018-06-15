@@ -8,6 +8,7 @@
 */
 
 #include "systray.h"
+#include "def.h"
 
 SysTray::SysTray(QObject *parent)
     : QObject(parent)

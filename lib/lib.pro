@@ -27,7 +27,9 @@ HEADERS += \
     powermanagement.h \
     screensaver.h \
     monitor.h \
-    hotplug.h
+    hotplug.h \
+    def.h \
+    service.h
 
 include(../powerdwarf.pri)
 
@@ -37,11 +39,21 @@ CONFIG(install_lib) {
     target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}
     target_docs.files = ../LICENSE ../README.md
     target_inc.path = $${PREFIX}/include/powerdwarf
-    target_inc.files = $${HEADERS}
+    target_inc.files = \
+        common.h \
+        power.h \
+        upower.h \
+        powermanagement.h \
+        screensaver.h \
+        monitor.h \
+        hotplug.h \
+        service.h
+    target_udev.path = $${UDEVDIR}/rules.d
+    target_udev.files = 90-backlight.rules
     QMAKE_PKGCONFIG_NAME = $${TARGET}
     QMAKE_PKGCONFIG_DESCRIPTION = PowerDwarf
     QMAKE_PKGCONFIG_LIBDIR = $$target.path
     QMAKE_PKGCONFIG_INCDIR = $$target_inc.path
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
-    INSTALLS += target target_docs target_inc
+    INSTALLS += target target_docs target_inc target_udev
 }

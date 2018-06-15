@@ -20,9 +20,7 @@ RESOURCES += ../powerdwarf.qrc
 LIBS += -L../lib -lPowerDwarf
 INCLUDEPATH += ../lib
 
-exists(../powerdwarf.pri) {
-    include(../powerdwarf.pri)
-}
+include(../powerdwarf.pri)
 
 target.path = $${PREFIX}/bin
 target_desktop.path = $${PREFIX}/share/applications

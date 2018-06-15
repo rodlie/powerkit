@@ -15,8 +15,6 @@
 #include <QTime>
 #include <QMap>
 
-#include "common.h"
-
 class ScreenSaver : public QObject
 {
     Q_OBJECT

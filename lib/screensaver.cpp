@@ -15,6 +15,8 @@
 #include <QProcess>
 #include <QDebug>
 
+#include "def.h"
+
 ScreenSaver::ScreenSaver()
 {
     timer.setInterval(SS_TIMEOUT);

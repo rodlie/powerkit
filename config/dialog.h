@@ -30,6 +30,7 @@
 #include <QListWidgetItem>
 #include <QApplication>
 
+#include "def.h"
 #include "common.h"
 #include "upower.h"
 #include "monitor.h"

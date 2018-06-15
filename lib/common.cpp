@@ -14,6 +14,8 @@
 #include <QSettings>
 #include <QDebug>
 
+#include "def.h"
+
 void Common::savePowerSettings(QString type, QVariant value)
 {
     QSettings settings(PD, PD);

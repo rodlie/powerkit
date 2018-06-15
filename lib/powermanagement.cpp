@@ -14,6 +14,8 @@
 #include <QDebug>
 #include <QProcess>
 
+#include "def.h"
+
 PowerManagement::PowerManagement()
 {
     timer.setInterval(PM_TIMEOUT);

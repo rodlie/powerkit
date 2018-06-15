@@ -8,6 +8,7 @@
 */
 
 #include "monitor.h"
+#include "def.h"
 
 QMap<QString, bool> Monitor::get(Display *dpy)
 {

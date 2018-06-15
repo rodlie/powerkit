@@ -17,6 +17,8 @@
 #include <QDebug>
 #include <QStringList>
 
+#include "def.h"
+
 bool UPower::canPowerOff()
 {
     QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());

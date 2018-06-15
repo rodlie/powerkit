@@ -12,9 +12,6 @@
 
 #include <QObject>
 
-#define PD_SERVICE "org.freedesktop.PowerDwarf"
-#define PD_PATH "/PowerDwarf"
-
 class PowerDwarf : public QObject
 {
     Q_OBJECT

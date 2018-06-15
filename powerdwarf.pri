@@ -13,12 +13,18 @@ isEmpty(PREFIX) {
     isEmpty(XDGDIR) {
         XDGDIR = $${PREFIX}/etc/xdg
     }
+    isEmpty(UDEVDIR) {
+        UDEVDIR = $${PREFIX}/etc/udev
+    }
 }
 isEmpty(DOCDIR) {
     DOCDIR = $$PREFIX/share/doc
 }
 isEmpty(XDGDIR) {
     XDGDIR = /etc/xdg
+}
+isEmpty(UDEVDIR) {
+    UDEVDIR = /etc/udev
 }
 
 CONFIG(release, debug|release): DEFINES += QT_NO_DEBUG_OUTPUT

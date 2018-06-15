@@ -12,8 +12,6 @@
 
 #include <QString>
 
-#include "common.h"
-
 class UPower
 {
 public:

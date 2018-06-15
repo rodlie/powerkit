@@ -15,8 +15,6 @@
 #include <QMap>
 #include <QTime>
 
-#include "common.h"
-
 class PowerManagement : public QObject
 {
     Q_OBJECT

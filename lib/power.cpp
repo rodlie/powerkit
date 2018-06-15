@@ -13,7 +13,7 @@
 #include <QTimer>
 #include <QProcess>
 
-#define XSCREENSAVER_LOCK "xscreensaver-command -lock"
+#include "def.h"
 
 Device::Device(const QString block, QObject *parent)
     : QObject(parent)

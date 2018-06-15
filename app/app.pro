@@ -14,14 +14,12 @@ TARGET = powerdwarf
 TEMPLATE = app
 
 SOURCES += main.cpp systray.cpp
-HEADERS += systray.h service.h
+HEADERS += systray.h
 RESOURCES += ../$${TARGET}.qrc
 LIBS += -L../lib -lPowerDwarf
 INCLUDEPATH += ../lib
 
-exists(../powerdwarf.pri) {
-    include(../powerdwarf.pri)
-}
+include(../powerdwarf.pri)
 
 target.path = $${PREFIX}/bin
 target_desktop.path = $${XDGDIR}/autostart
