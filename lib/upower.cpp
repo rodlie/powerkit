@@ -39,8 +39,11 @@ bool UPower::canSuspend()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanSuspend");
-    return reply.arguments().first().toBool();
+    //QDBusMessage reply = iface.call("CanSuspend");
+    QDBusMessage reply = iface.call("SuspendAllowed");
+    bool result = reply.arguments().first().toBool();
+    qDebug() << "can suspend?" << result << reply;//.arguments();
+    return result;
 }
 
 QString UPower::suspend()
@@ -55,8 +58,11 @@ bool UPower::canHibernate()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanHibernate");
-    return reply.arguments().first().toBool();
+//    QDBusMessage reply = iface.call("CanHibernate");
+    QDBusMessage reply = iface.call("HibernateAllowed");
+    bool result = reply.arguments().first().toBool();
+    qDebug() << "can hibernate?" << result << reply;//.arguments();
+    return result;
 }
 
 QString UPower::hibernate()
