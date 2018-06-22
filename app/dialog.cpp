@@ -50,7 +50,7 @@ Dialog::Dialog(QWidget *parent)
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
-    dbus = new QDBusInterface("org.freedesktop.PowerDwarf", "/PowerDwarf", "org.freedesktop.PowerDwarf", session, this);
+    dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE, session, this);
     if (dbus->isValid()) {
         session.connect(dbus->service(), dbus->path(), dbus->service(), "updatedMonitors", this, SLOT(handleUpdatedMonitors()));
     } else {
@@ -86,7 +86,6 @@ Dialog::Dialog(QWidget *parent)
 
         QLabel *powerLabel = new QLabel(this);
         QIcon powerIcon = QIcon(QString(":/icons/vendors/%1-black.png").arg(Common::vendor()));
-qDebug() << QString(":/icons/vendors/%1-black.png").arg(Common::vendor());
         powerLabel->setPixmap(powerIcon.pixmap(QSize(350, 75)));
         powerLabel->setMinimumSize(350, 75);
         powerLabel->setMaximumSize(powerLabel->minimumSize());
@@ -573,6 +572,10 @@ void Dialog::loadSettings()
         defaultDisableLidActionAC = Common::loadPowerSettings("disable_lid_action_ac_external_monitor").toBool();
     }
     disableLidActionAC->setChecked(defaultDisableLidActionAC);
+
+    sleepButton->setEnabled(UPower::canSuspend());
+    hibernateButton->setEnabled(UPower::canHibernate());
+    poweroffButton->setEnabled(UPower::canPowerOff());
 }
 
 // tell power manager to update settings
@@ -599,6 +602,7 @@ void Dialog::setDefaultAction(QSpinBox *box, int action)
     box->setValue(action);
 }
 
+// set default value in combobox
 void Dialog::setDefaultAction(QComboBox *box, QString value)
 {
     for (int i=0;i<box->count();i++) {
@@ -609,6 +613,7 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
     }
 }
 
+// set default monitor rotation
 void Dialog::setDefaultRotation(QString value)
 {
     for (int i=0;i<monitorRotation->count();i++) {
@@ -667,6 +672,7 @@ void Dialog::handleDesktopSS(bool triggered)
     Common::savePowerSettings("desktop_ss", triggered);
     updatePM();
     QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
+    // TODO: add restart now?
 }
 
 void Dialog::handleDesktopPM(bool triggered)
@@ -674,6 +680,7 @@ void Dialog::handleDesktopPM(bool triggered)
     Common::savePowerSettings("desktop_pm", triggered);
     updatePM();
     QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
+    // TODO: add restart now?
 }
 
 void Dialog::handleShowNotifications(bool triggered)
@@ -744,16 +751,37 @@ void Dialog::handleLockscreenButton()
 void Dialog::handleSleepButton()
 {
     if (UPower::canSuspend()) { UPower::suspend(); }
+    else {
+        QMessageBox::information(this,
+                                 tr("Power Action"),
+                                 tr("System denied power request."
+                                    " Maybe the required daemon is not running,"
+                                    " or you may not have the required permissions."));
+    }
 }
 
 void Dialog::handleHibernateButton()
 {
     if (UPower::canHibernate()) { UPower::hibernate(); }
+    else {
+        QMessageBox::information(this,
+                                 tr("Power Action"),
+                                 tr("System denied power request."
+                                    " Maybe the required daemon is not running,"
+                                    " or you may not have the required permissions."));
+    }
 }
 
 void Dialog::handlePoweroffButton()
 {
     if (UPower::canPowerOff()) { UPower::poweroff(); }
+    else {
+        QMessageBox::information(this,
+                                 tr("Power Action"),
+                                 tr("System denied power request."
+                                    " Maybe the required daemon is not running,"
+                                    " or you may not have the required permissions."));
+    }
 }
 
 void Dialog::handleLowBatteryAction(int value)

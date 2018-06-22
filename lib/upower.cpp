@@ -19,6 +19,22 @@
 
 #include "def.h"
 
+bool UPower::canRestart()
+{
+    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+    if (!iface.isValid()) { return false; }
+    QDBusMessage reply = iface.call("CanRestart");
+    return reply.arguments().first().toBool();
+}
+
+QString UPower::restart()
+{
+    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+    if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
+    QDBusMessage reply = iface.call("Restart");
+    return reply.arguments().first().toString();
+}
+
 bool UPower::canPowerOff()
 {
     QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
@@ -42,7 +58,7 @@ bool UPower::canSuspend()
     //QDBusMessage reply = iface.call("CanSuspend");
     QDBusMessage reply = iface.call("SuspendAllowed");
     bool result = reply.arguments().first().toBool();
-    qDebug() << "can suspend?" << result << reply;//.arguments();
+    //qDebug() << "can suspend?" << result << reply;//.arguments();
     return result;
 }
 
@@ -58,10 +74,10 @@ bool UPower::canHibernate()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-//    QDBusMessage reply = iface.call("CanHibernate");
+    //QDBusMessage reply = iface.call("CanHibernate");
     QDBusMessage reply = iface.call("HibernateAllowed");
     bool result = reply.arguments().first().toBool();
-    qDebug() << "can hibernate?" << result << reply;//.arguments();
+    //qDebug() << "can hibernate?" << result << reply;//.arguments();
     return result;
 }
 

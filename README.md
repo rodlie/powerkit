@@ -22,7 +22,6 @@ Some of the features included in PowerDwarf:
  * Monitor hot-plug support
    * Save/Restore monitor states automatically
  * Flexible configuration GUI
- * Small (under 400k)
 
 ## Compatibilty
 
@@ -65,32 +64,32 @@ make INSTALL_ROOT=/pkg/path install
 ```
 pkg/
 ├── etc
-│   └── xdg
-│       └── autostart
-│           └── powerdwarf.desktop
+│   └── xdg
+│       └── autostart
+│           └── powerdwarf.desktop
 └── usr
     ├── bin
-    │   ├── powerdwarf
-    │   └── powerdwarf-config
+    │   ├── powerdwarf
+    │   └── powerdwarf-config
     ├── include
-    │   └── powerdwarf
-    │       ├── common.h
-    │       ├── hotplug.h
-    │       ├── monitor.h
-    │       ├── power.h
-    │       ├── powermanagement.h
-    │       ├── screensaver.h
-    │       └── upower.h
+    │   └── powerdwarf
+    │       ├── common.h
+    │       ├── hotplug.h
+    │       ├── monitor.h
+    │       ├── power.h
+    │       ├── powermanagement.h
+    │       ├── screensaver.h
+    │       └── upower.h
     ├── lib
-    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9.0
-    │   └── pkgconfig
-    │       └── PowerDwarf.pc
+    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9.0
+    │   └── pkgconfig
+    │       └── PowerDwarf.pc
     └── share
         ├── applications
-        │   └── powerdwarf.desktop
+        │   └── powerdwarf.desktop
         └── doc
             └── powerdwarf-0.9.0
                 ├── LICENSE
@@ -99,5 +98,6 @@ pkg/
 
  * The XDG destination can be customized with ``XDGDIR=</etc/xdg>``
  * The documentation path can be customized with ``DOCDIR=<PREFIX/usr/share>``
+ * The udev path can be customized with ``UDEVDIR=</etc/udev>``
  * Shared library is enabled by default, this can be disabled with ``CONFIG+=staticlib``
  * Library installation can be disabled with ``echo "CONFIG-=install_lib" > local.pri``

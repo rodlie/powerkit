@@ -2,7 +2,7 @@
 Name=PowerDwarf Configuration
 Comment=Power Manager Configuration
 Icon=battery
-Exec=powerdwarf-config
+Exec=powerdwarf --config
 Terminal=false
 Type=Application
 Categories=Settings;

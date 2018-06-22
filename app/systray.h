@@ -34,8 +34,16 @@
 #include "hotplug.h"
 // fix X11 inc
 #undef CursorShape
-//#undef Bool // done in hotplug.h
+#undef Bool
 #undef Status
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
+#undef FrameFeature
 
 #define XSCREENSAVER_RUN "xscreensaver -no-splash"
 

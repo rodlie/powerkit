@@ -15,6 +15,8 @@
 class UPower
 {
 public:
+    static bool canRestart();
+    static QString restart();
     static bool canPowerOff();
     static QString poweroff();
     static bool canSuspend();
