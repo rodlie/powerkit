@@ -33,16 +33,17 @@ powerdwarf requires the following dependencies:
 
  * X11
  * Xss
- * Xrandr
+ * Xrandr (lib)
  * Xinerama
  * QtDBus
  * QtXml
  * QtGui
  * QtCore
- * ConsoleKit (optional, needed for power off)
+ * ConsoleKit (optional, needed for poweroff/restart)
  * UPower
  * XScreenSaver
  * adwaita-icon-theme (or similar)
+ * xrandr (app)
 
 ## Build
 
@@ -74,7 +75,6 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=no_pkgconfig_install``** : Do not install pkgconfig file.
  * **``CONFIG+=no_doc_install``** : Do not install library documentation.
 
-
 ### Build application
 
 ```
@@ -88,14 +88,14 @@ sudo make install
 usr
 └── local
     ├── bin
-    │   └── powerdwarf
+    │   └── powerdwarf
     ├── etc
-    │   └── xdg
-    │       └── autostart
-    │           └── powerdwarf.desktop
+    │   └── xdg
+    │       └── autostart
+    │           └── powerdwarf.desktop
     └── share
         ├── applications
-        │   └── powerdwarf.desktop
+        │   └── powerdwarf.desktop
         └── doc
             └── powerdwarf-0.9.0
                 ├── LICENSE
@@ -109,18 +109,18 @@ qmake CONFIG+=release CONFIG+=staticlib PREFIX=/usr
 make
 make INSTALL_ROOT=/pkg/path install
 ```
-```              
+```
 pkg
 ├── etc
-│   └── xdg
-│       └── autostart
-│           └── powerdwarf.desktop
+│   └── xdg
+│       └── autostart
+│           └── powerdwarf.desktop
 └── usr
     ├── bin
-    │   └── powerdwarf
+    │   └── powerdwarf
     └── share
         ├── applications
-        │   └── powerdwarf.desktop
+        │   └── powerdwarf.desktop
         └── doc
             └── powerdwarf-0.9.0
                 ├── LICENSE
@@ -141,22 +141,22 @@ sudo make install
 usr
 └── local
     ├── include
-    │   └── powerdwarf
-    │       ├── common.h
-    │       ├── hotplug.h
-    │       ├── monitor.h
-    │       ├── power.h
-    │       ├── powermanagement.h
-    │       ├── screensaver.h
-    │       ├── service.h
-    │       └── upower.h
+    │   └── powerdwarf
+    │       ├── common.h
+    │       ├── hotplug.h
+    │       ├── monitor.h
+    │       ├── power.h
+    │       ├── powermanagement.h
+    │       ├── screensaver.h
+    │       ├── service.h
+    │       └── upower.h
     ├── lib
-    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9.0
-    │   └── pkgconfig
-    │       └── PowerDwarf.pc
+    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9.0
+    │   └── pkgconfig
+    │       └── PowerDwarf.pc
     └── share
         └── doc
             └── powerdwarf-0.9.0
@@ -177,34 +177,34 @@ sudo make install
 usr
 └── local
     ├── bin
-    │   └── powerdwarf
+    │   └── powerdwarf
     ├── etc
-    │   ├── udev
-    │   │   └── rules.d
-    │   │       └── 90-backlight.rules
-    │   └── xdg
-    │       └── autostart
-    │           └── powerdwarf.desktop
+    │   ├── udev
+    │   │   └── rules.d
+    │   │       └── 90-backlight.rules
+    │   └── xdg
+    │       └── autostart
+    │           └── powerdwarf.desktop
     ├── include
-    │   └── powerdwarf
-    │       ├── common.h
-    │       ├── hotplug.h
-    │       ├── monitor.h
-    │       ├── power.h
-    │       ├── powermanagement.h
-    │       ├── screensaver.h
-    │       ├── service.h
-    │       └── upower.h
+    │   └── powerdwarf
+    │       ├── common.h
+    │       ├── hotplug.h
+    │       ├── monitor.h
+    │       ├── power.h
+    │       ├── powermanagement.h
+    │       ├── screensaver.h
+    │       ├── service.h
+    │       └── upower.h
     ├── lib
-    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9.0
-    │   └── pkgconfig
-    │       └── PowerDwarf.pc
+    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
+    │   ├── libPowerDwarf.so.0.9.0
+    │   └── pkgconfig
+    │       └── PowerDwarf.pc
     └── share
         ├── applications
-        │   └── powerdwarf.desktop
+        │   └── powerdwarf.desktop
         └── doc
             └── powerdwarf-0.9.0
                 ├── LICENSE

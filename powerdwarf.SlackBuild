@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Slackware build script for PowerDwarf <https://github.com/rodlie/powerdwarf>
+# Slackware build script for powerdwarf <https://github.com/rodlie/powerdwarf>
 
 # Copyright 2018 Ole-André Rodlie <ole.andre.rodlie@gmail.com>
 # All rights reserved.
@@ -22,34 +22,17 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-# Build requirements:
-
-# Qt 4.8+ (core/gui/dbus/xml)
-# scrnsaver (XSS)
-# xrandr (RandR)
-# xinerama
-
-# Run-time requirements:
-
-# Qt (core/gui/dbus/xml)
-# xrandr
-# xscreensaver
-# upower
-# consolekit (optional, needed for shutdown support)
-# resume=<swap> in lilo.conf/elilo.conf (powerdwarf will detect and warn users)
-
 PRGNAM=powerdwarf
 VERSION=${VERSION:-0.9.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
-QMAKE=${QMAKE:-qmake} # add -qt5 if you want to build against Qt 5.x
+QMAKE=${QMAKE:-qmake} # add -qt5 if you want to build against Qt5
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i586 ;;
     arm*) ARCH=arm ;;
-    # Unless $ARCH is already set, use uname -m for all other archs:
        *) ARCH=$( uname -m ) ;;
   esac
 fi
@@ -73,8 +56,9 @@ else
   LIBDIRSUFFIX=""
 fi
 
-set -e # Exit on most errors
+set -e
 
+# Prepare source
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
@@ -91,7 +75,7 @@ find -L . \
 # Configure application
 $QMAKE \
 CONFIG+=release \
-CONFIG+=install_lib \
+CONFIG+=staticlib \
 PREFIX=/usr \
 XDGDIR=/etc/xdg \
 DOCDIR=/usr/doc \
@@ -110,6 +94,9 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
 # Include the SlackBuild script in the documentation directory
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION # already created by application, but leave it "just in case"
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Add udev backlight rules example
+cat app/share/udev/90-backlight.rules > $PKG/usr/doc/$PRGNAM-$VERSION/udev-backlight.rules.example
 
 # Copy slack-desc into ./install
 mkdir -p $PKG/install

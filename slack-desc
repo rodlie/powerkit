@@ -8,12 +8,12 @@
           |-----handy-ruler------------------------------------------------------|
 powerdwarf: powerdwarf (Lightweight Desktop Independent Power Manager)
 powerdwarf:
-powerdwarf: PowerDwarf is a power manager created for Slackware for use with
+powerdwarf: powerdwarf is a power manager created for Slackware for use with
 powerdwarf: alternative desktop environments and window managers, like Fluxbox,
 powerdwarf: FVWM, WindowMaker, Openbox and others. Features lid actions, suspend
 powerdwarf: actions, freedesktop.org support, monitor hot-plug and more.
 powerdwarf:
-powerdwarf: PowerDwarf was written by Ole-André Rodlie.
+powerdwarf: powerdwarf was written by Ole-Andre Rodlie.
 powerdwarf:
 powerdwarf: Homepage: https://github.com/rodlie/powerdwarf
 powerdwarf:
