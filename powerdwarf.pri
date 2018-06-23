@@ -32,6 +32,3 @@ CONFIG(release, debug|release): DEFINES += QT_NO_DEBUG_OUTPUT
 CONFIG += link_pkgconfig
 PKGCONFIG += x11 xscrnsaver xrandr xinerama
 
-exists(local.pri) {
-    include(local.pri)
-}
