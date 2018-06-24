@@ -42,7 +42,7 @@ SysTray::SysTray(QObject *parent)
     , startupScreensaver(true)
 {
     // setup tray
-    tray = new QSystemTrayIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(QString(":/icons/%1.png").arg(DEFAULT_BATTERY_ICON))), this);
+    tray = new QSystemTrayIcon(/*QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(QString(":/icons/%1.png").arg(DEFAULT_BATTERY_ICON))),*/ this);
     connect(tray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
     if (tray->isSystemTrayAvailable()) { tray->show(); }
 
@@ -95,8 +95,7 @@ SysTray::SysTray(QObject *parent)
 
 SysTray::~SysTray()
 {
-    xscreensaver->close();
-    man->deleteLater();
+    if (xscreensaver->isOpen()) { xscreensaver->close(); }
     pm->deleteLater();
     ss->deleteLater();
     ht->deleteLater();
@@ -112,8 +111,8 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::Trigger:
     default:;
     }*/
-    QString config = QString("%1-config").arg(qApp->applicationFilePath());
-    if (!QFile::exists(config)) { return; }
+    QString config = QString("%1 --config").arg(qApp->applicationFilePath());
+    //if (!QFile::exists(config)) { return; }
     QProcess::startDetached(config);
 }
 
@@ -124,11 +123,13 @@ void SysTray::checkDevices()
 
     // get battery left and add tooltip
     double batteryLeft = man->batteryLeft();
-    tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
-    if (batteryLeft==100) { tray->setToolTip(tr("Charged")); }
-
-    // TODO: what is user don't have battery?
-    if (!man->onBattery() && man->batteryLeft()<100) { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
+    if (batteryLeft>0) {
+        tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
+        // TODO: check if 100 is 100%
+        if (batteryLeft == 100) { tray->setToolTip(tr("Charged")); }
+        if (!man->onBattery() &&
+            man->batteryLeft() < 100) { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
+    } else { tray->setToolTip(tr("On AC")); }
 
     // draw battery systray
     drawBattery(batteryLeft);
@@ -145,7 +146,7 @@ void SysTray::checkDevices()
 // what to do when user close lid
 void SysTray::handleClosedLid()
 {
-
+    qDebug() << "LID CLOSED";
     qDebug() << "monitors?" << monitors;
     qDebug() << "internal monitor connected?" << internalMonitorIsConnected();
     qDebug() << "has external monitor?" << externalMonitorIsConnected();
@@ -154,13 +155,13 @@ void SysTray::handleClosedLid()
     if (man->onBattery()) {  // on battery
         type = lidActionBattery;
         if (disableLidBatteryOnExternalMonitors && externalMonitorIsConnected()) {
-            qDebug() << "external monitor is connected, ignore lid action";
+            qDebug() << "on battery, external monitor is connected, ignore lid action";
             return;
         }
     } else { // on ac
         type = lidActionAC;
         if (disableLidACOnExternalMonitors && externalMonitorIsConnected()) {
-            qDebug() << "external monitor is connected, ignore lid action";
+            qDebug() << "on ac, external monitor is connected, ignore lid action";
             return;
         }
     }
@@ -184,7 +185,7 @@ void SysTray::handleClosedLid()
 // what to do when user open lid
 void SysTray::handleOpenedLid()
 {
-    qDebug() << "lid is open";
+    qDebug() << "lid is now open";
 }
 
 // do something when switched to battery power
@@ -260,7 +261,7 @@ void SysTray::loadSettings()
         disableLidACOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_ac_external_monitor").toBool();
     }
 
-    qDebug() << "====> powerdwarf settings:";
+    qDebug() << "SETTINGS";
     qDebug() << "startup_xscreensaver" << startupScreensaver;
     qDebug() << "disable_lid_action_ac_external_monitor" << disableLidACOnExternalMonitors;
     qDebug() << "disable_lid_action_battery_external_monitor" << disableLidBatteryOnExternalMonitors;
@@ -359,6 +360,11 @@ void SysTray::drawBattery(double left)
     if (tray->isSystemTrayAvailable() && !tray->isVisible() && showTray) { tray->show(); }
 
     QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(QString(":/icons/%1.png").arg(DEFAULT_BATTERY_ICON)));
+    if (left == 0) {
+        icon = QIcon::fromTheme(DEFAULT_AC_ICON, QIcon(QString(":/icons/%1.png").arg(DEFAULT_AC_ICON)));
+        tray->setIcon(icon);
+        return;
+    }
     if (left<=(double)lowBatteryValue && man->onBattery()) {
         icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW, QIcon(QString(":/icons/%1.png").arg(DEFAULT_BATTERY_ICON_LOW)));
         if (!wasLowBattery) { tray->showMessage(tr("Low Battery!"), tr("You battery is almost empty, please consider connecting your computer to a power supply.")); }
@@ -424,19 +430,22 @@ void SysTray::timeout()
     if (!showTray && tray->isVisible()) { tray->hide(); }
     if (tray->isSystemTrayAvailable() && !tray->isVisible() && showTray) { tray->show(); }
 
+    qDebug() << "TIMEOUT CHECK";
     qDebug() << "timeout?" << timeouts;
-    qDebug() << "XSS?" << xIdle();
-    qDebug() << "inhibit?" << pm->HasInhibit();
+    qDebug() << "user idle?" << xIdle();
+    qDebug() << "pm inhibit?" << pm->HasInhibit();
 
     int autoSuspend = 0;
     int autoSuspendAction = suspendNone;
     if (man->onBattery()) {
         autoSuspend = autoSuspendBattery;
         autoSuspendAction = autoSuspendBatteryAction;
+        qDebug() << "on battery" << autoSuspend << autoSuspendAction;
     }
     else {
         autoSuspend = autoSuspendAC;
         autoSuspendAction = autoSuspendACAction;
+        qDebug() << "on ac" << autoSuspend << autoSuspendAction;
     }
 
     bool doSuspend = false;
@@ -492,7 +501,7 @@ void SysTray::resetTimer()
 // Uses xrandr to turn on/off
 void SysTray::handleDisplay(QString display, bool connected)
 {
-    qDebug() << display << connected;
+    qDebug() << "handle display" << display << connected;
     if (monitors[display] == connected) { return; }
 
     bool wasConnected = monitors[display];

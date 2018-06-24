@@ -27,6 +27,7 @@ Dialog::Dialog(QWidget *parent)
     , disableLidActionAC(0)
     , disableLidActionBattery(0)
     , autoSleepBatteryAction(0)
+    , autoSleepACAction(0)
     , lockscreenButton(0)
     , sleepButton(0)
     , hibernateButton(0)
@@ -46,7 +47,7 @@ Dialog::Dialog(QWidget *parent)
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png")));
-    //setMinimumSize(QSize(550,400));
+    setMinimumSize(QSize(490,390));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -75,10 +76,10 @@ Dialog::Dialog(QWidget *parent)
     wrapperLayout->setMargin(0);
     wrapperLayout->setSpacing(0);
 
-    QWidget *powerContainer = new QWidget(this);
-    powerContainer->setContentsMargins(0,0,0,0);
+    //QWidget *powerContainer = new QWidget(this);
+    //powerContainer->setContentsMargins(0,0,0,0);
 
-    if (!Common::vendor().isEmpty()) {
+    /*if (!Common::vendor().isEmpty()) {
         containerWidget->setTabPosition(QTabWidget::South);
         QHBoxLayout *powerContainerLayout = new QHBoxLayout(powerContainer);
         powerContainerLayout->setMargin(0);
@@ -97,7 +98,7 @@ Dialog::Dialog(QWidget *parent)
         powerContainerLayout->addStretch();
         powerContainerLayout->addWidget(powerBatteryLabel);
         wrapperLayout->addWidget(powerContainer);
-    }
+    }*/
     wrapperLayout->addWidget(containerWidget);
 
     QWidget *batteryContainer = new QWidget(this);
@@ -240,8 +241,32 @@ Dialog::Dialog(QWidget *parent)
 
     sleepACLabel->setText(tr("<strong>Suspend after</strong>"));
     sleepACContainerLayout->addWidget(sleepACLabel);
-    sleepACContainerLayout->addWidget(autoSleepAC);
+    //sleepACContainerLayout->addWidget(autoSleepAC);
     acContainerLayout->addWidget(sleepACContainer);
+
+
+    QWidget *sleepActionACContainer = new QWidget(this);
+    sleepActionACContainer->setContentsMargins(0,0,0,0);
+    QVBoxLayout *sleepActionACContainerLayout = new QVBoxLayout(sleepActionACContainer);
+    sleepActionACContainerLayout->setMargin(0);
+    sleepActionACContainerLayout->setSpacing(0);
+    autoSleepACAction = new QComboBox(this);
+    sleepActionACContainerLayout->addWidget(autoSleepAC);
+    sleepActionACContainerLayout->addWidget(autoSleepACAction);
+    //acContainerLayout->addWidget(sleepActionACContainer);
+
+    QLabel *sleepACIcon = new QLabel(this);
+    sleepACIcon->setMaximumSize(48,48);
+    sleepACIcon->setMinimumSize(48,48);
+    sleepACIcon->setPixmap(QIcon::fromTheme("system-suspend", QIcon(":/icons/system-suspend.png")).pixmap(QSize(48,48)));
+    sleepACLabel->setText(tr("<h2 style=\"font-weight:normal;\">Suspend after</h2>"));
+    sleepACContainerLayout->addWidget(sleepACIcon);
+    sleepACContainerLayout->addWidget(sleepACLabel);
+    sleepACContainerLayout->addWidget(sleepActionACContainer);
+    acContainerLayout->addWidget(sleepACContainer);
+
+
+
 
     acContainerLayout->addStretch();
 
@@ -277,24 +302,48 @@ Dialog::Dialog(QWidget *parent)
 
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
-    extraContainerLayout->addStretch();
+
+    QLabel *powerLabel = new QLabel(this);
+    powerLabel->setText(tr("powerdwarf<br>version %1.").arg(QApplication::applicationVersion()));
 
     lockscreenButton = new QPushButton(this);
-    lockscreenButton->setIcon(QIcon::fromTheme("system-lock-screen", QIcon(":/icons/system-lock-screen.png")));
-    lockscreenButton->setText(tr("Lock screen"));
+    lockscreenButton->setIcon(QIcon::fromTheme("system-lock-screen",
+                                               QIcon(":/icons/system-lock-screen.png")));
+    lockscreenButton->setIconSize(QSize(24,24));
+    lockscreenButton->setToolTip(tr("Lock the screen now."));
+    if (lockscreenButton->icon().isNull()) {
+        lockscreenButton->setText(tr("Lock screen"));
+    }
 
     sleepButton = new QPushButton(this);
-    sleepButton->setIcon(QIcon::fromTheme("system-suspend", QIcon(":/icons/system-suspend.png")));
-    sleepButton->setText(tr("Sleep"));
+    sleepButton->setIcon(QIcon::fromTheme("system-suspend",
+                                          QIcon(":/icons/system-suspend.png")));
+    sleepButton->setIconSize(QSize(24,24));
+    sleepButton->setToolTip(tr("Suspend computer now."));
+    if (sleepButton->icon().isNull()) {
+        sleepButton->setText(tr("Suspend"));
+    }
 
     hibernateButton = new QPushButton(this);
-    hibernateButton->setIcon(QIcon::fromTheme("system-hibernate", QIcon(":/icons/system-hibernate.png")));
-    hibernateButton->setText(tr("Hibernate"));
+    hibernateButton->setIcon(QIcon::fromTheme("system-hibernate",
+                                              QIcon(":/icons/system-hibernate.png")));
+    hibernateButton->setIconSize(QSize(24,24));
+    hibernateButton->setToolTip(tr("Hibernate computer now."));
+    if (hibernateButton->icon().isNull()) {
+        hibernateButton->setText(tr("Hibernate"));
+    }
 
     poweroffButton = new QPushButton(this);
-    poweroffButton->setIcon(QIcon::fromTheme("system-shutdown", QIcon(":/icons/system-shutdown.png")));
-    poweroffButton->setText(tr("Shutdown"));
+    poweroffButton->setIcon(QIcon::fromTheme("system-shutdown",
+                                             QIcon(":/icons/system-shutdown.png")));
+    poweroffButton->setIconSize(QSize(24,24));
+    poweroffButton->setToolTip(tr("Shutdown computer now."));
+    if (poweroffButton->icon().isNull()) {
+        poweroffButton->setText(tr("Shutdown"));
+    }
 
+    extraContainerLayout->addWidget(powerLabel);
+    extraContainerLayout->addStretch();
     extraContainerLayout->addWidget(lockscreenButton);
     extraContainerLayout->addWidget(sleepButton);
     extraContainerLayout->addWidget(hibernateButton);
@@ -414,6 +463,7 @@ Dialog::Dialog(QWidget *parent)
     connect(disableLidActionAC, SIGNAL(toggled(bool)), this, SLOT(handleDisableLidActionAC(bool)));
     connect(disableLidActionBattery, SIGNAL(toggled(bool)), this, SLOT(handleDisableLidActionBattery(bool)));
     connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)), this, SLOT(handleAutoSleepBatteryAction(int)));
+    connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)), this, SLOT(handleAutoSleepACAction(int)));
 }
 
 Dialog::~Dialog()
@@ -446,6 +496,12 @@ void Dialog::populate()
     autoSleepBatteryAction->addItem(tr("Sleep"), suspendSleep);
     autoSleepBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
     autoSleepBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+
+    autoSleepACAction->clear();
+    autoSleepACAction->addItem(tr("None"), suspendNone);
+    autoSleepACAction->addItem(tr("Sleep"), suspendSleep);
+    autoSleepACAction->addItem(tr("Hibernate"), suspendHibernate);
+    autoSleepACAction->addItem(tr("Shutdown"), suspendShutdown);
 
     lowBatteryAction->clear();
     lowBatteryAction->addItem(tr("Notify"), suspendNone);
@@ -500,6 +556,12 @@ void Dialog::loadSettings()
         defaultAutoSleepAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
     }
     setDefaultAction(autoSleepAC, defaultAutoSleepAC);
+
+    int defaultAutoSleepACAction = DEFAULT_SUSPEND_AC_ACTION;
+    if (Common::validPowerSettings("suspend_ac_action")) {
+        defaultAutoSleepACAction = Common::loadPowerSettings("suspend_ac_action").toInt();
+    }
+    setDefaultAction(autoSleepACAction, defaultAutoSleepACAction);
 
     int defaultLowBattery = LOW_BATTERY;
     if (Common::validPowerSettings("lowBattery")) {
@@ -716,6 +778,12 @@ void Dialog::handleDisableLidActionBattery(bool triggered)
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
     Common::savePowerSettings("suspend_battery_action", index);
+    updatePM();
+}
+
+void Dialog::handleAutoSleepACAction(int index)
+{
+    Common::savePowerSettings("suspend_ac_action", index);
     updatePM();
 }
 

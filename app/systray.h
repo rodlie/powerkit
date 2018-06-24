@@ -57,6 +57,7 @@ public:
 
 signals:
     void updatedMonitors();
+
 private:
     QSystemTrayIcon *tray;
     Power *man;

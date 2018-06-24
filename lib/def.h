@@ -58,6 +58,7 @@ enum criticalAction
 #define LOW_BATTERY 15
 #define CRITICAL_BATTERY 10
 #define AUTO_SLEEP_BATTERY 15
+#define DEFAULT_AC_ICON "ac-adapter"
 #define DEFAULT_BATTERY_ICON "battery"
 #define DEFAULT_BATTERY_ICON_CRIT "battery-caution"
 #define DEFAULT_BATTERY_ICON_CRIT_AC "battery-caution-charging"

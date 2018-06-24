@@ -75,6 +75,7 @@ private:
     QCheckBox *disableLidActionAC;
     QCheckBox *disableLidActionBattery;
     QComboBox *autoSleepBatteryAction;
+    QComboBox *autoSleepACAction;
     QPushButton *lockscreenButton;
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
@@ -114,6 +115,7 @@ private slots:
     void handleDisableLidActionAC(bool triggered);
     void handleDisableLidActionBattery(bool triggered);
     void handleAutoSleepBatteryAction(int index);
+    void handleAutoSleepACAction(int index);
     void handleUpdatedMonitors();
     void handleLockscreenButton();
     void handleSleepButton();
