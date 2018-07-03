@@ -75,6 +75,17 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=no_pkgconfig_install``** : Do not install pkgconfig file.
  * **``CONFIG+=no_doc_install``** : Do not install library documentation.
 
+### Build (and package) on Slackware
+
+Installing powerdwarf on Slackware is easy, just:
+
+```
+git clone https://github.com/rodlie/powerdwarf
+cd powerdwarf
+sudo GIT_COMMIT=`git rev-parse --short HEAD` ./powerdwarf.SlackBuild
+sudo installpkg /tmp/powerdwarf-VERSION.tgz
+```
+
 ### Build application
 
 ```
