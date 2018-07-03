@@ -13,7 +13,5 @@ SUBDIRS += lib app
 OTHER_FILES += \
     README.md \
     LICENSE \
-    slack-desc \
-    powerdwarf.info \
     powerdwarf.SlackBuild
 app.depends += lib

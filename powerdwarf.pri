@@ -20,6 +20,9 @@ isEmpty(PREFIX) {
 isEmpty(DOCDIR) {
     DOCDIR = $$PREFIX/share/doc
 }
+isEmpty(MANDIR) {
+    MANDIR = $$PREFIX/share/man
+}
 isEmpty(XDGDIR) {
     XDGDIR = /etc/xdg
 }

@@ -93,6 +93,7 @@ CONFIG+=staticlib \
 PREFIX=/usr \
 XDGDIR=/etc/xdg \
 DOCDIR=/usr/doc \
+MANDIR=/usr/man \
 LIBSUFFIX=${LIBDIRSUFFIX} \
 QMAKE_CFLAGS="${SLKCFLAGS}" \
 QMAKE_CXXFLAGS="${SLKCFLAGS}"

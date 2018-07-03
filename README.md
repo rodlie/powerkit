@@ -56,6 +56,7 @@ First make sure you have the required dependencies installed, then review the bu
  * **``PREFIX=</usr/local>``** : Install target. Where files are copied when running ``make install``.
  * **``XDGDIR=</etc/xdg>``** : Path to xdg autostart directory, if ``PREFIX`` is ``/usr`` then ``XDGDIR`` should be ``/etc/xdg``. If ``PREFIX`` is ``/usr/local`` then ``XDGDIR`` should be ``/usr/local/etc/xdg``, it all depends on how your system is setup.
  * **``DOCDIR=<PREFIX/share/doc>``** : Path to the system documentation. Default is ``PREFIX/share/doc``.
+ * **``MANDIR=<PREFIX/share/man>``** : Path to the system manual. Default is ``PREFIX/share/man``.
  * **``UDEVDIR=</etc/udev>``** : Path to the udev directory, if ``PREFIX`` is ``/usr`` then ``UDEVDIR`` should be ``/etc/udev``. If ``PREFIX`` is ``/usr/local`` then ``UDEVDIR`` should be ``/usr/local/etc/udev``, it all depends on how your system is setup.
  * **``CONFIG+=release``** : Recommended option, this will create a release build without debug output.
  * **``CONFIG+=staticlib``** : Build static library. Recommended if you only want the application.
@@ -64,6 +65,7 @@ First make sure you have the required dependencies installed, then review the bu
 
  * **``CONFIG+=no_app_install``** : Do not install the application.
  * **``CONFIG+=no_doc_install``** : Do not install application documentation.
+ * **``CONFIG+=no_man_install``** : Do not install application manual.
  * **``CONFIG+=no_desktop_install``** : Do not install the application desktop file.
  * **``CONFIG+=no_autostart_install``** : Do not install the XDG autostart desktop file.
  * **``CONFIG+=install_udev_rules``** : Install additional power related udev rules
@@ -84,23 +86,6 @@ qmake CONFIG+=release CONFIG+=staticlib .. && make
 ```
 sudo make install
 ```
-```
-usr
-└── local
-    ├── bin
-    │   └── powerdwarf
-    ├── etc
-    │   └── xdg
-    │       └── autostart
-    │           └── powerdwarf.desktop
-    └── share
-        ├── applications
-        │   └── powerdwarf.desktop
-        └── doc
-            └── powerdwarf-0.9.0
-                ├── LICENSE
-                └── README.md
-```
 
 ### Package application
 
@@ -109,24 +94,6 @@ qmake CONFIG+=release CONFIG+=staticlib PREFIX=/usr
 make
 make INSTALL_ROOT=/pkg/path install
 ```
-```
-pkg
-├── etc
-│   └── xdg
-│       └── autostart
-│           └── powerdwarf.desktop
-└── usr
-    ├── bin
-    │   └── powerdwarf
-    └── share
-        ├── applications
-        │   └── powerdwarf.desktop
-        └── doc
-            └── powerdwarf-0.9.0
-                ├── LICENSE
-                └── README.md
-
-```
 
 ### Build library
 
@@ -134,79 +101,10 @@ pkg
 mkdir build && cd build
 qmake CONFIG+=release CONFIG+=install_lib CONFIG+=no_app_install .. && make
 ```
-```
-sudo make install
-```
-```
-usr
-└── local
-    ├── include
-    │   └── powerdwarf
-    │       ├── common.h
-    │       ├── hotplug.h
-    │       ├── monitor.h
-    │       ├── power.h
-    │       ├── powermanagement.h
-    │       ├── screensaver.h
-    │       ├── service.h
-    │       └── upower.h
-    ├── lib
-    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9.0
-    │   └── pkgconfig
-    │       └── PowerDwarf.pc
-    └── share
-        └── doc
-            └── powerdwarf-0.9.0
-                ├── LICENSE
-                └── README.md
-```
 
-### Build and install everything
+### Build everything
 
 ```
 mkdir build && cd build
 qmake CONFIG+=release CONFIG+=install_lib CONFIG+=install_udev_rules .. && make
-```
-```
-sudo make install
-```
-```
-usr
-└── local
-    ├── bin
-    │   └── powerdwarf
-    ├── etc
-    │   ├── udev
-    │   │   └── rules.d
-    │   │       └── 90-backlight.rules
-    │   └── xdg
-    │       └── autostart
-    │           └── powerdwarf.desktop
-    ├── include
-    │   └── powerdwarf
-    │       ├── common.h
-    │       ├── hotplug.h
-    │       ├── monitor.h
-    │       ├── power.h
-    │       ├── powermanagement.h
-    │       ├── screensaver.h
-    │       ├── service.h
-    │       └── upower.h
-    ├── lib
-    │   ├── libPowerDwarf.so -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9 -> libPowerDwarf.so.0.9.0
-    │   ├── libPowerDwarf.so.0.9.0
-    │   └── pkgconfig
-    │       └── PowerDwarf.pc
-    └── share
-        ├── applications
-        │   └── powerdwarf.desktop
-        └── doc
-            └── powerdwarf-0.9.0
-                ├── LICENSE
-                └── README.md
 ```
