@@ -23,9 +23,21 @@ Some of the features included in powerdwarf:
    * Save/Restore monitor states automatically
  * Flexible configuration GUI
 
-## Compatibilty
+## Links
 
-On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file. On Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file. If your desktop environment or window manager supports XDG auto start then powerdwarf should just work. powerdwarf should not be used in GNOME (and forks), KDE or Xfce.
+ * [Project](https://github.com/rodlie/powerdwarf)
+ * [Tracker](https://github.com/rodlie/powerdwarf/issues)
+ * [Milestones](https://github.com/rodlie/powerdwarf/milestones)
+ * [Releases](https://github.com/rodlie/powerdwarf/releases)
+ 
+## Usage
+
+powerdwarf is a daemon and should be started during the user X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
+
+ * On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file
+ * On Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file.
+ 
+ **powerdwarf should not be used in GNOME (and forks), KDE or Xfce.**
 
 ## Requirements
 
