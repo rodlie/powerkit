@@ -27,6 +27,8 @@ VERSION=${VERSION:-0.9.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 QMAKE=${QMAKE:-qmake} # add -qt5 if you want to build against Qt5
+#GIT_COMMIT="" # use a custom git commit as source
+GIT_URL="https://github.com/rodlie/powerdwarf" # url to git repo
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
@@ -35,6 +37,11 @@ if [ -z "$ARCH" ]; then
     arm*) ARCH=arm ;;
        *) ARCH=$( uname -m ) ;;
   esac
+fi
+
+# Check if we need to use git
+if [ ! -z "$GIT_COMMIT" ]; then
+  VERSION="${VERSION}_${GIT_COMMIT}"
 fi
 
 CWD=$(pwd)
@@ -63,8 +70,14 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
-cd $PRGNAM-$VERSION
+if [ -z "$GIT_COMMIT" ]; then
+  tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+  cd $PRGNAM-$VERSION
+else
+  git clone ${GIT_URL} $PRGNAM-$VERSION
+  cd $PRGNAM-$VERSION
+  git checkout $GIT_COMMIT
+fi
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -96,11 +109,36 @@ mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION # already created by application, but lea
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 # Add udev backlight rules example
-cat app/share/udev/90-backlight.rules > $PKG/usr/doc/$PRGNAM-$VERSION/udev-backlight.rules.example
+if [ -f "app/share/udev/90-backlight.rules" ]; then
+  cat app/share/udev/90-backlight.rules > $PKG/usr/doc/$PRGNAM-$VERSION/udev-backlight.rules.example
+fi
 
 # Copy slack-desc into ./install
 mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
+cat << EOF > $PKG/install/slack-desc
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+          |-----handy-ruler------------------------------------------------------|
+powerdwarf: powerdwarf (Lightweight Desktop Independent Power Manager)
+powerdwarf:
+powerdwarf: powerdwarf is a power manager created for Slackware for use with
+powerdwarf: alternative desktop environments and window managers, like Fluxbox,
+powerdwarf: FVWM, WindowMaker, Openbox and others. Features lid actions, suspend
+powerdwarf: actions, freedesktop.org support, monitor hot-plug and more.
+powerdwarf:
+powerdwarf: powerdwarf was written by Ole-Andre Rodlie.
+powerdwarf:
+powerdwarf: Homepage: https://github.com/rodlie/powerdwarf
+powerdwarf:
+EOF
+
+# Fix version issue (if any)
+VERSION=`echo $VERSION | sed 's/-/_/g'`
 
 # Make the package
 cd $PKG
