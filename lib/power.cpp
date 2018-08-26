@@ -133,7 +133,8 @@ double Power::batteryLeft()
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
-        if (device.value()->isBattery && device.value()->isPresent) {
+        if (device.value()->isBattery && device.value()->isPresent && !device.value()->nativePath.isEmpty()) {
+            qDebug() << "adding battery device" << device.value()->name;
             batteryLeft += device.value()->percentage;
         } else { continue; }
     }
