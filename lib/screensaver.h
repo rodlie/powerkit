@@ -28,6 +28,7 @@ private:
 
 signals:
     void newInhibit(QString application, QString reason, quint32 cookie);
+    void removedInhibit(quint32 cookie);
 
 private slots:
     int randInt(int low, int high);

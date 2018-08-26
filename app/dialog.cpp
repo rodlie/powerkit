@@ -279,7 +279,7 @@ Dialog::Dialog(QWidget *parent)
 
     showNotifications = new QCheckBox(this);
     showNotifications->setIcon(QIcon::fromTheme("user-available", QIcon(":/icons/user-available.png")));
-    showNotifications->setText(tr("Show system tray notifications"));
+    showNotifications->setText(tr("Show notifications (messagebox if no tray is available)"));
 
     showBatteryPercent = new QCheckBox(this);
     showBatteryPercent->setIcon(QIcon::fromTheme("battery", QIcon(":/icons/battery.png")));

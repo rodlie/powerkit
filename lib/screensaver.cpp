@@ -100,4 +100,5 @@ void ScreenSaver::UnInhibit(quint32 cookie)
 {
     if (clients.contains(cookie)) { clients.remove(cookie); }
     timeOut();
+    emit removedInhibit(cookie);
 }

@@ -13,7 +13,6 @@
 #include <QObject>
 #include <QSystemTrayIcon>
 #include <QTimer>
-
 #include <QIcon>
 #include <QMenu>
 #include <QAction>
@@ -23,6 +22,7 @@
 #include <QMap>
 #include <QMapIterator>
 #include <QProcess>
+#include <QMap>
 
 #include "common.h"
 #include "power.h"
@@ -88,6 +88,8 @@ private:
     int autoSuspendACAction;
     QProcess *xscreensaver;
     bool startupScreensaver;
+    QMap<quint32,QString> ssInhibitors;
+    QMap<quint32,QString> pmInhibitors;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -110,8 +112,11 @@ private slots:
     bool externalMonitorIsConnected();
     void handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie);
     void handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie);
+    void handleDelInhibitScreenSaver(quint32 cookie);
+    void handleDelInhibitPowerManagement(quint32 cookie);
     void handleScrensaverFinished(int exitcode);
     void setupMonitors();
+    void showMessage(QString title, QString msg);
 };
 
 #endif // SYSTRAY_H
