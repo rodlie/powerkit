@@ -44,56 +44,111 @@ SysTray::SysTray(QObject *parent)
 {
     // setup tray
     tray = new QSystemTrayIcon(this);
-    connect(tray, SIGNAL(activated(QSystemTrayIcon::ActivationReason)), this, SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
+    connect(tray,
+            SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this,
+            SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
     if (tray->isSystemTrayAvailable()) { tray->show(); }
 
     // setup manager
     man = new Power(this);
-    connect(man, SIGNAL(updatedDevices()), this, SLOT(checkDevices()));
-    connect(man, SIGNAL(closedLid()), this, SLOT(handleClosedLid()));
-    connect(man, SIGNAL(openedLid()), this, SLOT(handleOpenedLid()));
-    connect(man, SIGNAL(switchedToBattery()), this, SLOT(handleOnBattery()));
-    connect(man, SIGNAL(switchedToAC()), this, SLOT(handleOnAC()));
+    connect(man,
+            SIGNAL(updatedDevices()),
+            this,
+            SLOT(checkDevices()));
+    connect(man,
+            SIGNAL(closedLid()),
+            this,
+            SLOT(handleClosedLid()));
+    connect(man,
+            SIGNAL(openedLid()),
+            this,
+            SLOT(handleOpenedLid()));
+    connect(man,
+            SIGNAL(switchedToBattery()),
+            this,
+            SLOT(handleOnBattery()));
+    connect(man,
+            SIGNAL(switchedToAC()),
+            this,
+            SLOT(handleOnAC()));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
-    connect(pm, SIGNAL(HasInhibitChanged(bool)), this, SLOT(handleHasInhibitChanged(bool)));
+    connect(pm,
+            SIGNAL(HasInhibitChanged(bool)),
+            this,
+            SLOT(handleHasInhibitChanged(bool)));
     //connect(pm, SIGNAL(update()), this, SLOT(loadSettings()));
-    connect(pm, SIGNAL(newInhibit(QString,QString,quint32)), this, SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
-    connect(pm, SIGNAL(removedInhibit(quint32)), this, SLOT(handleDelInhibitPowerManagement(quint32)));
+    connect(pm,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            this,
+            SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
+    connect(pm,
+            SIGNAL(removedInhibit(quint32)),
+            this,
+            SLOT(handleDelInhibitPowerManagement(quint32)));
 
     // setup org.freedesktop.ScreenSaver
     ss = new ScreenSaver();
-    connect(ss, SIGNAL(newInhibit(QString,QString,quint32)), this, SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
-    connect(ss, SIGNAL(removedInhibit(quint32)), this, SLOT(handleDelInhibitScreenSaver(quint32)));
+    connect(ss,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            this,
+            SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
+    connect(ss,
+            SIGNAL(removedInhibit(quint32)),
+            this,
+            SLOT(handleDelInhibitScreenSaver(quint32)));
 
     // setup monitor hotplug watcher
     ht = new HotPlug();
     qRegisterMetaType<QMap<QString,bool> >("QMap<QString,bool>");
-    connect(ht, SIGNAL(status(QString,bool)), this, SLOT(handleDisplay(QString,bool)));
-    connect(ht, SIGNAL(found(QMap<QString,bool>)), this, SLOT(handleFoundDisplays(QMap<QString,bool>)));
+    connect(ht,
+            SIGNAL(status(QString,bool)),
+            this,
+            SLOT(handleDisplay(QString,bool)));
+    connect(ht,
+            SIGNAL(found(QMap<QString,bool>)),
+            this,
+            SLOT(handleFoundDisplays(QMap<QString,bool>)));
     ht->requestScan();
 
     // setup org.freedesktop.PowerDwarf
     pd = new PowerDwarf();
-    connect(this, SIGNAL(updatedMonitors()), pd, SLOT(updateMonitors()));
-    connect(pd, SIGNAL(update()), this, SLOT(loadSettings()));
+    connect(this,
+            SIGNAL(updatedMonitors()),
+            pd,
+            SLOT(updateMonitors()));
+    connect(pd,
+            SIGNAL(update()),
+            this,
+            SLOT(loadSettings()));
 
     // setup xscreensaver
     xscreensaver = new QProcess(this);
-    connect(xscreensaver, SIGNAL(finished(int)), this, SLOT(handleScrensaverFinished(int)));
+    connect(xscreensaver,
+            SIGNAL(finished(int)),
+            this,
+            SLOT(handleScrensaverFinished(int)));
 
     // setup timer
     timer = new QTimer(this);
     timer->setInterval(60000);
-    connect(timer, SIGNAL(timeout()), this, SLOT(timeout()));
+    connect(timer,
+            SIGNAL(timeout()),
+            this,
+            SLOT(timeout()));
     timer->start();
 
     // load settings and register service
     loadSettings();
     registerService();
-    QTimer::singleShot(10000, this, SLOT(checkDevices()));
-    QTimer::singleShot(5000, this, SLOT(setupMonitors()));
+    QTimer::singleShot(10000,
+                       this,
+                       SLOT(checkDevices()));
+    QTimer::singleShot(5000,
+                       this,
+                       SLOT(setupMonitors()));
 }
 
 SysTray::~SysTray()
@@ -121,24 +176,27 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void SysTray::checkDevices()
 {
-    if (tray->isSystemTrayAvailable() && !tray->isVisible() && showTray) { tray->show(); }
-    if (!showTray && tray->isVisible()) { tray->hide(); }
+    if (tray->isSystemTrayAvailable() &&
+        !tray->isVisible() &&
+        showTray) { tray->show(); }
+    if (!showTray &&
+        tray->isVisible()) { tray->hide(); }
 
     // get battery left and add tooltip
     double batteryLeft = man->batteryLeft();
-    if (batteryLeft>0) {
+    if (batteryLeft > 0) {
         tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
-        // TODO: check if 100 is 100%
-        if (batteryLeft == 100) { tray->setToolTip(tr("Charged")); }
+        if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
         if (!man->onBattery() &&
-            man->batteryLeft() < 100) { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
+            man->batteryLeft() <= 99)
+        { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
     } else { tray->setToolTip(tr("On AC")); }
 
     // draw battery systray
     drawBattery(batteryLeft);
 
     // critical battery?
-    if (batteryLeft>0 &&
+    if (batteryLeft > 0 &&
         batteryLeft<=(double)critBatteryValue &&
         man->onBattery()) { handleCritical(); }
 
@@ -157,13 +215,15 @@ void SysTray::handleClosedLid()
     int type = lidNone;
     if (man->onBattery()) {  // on battery
         type = lidActionBattery;
-        if (disableLidBatteryOnExternalMonitors && externalMonitorIsConnected()) {
+        if (disableLidBatteryOnExternalMonitors &&
+            externalMonitorIsConnected()) {
             qDebug() << "on battery, external monitor is connected, ignore lid action";
             return;
         }
     } else { // on ac
         type = lidActionAC;
-        if (disableLidACOnExternalMonitors && externalMonitorIsConnected()) {
+        if (disableLidACOnExternalMonitors &&
+            externalMonitorIsConnected()) {
             qDebug() << "on ac, external monitor is connected, ignore lid action";
             return;
         }
@@ -195,7 +255,8 @@ void SysTray::handleOpenedLid()
 void SysTray::handleOnBattery()
 {
     if (showNotifications) {
-        showMessage(tr("On Battery"), tr("Switched to battery power."));
+        showMessage(tr("On Battery"),
+                    tr("Switched to battery power."));
     }
     // TODO: add brightness
 }
@@ -204,7 +265,8 @@ void SysTray::handleOnBattery()
 void SysTray::handleOnAC()
 {
     if (showNotifications) {
-        showMessage(tr("On AC"), tr("Switched to AC power."));
+        showMessage(tr("On AC"),
+                    tr("Switched to AC power."));
     }
     // TODO: add brightness
 }
@@ -214,8 +276,13 @@ void SysTray::loadSettings()
 {
     // setup theme
     Common::setIconTheme();
-    if (QIcon::themeName().isEmpty() || QIcon::themeName() == "hicolor") {
-        QMessageBox::warning(NULL, tr("No icon theme found"), tr("Unable to find any icon theme, please install an icon theme! (adwaita-icon-theme is recommended)."));
+    if (QIcon::themeName().isEmpty() ||
+        QIcon::themeName() == "hicolor") {
+        QMessageBox::warning(NULL,
+                             tr("No icon theme found"),
+                             tr("Unable to find any icon theme,"
+                                " please install an icon theme!"
+                                " (adwaita-icon-theme is recommended)."));
     }
 
     // set default settings
@@ -310,7 +377,9 @@ void SysTray::registerService()
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-        if (!QDBusConnection::sessionBus().registerObject(PM_PATH, pm, /*QDBusConnection::ExportAllContents*/QDBusConnection::ExportAllSlots)) {
+        if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
+                                                          pm,
+                                                          QDBusConnection::ExportAllSlots)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
@@ -321,7 +390,9 @@ void SysTray::registerService()
             qWarning() << QDBusConnection::sessionBus().lastError().message();
             return;
         }
-        if (!QDBusConnection::sessionBus().registerObject(SS_PATH, ss, /*QDBusConnection::ExportAllContents*/QDBusConnection::ExportAllSlots)) {
+        if (!QDBusConnection::sessionBus().registerObject(SS_PATH,
+                                                          ss,
+                                                          QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
             return;
         }
@@ -331,7 +402,9 @@ void SysTray::registerService()
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-    if (!QDBusConnection::sessionBus().registerObject(PD_PATH, pd, QDBusConnection::ExportAllContents)) {
+    if (!QDBusConnection::sessionBus().registerObject(PD_PATH,
+                                                      pd,
+                                                      QDBusConnection::ExportAllContents)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
@@ -364,21 +437,27 @@ void SysTray::handleCritical()
 // draw battery tray icon
 void SysTray::drawBattery(double left)
 {
-    if (!showTray && tray->isVisible()) {
+    if (!showTray &&
+        tray->isVisible()) {
         tray->hide();
         return;
     }
-    if (tray->isSystemTrayAvailable() && !tray->isVisible() && showTray) { tray->show(); }
+    if (tray->isSystemTrayAvailable() &&
+        !tray->isVisible() &&
+        showTray) { tray->show(); }
 
     QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
-    if (left == 0) {
+    if (left == 0.0) {
         icon = QIcon::fromTheme(DEFAULT_AC_ICON);
         tray->setIcon(icon);
         return;
     }
     if (left<=(double)lowBatteryValue && man->onBattery()) {
         icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW);
-        if (!wasLowBattery) { showMessage(tr("Low Battery!"), tr("You battery is almost empty, please consider connecting your computer to a power supply.")); }
+        if (!wasLowBattery) { showMessage(tr("Low Battery!"),
+                                          tr("You battery is almost empty,"
+                                             " please consider connecting"
+                                             " your computer to a power supply.")); }
         wasLowBattery = true;
     } else {
         wasLowBattery = false;
@@ -419,7 +498,10 @@ void SysTray::drawBattery(double left)
         }
     }
 
-    if (left > 99 || left == 0 || !man->onBattery() || !showBatteryPercent) {
+    if (left > 99 ||
+        left == 0.0 ||
+        !man->onBattery() ||
+        !showBatteryPercent) {
         tray->setIcon(icon);
         return;
     }
@@ -427,9 +509,13 @@ void SysTray::drawBattery(double left)
     QPixmap pixmap = icon.pixmap(QSize(24, 24));
     QPainter painter(&pixmap);
     painter.setPen(QColor(Qt::black));
-    painter.drawText(pixmap.rect().adjusted(1, 1, 1, 1), Qt::AlignCenter, QString("%1").arg(left));
+    painter.drawText(pixmap.rect().adjusted(1, 1, 1, 1),
+                     Qt::AlignCenter,
+                     QString("%1").arg(left));
     painter.setPen(QColor(Qt::white));
-    painter.drawText(pixmap.rect(), Qt::AlignCenter, QString("%1").arg(left));
+    painter.drawText(pixmap.rect(),
+                     Qt::AlignCenter,
+                     QString("%1").arg(left));
     painter.setPen(QColor(Qt::transparent));
     tray->setIcon(pixmap);
 }
@@ -438,8 +524,11 @@ void SysTray::drawBattery(double left)
 // timeouts and xss must be >= user value and service has to be empty before suspend
 void SysTray::timeout()
 {
-    if (!showTray && tray->isVisible()) { tray->hide(); }
-    if (tray->isSystemTrayAvailable() && !tray->isVisible() && showTray) { tray->show(); }
+    if (!showTray &&
+        tray->isVisible()) { tray->hide(); }
+    if (tray->isSystemTrayAvailable() &&
+        !tray->isVisible() &&
+        showTray) { tray->show(); }
 
     qDebug() << "TIMEOUT CHECK";
     qDebug() << "timeout?" << timeouts;
@@ -567,7 +656,8 @@ bool SysTray::externalMonitorIsConnected()
     QMapIterator<QString, bool> i(monitors);
     while (i.hasNext()) {
         i.next();
-        if (!i.key().startsWith(INTERNAL_MONITOR) && !i.key().startsWith(VIRTUAL_MONITOR)) {
+        if (!i.key().startsWith(INTERNAL_MONITOR) &&
+            !i.key().startsWith(VIRTUAL_MONITOR)) {
             qDebug() << "external monitor connected?" << i.key() << i.value();
             if (i.value()) { return true; }
         }
