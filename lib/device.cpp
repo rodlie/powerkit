@@ -11,6 +11,7 @@
 
 #include <QDBusConnection>
 #include <QDebug>
+#include <QStringList>
 
 #include "def.h"
 
