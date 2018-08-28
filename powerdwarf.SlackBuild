@@ -26,8 +26,8 @@ PRGNAM=powerdwarf
 VERSION=${VERSION:-0.9.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
-QMAKE=${QMAKE:-qmake} # add -qt5 if you want to build against Qt5
-#GIT_COMMIT="" # use a custom git commit as source
+QMAKE=${QMAKE:-qmake}
+GIT_COMMIT=${GIT_COMMIT:-""}
 GIT_URL="https://github.com/rodlie/powerdwarf" # url to git repo
 
 # Automatically determine the architecture we're building on:
@@ -126,14 +126,14 @@ cat << EOF > $PKG/install/slack-desc
 # customary to leave one space after the ':' except on otherwise blank lines.
 
           |-----handy-ruler------------------------------------------------------|
-powerdwarf: powerdwarf (Lightweight Desktop Independent Power Manager)
+powerdwarf: powerdwarf (Lightweight Power Manager)
 powerdwarf:
 powerdwarf: powerdwarf is a power manager created for Slackware for use with
 powerdwarf: alternative desktop environments and window managers, like Fluxbox,
 powerdwarf: FVWM, WindowMaker, Openbox and others. Features lid actions, suspend
 powerdwarf: actions, freedesktop.org support, monitor hot-plug and more.
 powerdwarf:
-powerdwarf: powerdwarf was written by Ole-Andre Rodlie.
+powerdwarf: powerdwarf was written by Ole-André Rodlie.
 powerdwarf:
 powerdwarf: Homepage: https://github.com/rodlie/powerdwarf
 powerdwarf:

@@ -7,20 +7,19 @@
 #
 */
 
-#ifndef UPOWER_H
-#define UPOWER_H
+#ifndef CKIT_H
+#define CKIT_H
 
 #include <QString>
 
-class UPower
+class CKit
 {
 public:
     static bool hasService();
-    static bool canSuspend();
-    static QString suspend();
-    static bool canHibernate();
-    static QString hibernate();
-    static QStringList getDevices();
+    static bool canRestart();
+    static QString restart();
+    static bool canPowerOff();
+    static QString poweroff();
 };
 
-#endif // POWER_H
+#endif // CKIT_H

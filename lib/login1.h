@@ -7,20 +7,23 @@
 #
 */
 
-#ifndef UPOWER_H
-#define UPOWER_H
+#ifndef LOGIN1_H
+#define LOGIN1_H
 
 #include <QString>
 
-class UPower
+class Login1
 {
 public:
     static bool hasService();
+    static bool canRestart();
+    static QString restart();
+    static bool canPowerOff();
+    static QString poweroff();
     static bool canSuspend();
     static QString suspend();
     static bool canHibernate();
     static QString hibernate();
-    static QStringList getDevices();
 };
 
-#endif // POWER_H
+#endif // LOGIN1_H

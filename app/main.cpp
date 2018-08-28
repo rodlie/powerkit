@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -10,6 +10,10 @@
 #include <QApplication>
 #include "systray.h"
 #include "dialog.h"
+
+#include "upower.h"
+#include "login1.h"
+#include "ckit.h"
 
 int main(int argc, char *argv[])
 {
@@ -25,33 +29,12 @@ int main(int argc, char *argv[])
     if (a.arguments().size()>2) { userOpt = a.arguments().at(2); }
 
     // trigger system services early
-    QDBusInterface systemUP(UP_SERVICE,
-                            UP_PATH,
-                            UP_SERVICE,
-                            QDBusConnection::systemBus());
-    QDBusInterface systemCK(CKIT_SERVICE,
-                            CKIT_PATH,
-                            CKIT_SERVICE,
-                            QDBusConnection::systemBus());
+    UPower::hasService();
+    Login1::hasService();
+    CKit::hasService();
 
     // console actions
-    if (userArg == "--suspend") {
-        if (UPower::canSuspend()) { UPower::suspend(); }
-        else { qWarning() << QObject::tr("Unable to execute requested action"); return 1; }
-        return 0;
-    } else if (userArg == "--hibernate") {
-        if (UPower::canHibernate()) { UPower::hibernate(); }
-        else { qWarning() << QObject::tr("Unable to execute requested action"); return 1; }
-        return 0;
-    } else if (userArg == "--poweroff") {
-        if (UPower::canPowerOff()) { UPower::poweroff(); }
-        else { qWarning() << QObject::tr("Unable to execute requested action"); return 1; }
-        return 0;
-    } else if (userArg == "--restart") {
-        if (UPower::canRestart()) { UPower::restart(); }
-        else { qWarning() << QObject::tr("Unable to execute requested action"); return 1; }
-        return 0;
-    } else if (userArg == "--config") { // show config dialog
+    if (userArg == "--config") { // show config dialog
         Dialog dialog;
         dialog.show();
         return a.exec();

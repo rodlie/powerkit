@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -19,36 +19,14 @@
 
 #include "def.h"
 
-bool UPower::canRestart()
+bool UPower::hasService()
 {
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
-    if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanRestart");
-    return reply.arguments().first().toBool();
-}
-
-QString UPower::restart()
-{
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
-    if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Restart");
-    return reply.arguments().first().toString();
-}
-
-bool UPower::canPowerOff()
-{
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
-    if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanPowerOff");
-    return reply.arguments().first().toBool();
-}
-
-QString UPower::poweroff()
-{
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
-    if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("PowerOff");
-    return reply.arguments().first().toString();
+    QDBusInterface iface(UP_SERVICE,
+                         UP_PATH,
+                         UP_SERVICE,
+                         QDBusConnection::systemBus());
+    if (iface.isValid()) { return true; }
+    return false;
 }
 
 bool UPower::canSuspend()
@@ -58,7 +36,8 @@ bool UPower::canSuspend()
     //QDBusMessage reply = iface.call("CanSuspend");
     QDBusMessage reply = iface.call("SuspendAllowed");
     bool result = reply.arguments().first().toBool();
-    //qDebug() << "can suspend?" << result << reply;//.arguments();
+    if (!reply.errorMessage().isEmpty()) { result = false; }
+    qDebug() << "can suspend?" << result << reply;
     return result;
 }
 
@@ -67,7 +46,7 @@ QString UPower::suspend()
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
     QDBusMessage reply = iface.call("Suspend");
-    return reply.arguments().first().toString();
+    return reply.errorMessage();
 }
 
 bool UPower::canHibernate()
@@ -77,7 +56,8 @@ bool UPower::canHibernate()
     //QDBusMessage reply = iface.call("CanHibernate");
     QDBusMessage reply = iface.call("HibernateAllowed");
     bool result = reply.arguments().first().toBool();
-    //qDebug() << "can hibernate?" << result << reply;//.arguments();
+    if (!reply.errorMessage().isEmpty()) { result = false; }
+    qDebug() << "can hibernate?" << result << reply.arguments();
     return result;
 }
 
@@ -86,7 +66,7 @@ QString UPower::hibernate()
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
     QDBusMessage reply = iface.call("Hibernate");
-    return reply.arguments().first().toString();
+    return reply.errorMessage();
 }
 
 QStringList UPower::getDevices()

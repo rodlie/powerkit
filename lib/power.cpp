@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -14,70 +14,13 @@
 #include <QProcess>
 
 #include "def.h"
-
-Device::Device(const QString block, QObject *parent)
-    : QObject(parent)
-    , path(block)
-    , isRechargable(false)
-    , isPresent(false)
-    , percentage(0)
-    , online(false)
-    , hasPowerSupply(false)
-    , isBattery(false)
-    , isAC(false)
-    , capacity(0)
-    , energy(0)
-    , energyFullDesign(0)
-    , energyFull(0)
-    , energyEmpty(0)
-    , dbus(0)
-{
-    // setup device dbus connection
-    QDBusConnection system = QDBusConnection::systemBus();
-    dbus = new QDBusInterface(UP_SERVICE, path, QString("%1.Device").arg(UP_SERVICE), system, parent);
-    system.connect(dbus->service(), dbus->path(), QString("%1.Device").arg(UP_SERVICE), "Changed", this, SLOT(handlePropertiesChanged()));
-    if (name.isEmpty()) { name = path.split("/").takeLast(); }
-    updateDeviceProperties();
-}
-
-// get device properties
-void Device::updateDeviceProperties()
-{
-    if (!dbus->isValid()) { return; }
-
-    capacity =  dbus->property("Capacity").toDouble();
-    isRechargable =  dbus->property("IsRechargeable").toBool();
-    isPresent =  dbus->property("IsPresent").toBool();
-    percentage =  dbus->property("Percentage").toDouble();
-    energyFullDesign = dbus->property("EnergyFullDesign").toDouble();
-    energyFull = dbus->property("EnergyFull").toDouble();
-    energyEmpty = dbus->property("EnergyEmpty").toDouble();
-    energy = dbus->property("Energy").toDouble();
-    online = dbus->property("Online").toBool();
-    hasPowerSupply = dbus->property("PowerSupply").toBool();
-
-    uint type = dbus->property("Type").toUInt();
-    if (type == 2) { isBattery = true; }
-    else {
-        isBattery = false;
-        if (type == 1) { isAC = true; } else { isAC = false; }
-    }
-
-    vendor = dbus->property("Vendor").toString();
-    nativePath = dbus->property("NativePath").toString();
-
-    emit deviceChanged(path);
-}
-
-// what do to when something changed
-void Device::handlePropertiesChanged()
-{
-    updateDeviceProperties();
-}
+#include "login1.h"
+#include "ckit.h"
 
 Power::Power(QObject *parent)
     : QObject(parent)
-    , dbus(0)
+    , upower(0)
+    , logind(0)
     , wasDocked(false)
     , wasLidClosed(false)
     , wasOnBattery(false)
@@ -85,44 +28,50 @@ Power::Power(QObject *parent)
     // setup dbus connection and start timer
     setupDBus();
     timer.setInterval(60000);
-    connect(&timer, SIGNAL(timeout()), this, SLOT(checkUPower()));
+    connect(&timer,
+            SIGNAL(timeout()),
+            this,
+            SLOT(checkUPower()));
     timer.start();
 }
 
 // get dbus properties
 bool Power::isDocked()
 {
-    if (dbus->isValid()) { return dbus->property("IsDocked").toBool(); }
+    if (logind->isValid()) { return logind->property("Docked").toBool(); }
+    if (upower->isValid()) { return upower->property("IsDocked").toBool(); }
     return false;
 }
 
 bool Power::lidIsPresent()
 {
-    if (dbus->isValid()) { return dbus->property("LidIsPresent").toBool(); }
+    if (upower->isValid()) { return upower->property("LidIsPresent").toBool(); }
     return false;
 }
 
 bool Power::lidIsClosed()
 {
-    if (dbus->isValid()) { return dbus->property("LidIsClosed").toBool(); }
+    if (upower->isValid()) { return upower->property("LidIsClosed").toBool(); }
     return false;
 }
 
 bool Power::onBattery()
 {
-    if (dbus->isValid()) { return dbus->property("OnBattery").toBool(); }
+    if (upower->isValid()) { return upower->property("OnBattery").toBool(); }
     return false;
 }
 
 bool Power::canHibernate()
 {
-    if (dbus->isValid()) { return dbus->property("CanHibernate").toBool(); }
+    if (logind->isValid()) { return Login1::canHibernate(); }
+    if (upower->isValid()) { return upower->property("CanHibernate").toBool(); }
     return false;
 }
 
 bool Power::canSuspend()
 {
-    if (dbus->isValid()) { return dbus->property("CanSuspend").toBool(); }
+    if (logind->isValid()) { return Login1::canSuspend(); }
+    if (upower->isValid()) { return upower->property("CanSuspend").toBool(); }
     return false;
 }
 
@@ -133,18 +82,27 @@ double Power::batteryLeft()
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
-        if (device.value()->isBattery && device.value()->isPresent && !device.value()->nativePath.isEmpty()) {
-            qDebug() << "adding battery device" << device.value()->name;
+        if (device.value()->isBattery &&
+            device.value()->isPresent &&
+            !device.value()->nativePath.isEmpty())
+        {
             batteryLeft += device.value()->percentage;
         } else { continue; }
     }
+    qDebug() << "battery left" << batteryLeft;
     return batteryLeft;
 }
 
 // do suspend if available
 void Power::sleep()
 {
-    if (canSuspend()) { UPower::suspend(); }
+    if (canSuspend()) {
+        if (logind->isValid()) {
+            Login1::suspend();
+            return;
+        }
+        if (upower->isValid()) { UPower::suspend(); }
+    }
 }
 
 // do hibernate if available
@@ -154,7 +112,13 @@ void Power::sleep()
 // also check for elilo.conf
 void Power::hibernate()
 {
-    if (canHibernate()) { UPower::hibernate(); }
+    if (canHibernate()) {
+        if (logind->isValid()) {
+            Login1::hibernate();
+            return;
+        }
+        if (upower->isValid()) { UPower::hibernate(); }
+    }
 }
 
 // lock screen using xscreensaver
@@ -165,7 +129,15 @@ void Power::lockScreen()
 
 void Power::shutdown()
 {
-    if (UPower::canPowerOff()) { UPower::poweroff(); }
+    if (logind->isValid()) {
+        if (Login1::canPowerOff()) {
+            Login1::poweroff();
+            return;
+        }
+    }
+    if (upower->isValid()) {
+        if (CKit::canPowerOff()) { CKit::poweroff(); }
+    }
 }
 
 // setup dbus connections
@@ -173,13 +145,61 @@ void Power::setupDBus()
 {
     QDBusConnection system = QDBusConnection::systemBus();
     if (system.isConnected()) {
-        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, DBUS_DEVICE_ADDED, this, SLOT(deviceAdded(const QDBusObjectPath&)));
-        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, DBUS_DEVICE_REMOVED, this, SLOT(deviceRemoved(const QDBusObjectPath&)));
-        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "Changed", this, SLOT(deviceChanged()));
-        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "DeviceChanged", this, SLOT(deviceChanged()));
-        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "NotifyResume", this, SLOT(notifyResume()));
-        system.connect(UP_SERVICE, UP_PATH, UP_SERVICE, "NotifySleep", this, SLOT(notifySleep()));
-        if (dbus==NULL) { dbus = new QDBusInterface(UP_SERVICE, UP_PATH, UP_SERVICE, system); }
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       DBUS_DEVICE_ADDED,
+                       this,
+                       SLOT(deviceAdded(const QDBusObjectPath&)));
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       DBUS_DEVICE_REMOVED,
+                       this,
+                       SLOT(deviceRemoved(const QDBusObjectPath&)));
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       "Changed",
+                       this,
+                       SLOT(deviceChanged()));
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       "DeviceChanged",
+                       this,
+                       SLOT(deviceChanged()));
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       "NotifyResume",
+                       this,
+                       SLOT(notifyResume()));
+        // missing notify resume on logind
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       "NotifySleep",
+                       this,
+                       SLOT(notifySleep()));
+        system.connect(LOGIN1_SERVICE,
+                       LOGIN1_PATH,
+                       LOGIN1_MANAGER,
+                       "PrepareForSleep",
+                       this,
+                       SLOT(notifySleep()));
+        if (upower == NULL) {
+            upower = new QDBusInterface(UP_SERVICE,
+                                        UP_PATH,
+                                        UP_SERVICE,
+                                        system);
+        }
+        if (logind == NULL) {
+            logind = new QDBusInterface(LOGIN1_SERVICE,
+                                        LOGIN1_PATH,
+                                        LOGIN1_MANAGER,
+                                        system);
+        }
         scanDevices();
     }
 }
@@ -187,36 +207,40 @@ void Power::setupDBus()
 // scan for new devices
 void Power::scanDevices()
 {
+    qDebug() << "scanning devices...";
     QStringList foundDevices = UPower::getDevices();
-    for (int i=0;i<foundDevices.size();i++) {
+    for (int i=0; i < foundDevices.size(); i++) {
         QString foundDevicePath = foundDevices.at(i);
         bool hasDevice = devices.contains(foundDevicePath);
         if (hasDevice) { continue; }
         Device *newDevice = new Device(foundDevicePath, this);
-        //connect(newDevice, SIGNAL(deviceChanged(QString)), this, SLOT(handleDeviceChanged(QString)));
+        connect(newDevice,
+                SIGNAL(deviceChanged(QString)),
+                this,
+                SLOT(handleDeviceChanged(QString)));
         devices[foundDevicePath] = newDevice;
     }
     emit updatedDevices();
 }
 
+// add device if not exists
 void Power::deviceAdded(const QDBusObjectPath &obj)
 {
-    qDebug() << "device added?";
-    if (!dbus->isValid()) { return; }
+    if (!upower->isValid()) { return; }
     QString path = obj.path();
+    qDebug() << "upower device added?" << path;
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
-
     scanDevices();
 }
 
+// remove device if exists
 void Power::deviceRemoved(const QDBusObjectPath &obj)
 {
-    qDebug() << "device removed?";
-    if (!dbus->isValid()) { return; }
+    if (!upower->isValid()) { return; }
     QString path = obj.path();
+    qDebug() << "upower device removed?" << path;
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
-
     if (deviceExists) {
         if (UPower::getDevices().contains(path)) { return; }
         delete devices.take(path);
@@ -248,24 +272,27 @@ void Power::deviceChanged()
     emit updatedDevices();
 }
 
+// handle device changes
 void Power::handleDeviceChanged(QString devicePath)
 {
-    Q_UNUSED(devicePath)
-    /*if (devicePath.isEmpty()) { return; }
-    emit updatedDevices();*/
+    //Q_UNUSED(devicePath)
+    if (devicePath.isEmpty()) { return; }
+    qDebug() << "handle device changed" << devicePath;
+    deviceChanged();
 }
 
-// check if upower is connected, if not connect
+// check if dbus is connected, if not connect
 void Power::checkUPower()
 {
     if (!QDBusConnection::systemBus().isConnected()) {
         setupDBus();
         return;
     }
-    if (!dbus->isValid()) { scanDevices(); }
+    if (!upower->isValid()) { scanDevices(); }
 }
 
 // do stuff when resuming
+// this does not work on newer upower/logind
 void Power::notifyResume()
 {
     qDebug() << "system is about to resume ...";

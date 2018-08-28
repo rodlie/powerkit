@@ -18,7 +18,10 @@ SOURCES += \
     powermanagement.cpp \
     screensaver.cpp \
     monitor.cpp \
-    hotplug.cpp
+    hotplug.cpp \
+    login1.cpp \
+    device.cpp \
+    ckit.cpp
 HEADERS += \
     common.h \
     power.h \
@@ -28,7 +31,10 @@ HEADERS += \
     monitor.h \
     hotplug.h \
     def.h \
-    service.h
+    service.h \
+    login1.h \
+    device.h \
+    ckit.h
 
 include(../powerdwarf.pri)
 
@@ -42,15 +48,7 @@ CONFIG(install_lib) {
     }
     !CONFIG(no_include_install) {
         target_inc.path = $${PREFIX}/include/powerdwarf
-        target_inc.files = \
-            common.h \
-            power.h \
-            upower.h \
-            powermanagement.h \
-            screensaver.h \
-            monitor.h \
-            hotplug.h \
-            service.h
+        target_inc.files = $${HEADERS}
         INSTALLS += target_inc
     }
     !CONFIG(no_pkgconfig_install) {
