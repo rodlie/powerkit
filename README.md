@@ -55,6 +55,10 @@ powerdwarf requires the following dependencies:
  * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
  * adwaita-icon-theme (or similar)
+ 
+ The following distributions are supported/tested:
+ * Slackware 14.2
+ * Ubuntu 18.04
 
 ## Build
 
