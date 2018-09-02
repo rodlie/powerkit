@@ -20,22 +20,50 @@ bool Login1::hasService()
 
 bool Login1::canRestart()
 {
+    QDBusInterface iface(LOGIN1_SERVICE,
+                         LOGIN1_PATH,
+                         LOGIN1_MANAGER,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return false; }
+    QDBusMessage reply = iface.call("CanReboot");
+    qDebug() << "can restart?" << reply;
+    if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
 
 QString Login1::restart()
 {
-    return QString();
+    QDBusInterface iface(LOGIN1_SERVICE,
+                         LOGIN1_PATH,
+                         LOGIN1_MANAGER,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
+    QDBusMessage reply = iface.call("Reboot", true);
+    return reply.errorMessage();
 }
 
 bool Login1::canPowerOff()
 {
+    QDBusInterface iface(LOGIN1_SERVICE,
+                         LOGIN1_PATH,
+                         LOGIN1_MANAGER,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return false; }
+    QDBusMessage reply = iface.call("CanPowerOff");
+    qDebug() << "can poweroff?" << reply;
+    if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
 
 QString Login1::poweroff()
 {
-    return QString();
+    QDBusInterface iface(LOGIN1_SERVICE,
+                         LOGIN1_PATH,
+                         LOGIN1_MANAGER,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
+    QDBusMessage reply = iface.call("PowerOff", true);
+    return reply.errorMessage();
 }
 
 bool Login1::canSuspend()
@@ -77,5 +105,11 @@ bool Login1::canHibernate()
 
 QString Login1::hibernate()
 {
-    return QString();
+    QDBusInterface iface(LOGIN1_SERVICE,
+                         LOGIN1_PATH,
+                         LOGIN1_MANAGER,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
+    QDBusMessage reply = iface.call("Hibernate", true);
+    return reply.errorMessage();
 }
