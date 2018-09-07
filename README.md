@@ -1,6 +1,6 @@
 # powerdwarf
 
-powerdwarf is a power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, FVWM, WindowMaker, Openbox, Lumina and others.
+powerdwarf is a (WIP) power manager created for (Slackware) Linux for use with alternative desktop environments and window managers, like Fluxbox, FVWM, WindowMaker, Openbox, Lumina and others.
 
 ## Features
 
@@ -32,12 +32,12 @@ Some of the features included in powerdwarf:
 
 ## Usage
 
-powerdwarf is a daemon and should be started during the user X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
+powerdwarf is a user session daemon and should be started during the user X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
 
  * On Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file
  * On Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file.
 
- **powerdwarf should not be used in GNOME (and forks), KDE or Xfce.**
+ **powerdwarf should not be used in GNOME or KDE.**
 
 ## Requirements
 
@@ -45,17 +45,20 @@ powerdwarf requires the following dependencies:
 
  * X11
  * Xss
- * Xrandr (lib)
+ * Xrandr (lib+app)
  * Xinerama
  * QtDBus
  * QtXml
  * QtGui
  * QtCore
- * ConsoleKit (optional, needed for poweroff/restart)
- * UPower
+ * ConsoleKit or logind (for optional poweroff/restart)
+ * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
  * adwaita-icon-theme (or similar)
- * xrandr (app)
+ 
+ The following distributions are supported/tested:
+ * Slackware 14.2
+ * Ubuntu 18.04
 
 ## Build
 
@@ -88,17 +91,6 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=no_include_install``** : Do not install development files.
  * **``CONFIG+=no_pkgconfig_install``** : Do not install pkgconfig file.
  * **``CONFIG+=no_doc_install``** : Do not install library documentation.
-
-### Build (and package) on Slackware
-
-Installing powerdwarf on Slackware is easy, just:
-
-```
-git clone https://github.com/rodlie/powerdwarf
-cd powerdwarf
-sudo GIT_COMMIT=`git rev-parse --short HEAD` ./powerdwarf.SlackBuild
-sudo installpkg /tmp/powerdwarf-VERSION.tgz
-```
 
 ### Build application
 

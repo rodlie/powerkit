@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -8,6 +8,8 @@
 */
 
 #include "dialog.h"
+#include "login1.h"
+#include "ckit.h"
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
@@ -635,9 +637,15 @@ void Dialog::loadSettings()
     }
     disableLidActionAC->setChecked(defaultDisableLidActionAC);
 
-    sleepButton->setEnabled(UPower::canSuspend());
-    hibernateButton->setEnabled(UPower::canHibernate());
-    poweroffButton->setEnabled(UPower::canPowerOff());
+    if (Login1::hasService()) {
+        sleepButton->setEnabled(Login1::canSuspend());
+        hibernateButton->setEnabled(Login1::canHibernate());
+        poweroffButton->setEnabled(Login1::canPowerOff());
+    } else {
+        sleepButton->setEnabled(UPower::canSuspend());
+        hibernateButton->setEnabled(UPower::canHibernate());
+        poweroffButton->setEnabled(CKit::canPowerOff());
+    }
 }
 
 // tell power manager to update settings
@@ -818,7 +826,9 @@ void Dialog::handleLockscreenButton()
 
 void Dialog::handleSleepButton()
 {
-    if (UPower::canSuspend()) { UPower::suspend(); }
+    if (Login1::hasService()) {
+        if (Login1::canSuspend()) { Login1::suspend(); }
+    } else if (UPower::canSuspend()) { UPower::suspend(); }
     else {
         QMessageBox::information(this,
                                  tr("Power Action"),
@@ -830,7 +840,9 @@ void Dialog::handleSleepButton()
 
 void Dialog::handleHibernateButton()
 {
-    if (UPower::canHibernate()) { UPower::hibernate(); }
+    if (Login1::hasService()) {
+        if (Login1::canHibernate()) { Login1::hibernate(); }
+    } else if (UPower::canHibernate()) { UPower::hibernate(); }
     else {
         QMessageBox::information(this,
                                  tr("Power Action"),
@@ -842,8 +854,11 @@ void Dialog::handleHibernateButton()
 
 void Dialog::handlePoweroffButton()
 {
-    if (UPower::canPowerOff()) { UPower::poweroff(); }
-    else {
+    if (Login1::hasService()) {
+        if (Login1::canPowerOff()) { Login1::poweroff(); }
+    } else if (CKit::hasService()) {
+        if (CKit::canPowerOff()) { CKit::poweroff(); }
+    } else {
         QMessageBox::information(this,
                                  tr("Power Action"),
                                  tr("System denied power request."

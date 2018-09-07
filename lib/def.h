@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -101,6 +101,10 @@ enum criticalAction
 #define CKIT_SERVICE "org.freedesktop.ConsoleKit"
 #define CKIT_PATH "/org/freedesktop/ConsoleKit/Manager"
 #define CKIT_MANAGER "org.freedesktop.ConsoleKit.Manager"
+
+#define LOGIN1_SERVICE "org.freedesktop.login1"
+#define LOGIN1_PATH "/org/freedesktop/login1"
+#define LOGIN1_MANAGER "org.freedesktop.login1.Manager"
 
 #define XSCREENSAVER "xscreensaver-command -deactivate"
 #define XSCREENSAVER_LOCK "xscreensaver-command -lock"

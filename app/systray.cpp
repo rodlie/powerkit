@@ -10,6 +10,7 @@
 #include "systray.h"
 #include "def.h"
 #include <QMessageBox>
+#include <QApplication>
 
 SysTray::SysTray(QObject *parent)
     : QObject(parent)

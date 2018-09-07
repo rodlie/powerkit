@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -12,41 +12,11 @@
 
 #include <QObject>
 #include <QMap>
-#include <QtDBus>
+#include <QDBusInterface>
+#include <QDBusObjectPath>
+#include <QTimer>
 
-class Device : public QObject
-{
-    Q_OBJECT
-
-public:
-    explicit Device(const QString block, QObject *parent = NULL);
-    QString name;
-    QString path;
-    bool isRechargable;
-    bool isPresent;
-    double percentage;
-    bool online;
-    bool hasPowerSupply;
-    bool isBattery;
-    bool isAC;
-    QString vendor;
-    QString nativePath;
-    double capacity;
-    double energy;
-    double energyFullDesign;
-    double energyFull;
-    double energyEmpty;
-
-private:
-    QDBusInterface *dbus;
-
-signals:
-    void deviceChanged(QString devicePath);
-
-private slots:
-    void updateDeviceProperties();
-    void handlePropertiesChanged();
-};
+#include "device.h"
 
 class Power : public QObject
 {
@@ -57,7 +27,8 @@ public:
     QMap<QString,Device*> devices;
 
 private:
-    QDBusInterface *dbus;
+    QDBusInterface *upower;
+    QDBusInterface *logind;
     QTimer timer;
     bool wasDocked;
     bool wasLidClosed;
