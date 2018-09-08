@@ -30,7 +30,10 @@ isEmpty(UDEVDIR) {
     UDEVDIR = /etc/udev
 }
 
-CONFIG(release, debug|release): DEFINES += QT_NO_DEBUG_OUTPUT
+CONFIG(release, debug|release) {
+    DEFINES += QT_NO_DEBUG_OUTPUT
+    CONFIG += staticlib
+}
 
 CONFIG += link_pkgconfig
 PKGCONFIG += x11 xscrnsaver xrandr xinerama

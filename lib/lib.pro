@@ -39,6 +39,7 @@ HEADERS += \
 include(../powerdwarf.pri)
 
 CONFIG(install_lib) {
+    CONFIG -= staticlib
     target.path = $${PREFIX}/lib$${LIBSUFFIX}
     INSTALLS += target
     !CONFIG(no_doc_install) {
