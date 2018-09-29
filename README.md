@@ -1,26 +1,25 @@
 # powerdwarf
 
-powerdwarf is a (WIP) power manager created for (Slackware) Linux for use with alternative desktop environments and window managers, like Fluxbox, FVWM, WindowMaker, Openbox, Lumina and others.
+powerdwarf is a full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, FVWM, WindowMaker, Openbox, Lumina and others.
 
 ## Features
 
 Some of the features included in powerdwarf:
 
  * Implements org.freedesktop.ScreenSaver daemon specification
-   * Enables applications to inhibit the screen saver (video player)
+   * Enables applications to inhibit the screen saver
    * Supports XScreenSaver
  * Implements org.freedesktop.PowerManagement daemon specification
-   * Enables applications to inhibit suspend actions (music player)
- * Supports lid and suspend actions
-   * Lock screen
-   * Sleep
-   * Hibernate
-   * Shutdown
-   * Inhibit if external monitor connected
-   * Automatically suspend based on timer/idle
+   * Enables applications to inhibit suspend actions
+ * Lid action
+ * Lock screen
+ * Sleep
+ * Hibernate
+ * Shutdown
+ * Inhibit suspend if external monitor connected
+ * Automatically suspend based on timer/idle
  * Low and critical battery actions
- * Monitor hot-plug support
-   * Save/Restore monitor states automatically
+ * Monitor hot-plug support (WIP)
  * Flexible configuration GUI
 
 ## Links
@@ -51,14 +50,15 @@ powerdwarf requires the following dependencies:
  * QtXml
  * QtGui
  * QtCore
- * ConsoleKit or logind (for optional poweroff/restart)
+ * ConsoleKit or logind
  * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
  * adwaita-icon-theme (or similar)
  
  The following distributions are supported/tested:
- * Slackware 14.2
+ * Slackware 14.2+
  * Ubuntu 18.04
+ * FreeBSD 11.x
 
 ## Build
 
