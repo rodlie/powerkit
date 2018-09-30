@@ -17,8 +17,7 @@ powerdwarf is a lightweight full featured power manager created for Slackware fo
  * Inhibit suspend if external monitor connected
  * Automatically suspend based on timer/idle
  * Low and critical battery actions
- * Monitor hot-plug support (WIP)
- * Flexible configuration GUI
+ * Configuration GUI
 
 ## Links
 
@@ -48,10 +47,10 @@ powerdwarf requires the following dependencies:
  * QtXml
  * QtGui
  * QtCore
- * D-Bus
- * ConsoleKit or logind
+ * ConsoleKit (or logind)
  * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
+ * hicolor-icon-theme
  * adwaita-icon-theme (or similar)
 
 ## Build

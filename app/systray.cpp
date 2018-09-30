@@ -603,6 +603,8 @@ void SysTray::resetTimer()
 // Uses xrandr to turn on/off
 void SysTray::handleDisplay(QString display, bool connected)
 {
+    qDebug() << "ignore display" << display << connected;
+#ifdef USE_XRANDR
     qDebug() << "handle display" << display << connected;
     if (monitors[display] == connected) { return; }
 
@@ -627,6 +629,7 @@ void SysTray::handleDisplay(QString display, bool connected)
         //TODO add detect for lumina
         //QProcess::startDetached(LUMINA_XCONFIG);
     }
+#endif
 }
 
 // update monitor list

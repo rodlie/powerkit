@@ -81,6 +81,7 @@ private:
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
     QComboBox *lowBatteryAction;
+#ifdef USE_XRANDR
     QListWidget *monitorList;
     QComboBox *monitorModes;
     QComboBox *monitorRates;
@@ -91,6 +92,7 @@ private:
     QComboBox *monitorRotation;
     QComboBox *monitorPosition;
     QComboBox *monitorPositionOther;
+#endif
 
 private slots:
     void populate();
@@ -99,7 +101,9 @@ private slots:
     void setDefaultAction(QComboBox *box, int action);
     void setDefaultAction(QSpinBox *box, int action);
     void setDefaultAction(QComboBox *box, QString value);
+#ifdef USE_XRANDR
     void setDefaultRotation(QString value);
+#endif
     void handleLidActionBattery(int index);
     void handleLidActionAC(int index);
     void handleCriticalAction(int index);
@@ -122,6 +126,7 @@ private slots:
     void handleHibernateButton();
     void handlePoweroffButton();
     void handleLowBatteryAction(int value);
+#ifdef USE_XRANDR
     bool monitorExists(QString display);
     void handleMonitorListItemChanged(QListWidgetItem *item);
     void handleMonitorListICurrentitemChanged(QListWidgetItem *item,
@@ -129,6 +134,7 @@ private slots:
     void handleMonitorModeChanged(QString mode);
     void monitorSaveSettings();
     void monitorApplySettings();
+#endif
 };
 
 #endif // DIALOG_H

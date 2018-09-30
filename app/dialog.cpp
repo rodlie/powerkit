@@ -35,6 +35,7 @@ Dialog::Dialog(QWidget *parent)
     , hibernateButton(0)
     , poweroffButton(0)
     , lowBatteryAction(0)
+#ifdef USE_XRANDR
     , monitorList(0)
     , monitorModes(0)
     , monitorRates(0)
@@ -44,6 +45,7 @@ Dialog::Dialog(QWidget *parent)
     , monitorRotation(0)
     , monitorPosition(0)
     , monitorPositionOther(0)
+#endif
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -330,6 +332,7 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addWidget(hibernateButton);
     extraContainerLayout->addWidget(poweroffButton);
 
+#ifdef USE_XRANDR
     QWidget *monitorContainer = new QWidget(this);
     QVBoxLayout *monitorContainerLayout = new QVBoxLayout(monitorContainer);
 
@@ -404,6 +407,7 @@ Dialog::Dialog(QWidget *parent)
     monitorContainerLayout->addWidget(monitorPosContainer);
     monitorContainerLayout->addWidget(monitorPrimary);
     monitorContainerLayout->addWidget(monitorButtonsContainer);
+#endif
 
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
@@ -414,9 +418,11 @@ Dialog::Dialog(QWidget *parent)
     containerWidget->addTab(acContainer,
                             QIcon::fromTheme("ac-adapter"),
                             tr("AC"));
+#ifdef USE_XRANDR
     containerWidget->addTab(monitorContainer,
                             QIcon::fromTheme("video-display"),
                             tr("Monitors"));
+#endif
     containerWidget->addTab(advContainer,
                             QIcon::fromTheme("preferences-other"),
                             tr("Advanced"));
@@ -425,6 +431,7 @@ Dialog::Dialog(QWidget *parent)
     loadSettings(); // load settings
 
     // connect various widgets
+#ifdef USE_XRANDR
     connect(monitorSaveButton, SIGNAL(released()),
             this, SLOT(monitorSaveSettings()));
     connect(monitorApplyButton, SIGNAL(released()),
@@ -440,6 +447,7 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
     connect(monitorList, SIGNAL(itemPressed(QListWidgetItem*)),
             this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
+#endif
     connect(lockscreenButton, SIGNAL(released()),
             this, SLOT(handleLockscreenButton()));
     connect(sleepButton, SIGNAL(released()),
@@ -525,6 +533,7 @@ void Dialog::populate()
     lowBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
     lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
 
+#ifdef USE_XRANDR
     monitorRotation->clear();
     monitorRotation->addItem(tr("Normal"), "normal");
     monitorRotation->addItem(tr("Left"), "left");
@@ -538,6 +547,7 @@ void Dialog::populate()
     monitorPosition->addItem(tr("Above"), randrAbove);
     monitorPosition->addItem(tr("Below"), randrBelow);
     monitorPosition->addItem(tr("Same As"), randrSameAs);
+#endif
 
     handleUpdatedMonitors();
 }
@@ -698,6 +708,7 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
 }
 
 // set default monitor rotation
+#ifdef USE_XRANDR
 void Dialog::setDefaultRotation(QString value)
 {
     for (int i=0;i<monitorRotation->count();i++) {
@@ -707,6 +718,7 @@ void Dialog::setDefaultRotation(QString value)
         }
     }
 }
+#endif
 
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
@@ -812,6 +824,7 @@ void Dialog::handleAutoSleepACAction(int index)
 void Dialog::handleUpdatedMonitors()
 {
     qDebug() << "monitors changed";
+#ifdef USE_XRANDR
     QMap<QString,bool> map = Monitor::getX();
     QMapIterator<QString, bool> i(map);
     while (i.hasNext()) {
@@ -831,6 +844,7 @@ void Dialog::handleUpdatedMonitors()
             delete monitorList->takeItem(i);
         }
     }
+#endif
 }
 
 void Dialog::handleLockscreenButton()
@@ -887,6 +901,7 @@ void Dialog::handleLowBatteryAction(int value)
     updatePM();
 }
 
+#ifdef USE_XRANDR
 bool Dialog::monitorExists(QString display)
 {
     for (int i=0;i<monitorList->count();++i) {
@@ -1035,3 +1050,4 @@ void Dialog::monitorApplySettings()
     proc.waitForFinished();
     handleMonitorListItemChanged(item);
 }
+#endif
