@@ -17,7 +17,7 @@ Dialog::Dialog(QWidget *parent)
     , lidActionBattery(0)
     , lidActionAC(0)
     , criticalActionBattery(0)
-    , lowBattery(0)
+//    , lowBattery(0)
     , criticalBattery(0)
     , autoSleepBattery(0)
     , autoSleepAC(0)
@@ -32,7 +32,7 @@ Dialog::Dialog(QWidget *parent)
     , sleepButton(0)
     , hibernateButton(0)
     , poweroffButton(0)
-    , lowBatteryAction(0)
+//    , lowBatteryAction(0)
 #ifdef USE_XRANDR
     , monitorList(0)
     , monitorModes(0)
@@ -49,7 +49,7 @@ Dialog::Dialog(QWidget *parent)
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
-    setMinimumSize(QSize(380,380));
+    setMinimumSize(QSize(380,350));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -109,7 +109,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
     batteryContainerLayout->addWidget(lidActionBatteryContainer);
 
-    QWidget *lowBatteryContainer = new QWidget(this);
+    /*QWidget *lowBatteryContainer = new QWidget(this);
     QHBoxLayout *lowBatteryContainerLayout = new QHBoxLayout(lowBatteryContainer);
     lowBattery = new QSpinBox(this);
     lowBattery->setMinimum(0);
@@ -138,7 +138,7 @@ Dialog::Dialog(QWidget *parent)
     lowBatteryContainerLayout->addWidget(lowBatteryIcon);
     lowBatteryContainerLayout->addWidget(lowBatteryLabel);
     lowBatteryContainerLayout->addWidget(lowActionBatteryContainer);
-    batteryContainerLayout->addWidget(lowBatteryContainer);
+    batteryContainerLayout->addWidget(lowBatteryContainer);*/
 
     QWidget *criticalBatteryContainer = new QWidget(this);
     QHBoxLayout *criticalBatteryContainerLayout = new QHBoxLayout(criticalBatteryContainer);
@@ -165,7 +165,6 @@ Dialog::Dialog(QWidget *parent)
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
     criticalBatteryContainerLayout->addWidget(criticalActionBatteryContainer);
-    batteryContainerLayout->addWidget(criticalBatteryContainer);
 
     QWidget *sleepBatteryContainer = new QWidget(this);
     QHBoxLayout *sleepBatteryContainerLayout = new QHBoxLayout(sleepBatteryContainer);
@@ -192,7 +191,9 @@ Dialog::Dialog(QWidget *parent)
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
     sleepBatteryContainerLayout->addWidget(sleepActionBatteryContainer);
+
     batteryContainerLayout->addWidget(sleepBatteryContainer);
+    batteryContainerLayout->addWidget(criticalBatteryContainer);
 
     batteryContainerLayout->addStretch();
 
@@ -449,8 +450,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleLidActionAC(int)));
     connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)),
             this, SLOT(handleCriticalAction(int)));
-    connect(lowBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleLowBattery(int)));
+    /*connect(lowBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleLowBattery(int)));*/
     connect(criticalBattery, SIGNAL(valueChanged(int)),
             this, SLOT(handleCriticalBattery(int)));
     connect(autoSleepBattery, SIGNAL(valueChanged(int)),
@@ -510,11 +511,11 @@ void Dialog::populate()
     autoSleepACAction->addItem(tr("Hibernate"), suspendHibernate);
     autoSleepACAction->addItem(tr("Shutdown"), suspendShutdown);
 
-    lowBatteryAction->clear();
+    /*lowBatteryAction->clear();
     lowBatteryAction->addItem(tr("Notify"), suspendNone);
     lowBatteryAction->addItem(tr("Sleep"), suspendSleep);
     lowBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
-    lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+    lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);*/
 
 #ifdef USE_XRANDR
     monitorRotation->clear();
@@ -542,11 +543,11 @@ void Dialog::loadSettings()
         restoreGeometry(Common::loadPowerSettings("dialog_geometry").toByteArray());
     }
 
-    int defaultLowBatteryAction = suspendNone;
+    /*int defaultLowBatteryAction = suspendNone;
     if (Common::validPowerSettings("low_battery_action")) {
         defaultLowBatteryAction = Common::loadPowerSettings("low_battery_action").toInt();
     }
-    setDefaultAction(lowBatteryAction, defaultLowBatteryAction);
+    setDefaultAction(lowBatteryAction, defaultLowBatteryAction);*/
 
     int defaultAutoSleepBattery = AUTO_SLEEP_BATTERY;
     if (Common::validPowerSettings("suspend_battery_timeout")) {
@@ -572,11 +573,11 @@ void Dialog::loadSettings()
     }
     setDefaultAction(autoSleepACAction, defaultAutoSleepACAction);
 
-    int defaultLowBattery = LOW_BATTERY;
+    /*int defaultLowBattery = LOW_BATTERY;
     if (Common::validPowerSettings("lowBattery")) {
         defaultLowBattery = Common::loadPowerSettings("lowBattery").toInt();
     }
-    setDefaultAction(lowBattery, defaultLowBattery);
+    setDefaultAction(lowBattery, defaultLowBattery);*/
 
     int defaultCriticalBattery = CRITICAL_BATTERY;
     if (Common::validPowerSettings("criticalBattery")) {
@@ -710,11 +711,11 @@ void Dialog::handleCriticalAction(int index)
     updatePM();
 }
 
-void Dialog::handleLowBattery(int value)
+/*void Dialog::handleLowBattery(int value)
 {
     Common::savePowerSettings("lowBattery", value);
     updatePM();
-}
+}*/
 
 void Dialog::handleCriticalBattery(int value)
 {
@@ -854,11 +855,11 @@ void Dialog::handlePoweroffButton()
     }
 }
 
-void Dialog::handleLowBatteryAction(int value)
+/*void Dialog::handleLowBatteryAction(int value)
 {
     Common::savePowerSettings("low_battery_action", value);
     updatePM();
-}
+}*/
 
 #ifdef USE_XRANDR
 bool Dialog::monitorExists(QString display)

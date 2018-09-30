@@ -63,7 +63,7 @@ private:
     QComboBox *lidActionBattery;
     QComboBox *lidActionAC;
     QComboBox *criticalActionBattery;
-    QSpinBox *lowBattery;
+    //QSpinBox *lowBattery;
     QSpinBox *criticalBattery;
     QSpinBox *autoSleepBattery;
     QSpinBox *autoSleepAC;
@@ -78,7 +78,7 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
-    QComboBox *lowBatteryAction;
+    //QComboBox *lowBatteryAction;
 #ifdef USE_XRANDR
     QListWidget *monitorList;
     QComboBox *monitorModes;
@@ -105,7 +105,7 @@ private slots:
     void handleLidActionBattery(int index);
     void handleLidActionAC(int index);
     void handleCriticalAction(int index);
-    void handleLowBattery(int value);
+    //void handleLowBattery(int value);
     void handleCriticalBattery(int value);
     void handleAutoSleepBattery(int value);
     void handleAutoSleepAC(int value);
@@ -121,7 +121,7 @@ private slots:
     void handleSleepButton();
     void handleHibernateButton();
     void handlePoweroffButton();
-    void handleLowBatteryAction(int value);
+    //void handleLowBatteryAction(int value);
 #ifdef USE_XRANDR
     bool monitorExists(QString display);
     void handleMonitorListItemChanged(QListWidgetItem *item);
