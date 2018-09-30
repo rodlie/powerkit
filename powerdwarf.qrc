@@ -22,7 +22,5 @@
         <file>icons/system-shutdown.png</file>
         <file>icons/system-lock-screen.png</file>
         <file>icons/system-hibernate.png</file>
-        <file>icons/vendors/slackware-black.png</file>
-        <file>icons/vendors/slackware-white.png</file>
     </qresource>
 </RCC>
