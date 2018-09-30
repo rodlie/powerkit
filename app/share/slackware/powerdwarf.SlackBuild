@@ -27,8 +27,6 @@ VERSION=${VERSION:-0.9.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 QMAKE=${QMAKE:-qmake}
-GIT_COMMIT=${GIT_COMMIT:-""}
-GIT_URL="https://github.com/rodlie/powerdwarf" # url to git repo
 
 # Automatically determine the architecture we're building on:
 if [ -z "$ARCH" ]; then
@@ -37,11 +35,6 @@ if [ -z "$ARCH" ]; then
     arm*) ARCH=arm ;;
        *) ARCH=$( uname -m ) ;;
   esac
-fi
-
-# Check if we need to use git
-if [ ! -z "$GIT_COMMIT" ]; then
-  VERSION="${VERSION}_${GIT_COMMIT}"
 fi
 
 CWD=$(pwd)
@@ -70,15 +63,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-if [ -z "$GIT_COMMIT" ]; then
-  tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
-  cd $PRGNAM-$VERSION
-else
-  git clone ${GIT_URL} $PRGNAM-$VERSION
-  cd $PRGNAM-$VERSION
-  git checkout $GIT_COMMIT
-  echo "VERSION=`echo ${VERSION} | sed 's/-/_/g'`" >> powerdwarf.pri
-fi
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -105,41 +91,25 @@ make INSTALL_ROOT=$PKG install
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
+# Compress man
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
 # Include the SlackBuild script in the documentation directory
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION # already created by application, but leave it "just in case"
+if [ ! -d "$PKG/usr/doc/$PRGNAME-$VERSION" ]; then
+  mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+fi
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 # Add udev backlight rules example
 if [ -f "app/share/udev/90-backlight.rules" ]; then
-  cat app/share/udev/90-backlight.rules > $PKG/usr/doc/$PRGNAM-$VERSION/udev-backlight.rules.example
+  cat app/share/udev/90-backlight.rules > $PKG/usr/doc/$PRGNAM-$VERSION/udev-backlight.rules
 fi
 
-# Copy slack-desc into ./install
+# Copy slack-desc and doinst.sh into ./install
 mkdir -p $PKG/install
-cat << EOF > $PKG/install/slack-desc
-# HOW TO EDIT THIS FILE:
-# The "handy ruler" below makes it easier to edit a package description.
-# Line up the first '|' above the ':' following the base package name, and
-# the '|' on the right side marks the last column you can put a character in.
-# You must make exactly 11 lines for the formatting to be correct.  It's also
-# customary to leave one space after the ':' except on otherwise blank lines.
-
-          |-----handy-ruler------------------------------------------------------|
-powerdwarf: powerdwarf (Lightweight Power Manager)
-powerdwarf:
-powerdwarf: powerdwarf is a power manager created for Slackware for use with
-powerdwarf: alternative desktop environments and window managers, like Fluxbox,
-powerdwarf: FVWM, WindowMaker, Openbox and others. Features lid actions, suspend
-powerdwarf: actions, freedesktop.org support, monitor hot-plug and more.
-powerdwarf:
-powerdwarf: powerdwarf was written by Ole-André Rodlie.
-powerdwarf:
-powerdwarf: Homepage: https://github.com/rodlie/powerdwarf
-powerdwarf:
-EOF
-
-# Fix version issue (if any)
-VERSION=`echo $VERSION | sed 's/-/_/g'`
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 # Make the package
 cd $PKG
