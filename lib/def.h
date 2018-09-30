@@ -77,6 +77,8 @@ enum criticalAction
 #define DEFAULT_LOCK_ICON "system-lock-screen"
 #define DEFAULT_HIBERNATE_ICON "system-hibernate"
 #define DEFAULT_SHUTDOWN_ICON "system-shutdown"
+#define DEFAULT_NONE_ICON "emblem-unreadable"
+
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
 

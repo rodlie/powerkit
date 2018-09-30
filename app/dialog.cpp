@@ -47,7 +47,7 @@ Dialog::Dialog(QWidget *parent)
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
-    setMinimumSize(QSize(380,350));
+    setMinimumSize(QSize(380,320));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -104,7 +104,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionBatteryIcon->setMaximumSize(48,48);
     lidActionBatteryIcon->setMinimumSize(48,48);
     lidActionBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON).pixmap(QSize(48, 48)));
-    lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid Action</h3>"));
+    lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
@@ -182,7 +182,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionACIcon->setMaximumSize(48,48);
     lidActionACIcon->setMinimumSize(48,48);
     lidActionACIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON).pixmap(QSize(48, 48)));
-    lidActionACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid Action</h3>"));
+    lidActionACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionACContainerLayout->addWidget(lidActionACIcon);
     lidActionACContainerLayout->addWidget(lidActionACLabel);
     lidActionACContainerLayout->addWidget(lidActionAC);
@@ -453,33 +453,52 @@ Dialog::~Dialog()
 void Dialog::populate()
 {
     lidActionBattery->clear();
-    lidActionBattery->addItem(tr("None"), lidNone);
-    lidActionBattery->addItem(tr("Lock Screen"), lidLock);
-    lidActionBattery->addItem(tr("Sleep"), lidSleep);
-    lidActionBattery->addItem(tr("Hibernate"), lidHibernate);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
+                              tr("None"), lidNone);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_LOCK_ICON),
+                              tr("Lock Screen"), lidLock);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                              tr("Sleep"), lidSleep);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
+                              tr("Hibernate"), lidHibernate);
 
     lidActionAC->clear();
-    lidActionAC->addItem(tr("None"), lidNone);
-    lidActionAC->addItem(tr("Lock Screen"), lidLock);
-    lidActionAC->addItem(tr("Sleep"), lidSleep);
-    lidActionAC->addItem(tr("Hibernate"), lidHibernate);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
+                         tr("None"), lidNone);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_LOCK_ICON),
+                         tr("Lock Screen"), lidLock);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                         tr("Sleep"), lidSleep);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
+                         tr("Hibernate"), lidHibernate);
 
     criticalActionBattery->clear();
-    criticalActionBattery->addItem(tr("None"), criticalNone);
-    criticalActionBattery->addItem(tr("Hibernate"), criticalHibernate);
-    criticalActionBattery->addItem(tr("Shutdown"), criticalShutdown);
+    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
+                                   tr("None"), criticalNone);
+    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
+                                   tr("Hibernate"), criticalHibernate);
+    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
+                                   tr("Shutdown"), criticalShutdown);
 
     autoSleepBatteryAction->clear();
-    autoSleepBatteryAction->addItem(tr("None"), suspendNone);
-    autoSleepBatteryAction->addItem(tr("Sleep"), suspendSleep);
-    autoSleepBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
-    autoSleepBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
+                                    tr("None"), suspendNone);
+    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                                    tr("Sleep"), suspendSleep);
+    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
+                                    tr("Hibernate"), suspendHibernate);
+    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
+                                    tr("Shutdown"), suspendShutdown);
 
     autoSleepACAction->clear();
-    autoSleepACAction->addItem(tr("None"), suspendNone);
-    autoSleepACAction->addItem(tr("Sleep"), suspendSleep);
-    autoSleepACAction->addItem(tr("Hibernate"), suspendHibernate);
-    autoSleepACAction->addItem(tr("Shutdown"), suspendShutdown);
+    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
+                               tr("None"), suspendNone);
+    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                               tr("Sleep"), suspendSleep);
+    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
+                               tr("Hibernate"), suspendHibernate);
+    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
+                               tr("Shutdown"), suspendShutdown);
 
 #ifdef USE_XRANDR
     monitorRotation->clear();
