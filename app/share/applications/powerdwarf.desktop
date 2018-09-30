@@ -1,10 +1,10 @@
 [Desktop Entry]
-Name=PowerDwarf Configuration
+Name=Power Manager Configuration
 Comment=Power Manager Configuration
 Icon=battery
 Exec=powerdwarf --config
 Terminal=false
 Type=Application
 Categories=Settings;
-NotShowIn=GNOME;KDE;LXDE;LXQt;MATE;TDE;Unity;XFCE;Cinnamon;
+NotShowIn=GNOME;KDE;MATE;TDE;Unity;XFCE;Cinnamon;
 StartupNotify=false

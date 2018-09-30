@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -458,7 +458,8 @@ void SysTray::drawBattery(double left)
         if (!wasLowBattery) { showMessage(tr("Low Battery!"),
                                           tr("You battery is almost empty,"
                                              " please consider connecting"
-                                             " your computer to a power supply.")); }
+                                             " your computer to a power supply."),
+                                          true); }
         wasLowBattery = true;
     } else {
         wasLowBattery = false;
@@ -727,12 +728,15 @@ void SysTray::setupMonitors()
 }
 
 // show notifications
-// msgbox if no tray
-void SysTray::showMessage(QString title, QString msg)
+void SysTray::showMessage(QString title, QString msg, bool critical)
 {
     if (tray->isVisible()) {
-        tray->showMessage(title, msg);
-    } else {
+        if (critical) {
+            tray->showMessage(title, msg, QSystemTrayIcon::Critical, 900000);
+        } else {
+            tray->showMessage(title, msg);
+        }
+    } /*else {
         QMessageBox::information(NULL, title, msg);
-    }
+    }*/
 }

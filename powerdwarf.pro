@@ -1,5 +1,5 @@
 #
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -10,8 +10,5 @@
 TEMPLATE = subdirs
 CONFIG -= ordered
 SUBDIRS += lib app
-OTHER_FILES += \
-    README.md \
-    LICENSE \
-    powerdwarf.SlackBuild
+OTHER_FILES += README.md LICENSE
 app.depends += lib

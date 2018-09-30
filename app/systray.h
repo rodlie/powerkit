@@ -1,5 +1,5 @@
 /*
-# PowerDwarf <https://github.com/rodlie/powerdwarf>
+# powerdwarf <https://github.com/rodlie/powerdwarf>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -110,13 +110,17 @@ private slots:
     void handleFoundDisplays(QMap<QString,bool> displays);
     bool internalMonitorIsConnected();
     bool externalMonitorIsConnected();
-    void handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie);
-    void handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie);
+    void handleNewInhibitScreenSaver(QString application,
+                                     QString reason,
+                                     quint32 cookie);
+    void handleNewInhibitPowerManagement(QString application,
+                                         QString reason,
+                                         quint32 cookie);
     void handleDelInhibitScreenSaver(quint32 cookie);
     void handleDelInhibitPowerManagement(quint32 cookie);
     void handleScrensaverFinished(int exitcode);
     void setupMonitors();
-    void showMessage(QString title, QString msg);
+    void showMessage(QString title, QString msg, bool critical = false);
 };
 
 #endif // SYSTRAY_H

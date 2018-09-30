@@ -124,7 +124,8 @@ private slots:
     void handleLowBatteryAction(int value);
     bool monitorExists(QString display);
     void handleMonitorListItemChanged(QListWidgetItem *item);
-    void handleMonitorListICurrentitemChanged(QListWidgetItem *item, QListWidgetItem *item2);
+    void handleMonitorListICurrentitemChanged(QListWidgetItem *item,
+                                              QListWidgetItem *item2);
     void handleMonitorModeChanged(QString mode);
     void monitorSaveSettings();
     void monitorApplySettings();
