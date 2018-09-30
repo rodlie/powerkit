@@ -103,7 +103,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionBatteryIcon->setMaximumSize(48,48);
     lidActionBatteryIcon->setMinimumSize(48,48);
     lidActionBatteryIcon->setPixmap(QIcon::fromTheme("video-display").pixmap(QSize(48, 48)));
-    lidActionBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Lid Action</h2>"));
+    lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid Action</h3>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
@@ -134,7 +134,7 @@ Dialog::Dialog(QWidget *parent)
     lowBatteryIcon->setMaximumSize(48,48);
     lowBatteryIcon->setMinimumSize(48,48);
     lowBatteryIcon->setPixmap(QIcon::fromTheme("battery-low-charging").pixmap(QSize(48, 48)));
-    lowBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Low battery</h2>"));
+    lowBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Low battery</h3>"));
     lowBatteryContainerLayout->addWidget(lowBatteryIcon);
     lowBatteryContainerLayout->addWidget(lowBatteryLabel);
     lowBatteryContainerLayout->addWidget(lowActionBatteryContainer);
@@ -161,7 +161,7 @@ Dialog::Dialog(QWidget *parent)
     criticalBatteryIcon->setMaximumSize(48,48);
     criticalBatteryIcon->setMinimumSize(48,48);
     criticalBatteryIcon->setPixmap(QIcon::fromTheme("battery-caution").pixmap(QSize(48, 48)));
-    criticalBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Critical battery</h2>"));
+    criticalBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Critical battery</h3>"));
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
     criticalBatteryContainerLayout->addWidget(criticalActionBatteryContainer);
@@ -188,7 +188,7 @@ Dialog::Dialog(QWidget *parent)
     sleepBatteryIcon->setMaximumSize(48,48);
     sleepBatteryIcon->setMinimumSize(48,48);
     sleepBatteryIcon->setPixmap(QIcon::fromTheme("system-suspend").pixmap(QSize(48, 48)));
-    sleepBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Suspend after</h2>"));
+    sleepBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
     sleepBatteryContainerLayout->addWidget(sleepActionBatteryContainer);

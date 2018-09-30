@@ -484,27 +484,7 @@ void SysTray::drawBattery(double left)
             // TODO
         }
     }
-
-    /*if (left > 99 ||
-        left == 0.0 ||
-        !man->onBattery()) {
-        tray->setIcon(icon);
-    }*/
-
     tray->setIcon(icon);
-
-    /*QPixmap pixmap = icon.pixmap(QSize(24, 24));
-    QPainter painter(&pixmap);
-    painter.setPen(QColor(Qt::black));
-    painter.drawText(pixmap.rect().adjusted(1, 1, 1, 1),
-                     Qt::AlignCenter,
-                     QString("%1").arg(left));
-    painter.setPen(QColor(Qt::white));
-    painter.drawText(pixmap.rect(),
-                     Qt::AlignCenter,
-                     QString("%1").arg(left));
-    painter.setPen(QColor(Qt::transparent));
-    tray->setIcon(pixmap);*/
 }
 
 // timeout, check if idle
