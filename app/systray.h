@@ -23,6 +23,7 @@
 #include <QMapIterator>
 #include <QProcess>
 #include <QMap>
+#include <QFileSystemWatcher>
 
 #include "common.h"
 #include "power.h"
@@ -44,6 +45,7 @@
 #undef FontChange
 #undef Expose
 #undef FrameFeature
+#undef Unsorted
 
 #define XSCREENSAVER_RUN "xscreensaver -no-splash"
 
@@ -89,6 +91,7 @@ private:
     QMap<quint32,QString> ssInhibitors;
     QMap<quint32,QString> pmInhibitors;
     QString internalMonitor;
+    QFileSystemWatcher *watcher;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -121,6 +124,7 @@ private slots:
     void handleScrensaverFinished(int exitcode);
     void setupMonitors();
     void showMessage(QString title, QString msg, bool critical = false);
+    void handleConfChanged(QString file);
 };
 
 #endif // SYSTRAY_H

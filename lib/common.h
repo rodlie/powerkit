@@ -22,6 +22,8 @@ public:
     static void setDarkTheme();
     static void setNormalTheme();
     static void setIconTheme();
+    static QString confFile();
+    static QString confDir();
 };
 
 #endif // COMMON_H

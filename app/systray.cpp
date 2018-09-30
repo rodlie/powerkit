@@ -40,7 +40,17 @@ SysTray::SysTray(QObject *parent)
     , autoSuspendACAction(suspendNone)
     , xscreensaver(0)
     , startupScreensaver(true)
+    , watcher(0)
 {
+    // setup watcher
+    watcher = new QFileSystemWatcher(this);
+    watcher->addPath(Common::confFile());
+    watcher->addPath(Common::confDir());
+    connect(watcher, SIGNAL(fileChanged(QString)),
+            this, SLOT(handleConfChanged(QString)));
+    connect(watcher, SIGNAL(directoryChanged(QString)),
+            this, SLOT(handleConfChanged(QString)));
+
     // setup tray
     tray = new QSystemTrayIcon(this);
     connect(tray,
@@ -169,7 +179,6 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     default:;
     }*/
     QString config = QString("%1 --config").arg(qApp->applicationFilePath());
-    //if (!QFile::exists(config)) { return; }
     QProcess::startDetached(config);
 }
 
@@ -295,9 +304,6 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings(CONF_SUSPEND_AC_ACTION)) {
         autoSuspendACAction = Common::loadPowerSettings(CONF_SUSPEND_AC_ACTION).toInt();
     }
-    /*if (Common::validPowerSettings("lowBattery")) {
-        lowBatteryValue = Common::loadPowerSettings("lowBattery").toInt();
-    }*/
     if (Common::validPowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT)) {
         critBatteryValue = Common::loadPowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
     }
@@ -336,7 +342,6 @@ void SysTray::loadSettings()
     qDebug() << CONF_SUSPEND_AC_TIMEOUT << autoSuspendAC;
     qDebug() << CONF_SUSPEND_BATTERY_ACTION << autoSuspendBatteryAction;
     qDebug() << CONF_SUSPEND_AC_ACTION << autoSuspendACAction;
-    //qDebug() << "low battery setting" << lowBatteryValue;
     qDebug() << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
     qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
     qDebug() << CONF_LID_AC_ACTION << lidActionAC;
@@ -723,7 +728,11 @@ void SysTray::showMessage(QString title, QString msg, bool critical)
         } else {
             tray->showMessage(title, msg);
         }
-    } /*else {
-        QMessageBox::information(NULL, title, msg);
-    }*/
+    }
+}
+
+void SysTray::handleConfChanged(QString file)
+{
+    Q_UNUSED(file)
+    loadSettings();
 }

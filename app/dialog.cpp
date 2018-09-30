@@ -59,11 +59,14 @@ Dialog::Dialog(QWidget *parent)
                         "updatedMonitors",
                         this,
                         SLOT(handleUpdatedMonitors()));
-    } else {
+    }
+#ifdef USE_XRANDR
+    else {
         QMessageBox::warning(this, tr("Power manager not running"),
                              tr("Power manager is not running, please start it before running settings."));
         QTimer::singleShot(100, this, SLOT(close()));
     }
+#endif
 
     // setup theme
     Common::setIconTheme();
@@ -193,11 +196,8 @@ Dialog::Dialog(QWidget *parent)
     autoSleepAC->setSuffix(tr(" min"));
     QLabel *sleepACLabel = new QLabel(this);
 
-    sleepACLabel->setText(tr("<strong>Suspend after</strong>"));
     sleepACContainerLayout->addWidget(sleepACLabel);
-    //sleepACContainerLayout->addWidget(autoSleepAC);
     acContainerLayout->addWidget(sleepACContainer);
-
 
     QWidget *sleepActionACContainer = new QWidget(this);
     sleepActionACContainer->setContentsMargins(0,0,0,0);
@@ -207,7 +207,6 @@ Dialog::Dialog(QWidget *parent)
     autoSleepACAction = new QComboBox(this);
     sleepActionACContainerLayout->addWidget(autoSleepAC);
     sleepActionACContainerLayout->addWidget(autoSleepACAction);
-    //acContainerLayout->addWidget(sleepActionACContainer);
 
     QLabel *sleepACIcon = new QLabel(this);
     sleepACIcon->setMaximumSize(48,48);
@@ -649,43 +648,43 @@ void Dialog::setDefaultRotation(QString value)
 void Dialog::handleLidActionBattery(int index)
 {
     Common::savePowerSettings(CONF_LID_BATTERY_ACTION, index);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleLidActionAC(int index)
 {
     Common::savePowerSettings(CONF_LID_AC_ACTION, index);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleCriticalAction(int index)
 {
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleCriticalBattery(int value)
 {
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT, value);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleAutoSleepBattery(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT, value);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleAutoSleepAC(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_AC_TIMEOUT, value);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleDesktopSS(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_SS, triggered);
-    updatePM();
+    //updatePM();
     QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
 }
@@ -693,7 +692,7 @@ void Dialog::handleDesktopSS(bool triggered)
 void Dialog::handleDesktopPM(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_PM, triggered);
-    updatePM();
+    //updatePM();
     QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
 }
@@ -701,31 +700,31 @@ void Dialog::handleDesktopPM(bool triggered)
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleShowSystemTray(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_SHOW, triggered);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
     Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
-    updatePM();
+    //updatePM();
 }
 
 void Dialog::handleUpdatedMonitors()

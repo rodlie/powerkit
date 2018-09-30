@@ -20,6 +20,7 @@ void Common::savePowerSettings(QString type, QVariant value)
 {
     QSettings settings(PD, PD);
     settings.setValue(type, value);
+    settings.sync();
 }
 
 QVariant Common::loadPowerSettings(QString type)
@@ -101,4 +102,14 @@ void Common::setIconTheme()
         }
     }
     QIcon::setThemeName(theme);
+}
+
+QString Common::confFile()
+{
+    return QString("%1/.config/powerdwarf/powerdwarf.conf").arg(QDir::homePath());
+}
+
+QString Common::confDir()
+{
+    return QString("%1/.config/powerdwarf").arg(QDir::homePath());
 }
