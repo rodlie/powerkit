@@ -70,7 +70,13 @@ enum criticalAction
 #define DEFAULT_BATTERY_ICON_CHARGED "battery-full-charged"
 #define DEFAULT_BATTERY_EMPTY "battery-empty"
 #define DEFAULT_BATTERY_MISSING "battery-missing"
-
+#define DEFAULT_VIDEO_ICON "video-display"
+#define DEFAULT_SUSPEND_ICON "system-suspend"
+#define DEFAULT_TRAY_ICON "preferences-other"
+#define DEFAULT_NOTIFY_ICON "user-available"
+#define DEFAULT_LOCK_ICON "system-lock-screen"
+#define DEFAULT_HIBERNATE_ICON "system-hibernate"
+#define DEFAULT_SHUTDOWN_ICON "system-shutdown"
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
 
