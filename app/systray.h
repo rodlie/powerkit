@@ -88,6 +88,7 @@ private:
     bool startupScreensaver;
     QMap<quint32,QString> ssInhibitors;
     QMap<quint32,QString> pmInhibitors;
+    QString internalMonitor;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -106,6 +107,7 @@ private slots:
     void resetTimer();
     void handleDisplay(QString display, bool connected);
     void handleFoundDisplays(QMap<QString,bool> displays);
+    void setInternalMonitor();
     bool internalMonitorIsConnected();
     bool externalMonitorIsConnected();
     void handleNewInhibitScreenSaver(QString application,

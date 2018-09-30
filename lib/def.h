@@ -45,7 +45,6 @@ enum criticalAction
 };
 
 #define XRANDR "xrandr"
-#define INTERNAL_MONITOR "LVDS"
 #define VIRTUAL_MONITOR "VIRTUAL"
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
 #define TURN_ON_MONITOR "xrandr --output %1"
@@ -55,7 +54,7 @@ enum criticalAction
 #define LID_AC_DEFAULT lidLock
 #define CRITICAL_DEFAULT criticalNone
 
-#define LOW_BATTERY 15
+#define LOW_BATTERY 5 // % over critical
 #define CRITICAL_BATTERY 10
 #define AUTO_SLEEP_BATTERY 15
 #define DEFAULT_AC_ICON "ac-adapter"
@@ -110,5 +109,22 @@ enum criticalAction
 #define XSCREENSAVER_LOCK "xscreensaver-command -lock"
 
 #define MONITOR_DATA_CONNECTED Qt::UserRole+1
+
+#define CONF_DIALOG_GEOMETRY "dialog_geometry"
+#define CONF_SUSPEND_BATTERY_TIMEOUT "suspend_battery_timeout"
+#define CONF_SUSPEND_BATTERY_ACTION "suspend_battery_action"
+#define CONF_SUSPEND_AC_TIMEOUT "suspend_ac_timeout"
+#define CONF_SUSPEND_AC_ACTION "suspend_ac_action"
+#define CONF_CRITICAL_BATTERY_TIMEOUT "critical_battery_timeout"
+#define CONF_CRITICAL_BATTERY_ACTION "critical_battery_action"
+#define CONF_LID_BATTERY_ACTION "lid_battery_action"
+#define CONF_LID_AC_ACTION "lid_ac_action"
+#define CONF_LID_DISABLE_IF_EXTERNAL "disable_lid_action_external_monitor"
+#define CONF_FREEDESKTOP_SS "freedesktop_ss"
+#define CONF_FREEDESKTOP_PM "freedesktop_pm"
+#define CONF_TRAY_NOTIFY "tray_notify"
+#define CONF_TRAY_SHOW "show_tray"
+#define CONF_INTERNAL_MONITOR "internal_monitor"
+#define CONF_START_SCREENSAVER "startup_xscreensaver"
 
 #endif // DEF_H

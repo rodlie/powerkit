@@ -99,6 +99,13 @@ Dialog::Dialog(QWidget *parent)
     disableLidAction->setIcon(QIcon::fromTheme("video-display"));
     disableLidAction->setText(tr("Disable lid action if external monitor(s) is on."));
 
+   /* QWidget *lidActionBatteryWrapper = new QWidget(this);
+    lidActionBatteryWrapper->setContentsMargins(0,0,0,0);
+    QVBoxLayout *lidActionBatteryWrapperLayout = new QVBoxLayout(lidActionBatteryWrapper);
+    lidActionBatteryWrapperLayout->setMargin(0);
+    lidActionBatteryWrapperLayout->setSpacing(0);
+    lidActionBatteryWrapperLayout->addWidget(lidActionBattery);*/
+
     QLabel *lidActionBatteryIcon = new QLabel(this);
     lidActionBatteryIcon->setMaximumSize(48,48);
     lidActionBatteryIcon->setMinimumSize(48,48);
@@ -106,7 +113,9 @@ Dialog::Dialog(QWidget *parent)
     lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid Action</h3>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
+
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
+
     batteryContainerLayout->addWidget(lidActionBatteryContainer);
 
     /*QWidget *lowBatteryContainer = new QWidget(this);
@@ -450,8 +459,6 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleLidActionAC(int)));
     connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)),
             this, SLOT(handleCriticalAction(int)));
-    /*connect(lowBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleLowBattery(int)));*/
     connect(criticalBattery, SIGNAL(valueChanged(int)),
             this, SLOT(handleCriticalBattery(int)));
     connect(autoSleepBattery, SIGNAL(valueChanged(int)),
@@ -511,12 +518,6 @@ void Dialog::populate()
     autoSleepACAction->addItem(tr("Hibernate"), suspendHibernate);
     autoSleepACAction->addItem(tr("Shutdown"), suspendShutdown);
 
-    /*lowBatteryAction->clear();
-    lowBatteryAction->addItem(tr("Notify"), suspendNone);
-    lowBatteryAction->addItem(tr("Sleep"), suspendSleep);
-    lowBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
-    lowBatteryAction->addItem(tr("Shutdown"), suspendShutdown);*/
-
 #ifdef USE_XRANDR
     monitorRotation->clear();
     monitorRotation->addItem(tr("Normal"), "normal");
@@ -536,100 +537,88 @@ void Dialog::populate()
     handleUpdatedMonitors();
 }
 
-// load settings and set as default in widgets
+// load settings and set defaults
 void Dialog::loadSettings()
 {
-    if (Common::validPowerSettings("dialog_geometry")) {
-        restoreGeometry(Common::loadPowerSettings("dialog_geometry").toByteArray());
+    if (Common::validPowerSettings(CONF_DIALOG_GEOMETRY)) {
+        restoreGeometry(Common::loadPowerSettings(CONF_DIALOG_GEOMETRY).toByteArray());
     }
-
-    /*int defaultLowBatteryAction = suspendNone;
-    if (Common::validPowerSettings("low_battery_action")) {
-        defaultLowBatteryAction = Common::loadPowerSettings("low_battery_action").toInt();
-    }
-    setDefaultAction(lowBatteryAction, defaultLowBatteryAction);*/
 
     int defaultAutoSleepBattery = AUTO_SLEEP_BATTERY;
-    if (Common::validPowerSettings("suspend_battery_timeout")) {
-        defaultAutoSleepBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT)) {
+        defaultAutoSleepBattery = Common::loadPowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
     }
     setDefaultAction(autoSleepBattery, defaultAutoSleepBattery);
 
     int defaultAutoSleepBatteryAction = DEFAULT_SUSPEND_BATTERY_ACTION;
-    if (Common::validPowerSettings("suspend_battery_action")) {
-        defaultAutoSleepBatteryAction = Common::loadPowerSettings("suspend_battery_action").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_BATTERY_ACTION)) {
+        defaultAutoSleepBatteryAction = Common::loadPowerSettings(CONF_SUSPEND_BATTERY_ACTION).toInt();
     }
     setDefaultAction(autoSleepBatteryAction, defaultAutoSleepBatteryAction);
 
-    int defaultAutoSleepAC = 0; // don't add default on AC
-    if (Common::validPowerSettings("suspend_ac_timeout")) {
-        defaultAutoSleepAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
+    int defaultAutoSleepAC = 0;
+    if (Common::validPowerSettings(CONF_SUSPEND_AC_TIMEOUT)) {
+        defaultAutoSleepAC = Common::loadPowerSettings(CONF_SUSPEND_AC_TIMEOUT).toInt();
     }
     setDefaultAction(autoSleepAC, defaultAutoSleepAC);
 
     int defaultAutoSleepACAction = DEFAULT_SUSPEND_AC_ACTION;
-    if (Common::validPowerSettings("suspend_ac_action")) {
-        defaultAutoSleepACAction = Common::loadPowerSettings("suspend_ac_action").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_AC_ACTION)) {
+        defaultAutoSleepACAction = Common::loadPowerSettings(CONF_SUSPEND_AC_ACTION).toInt();
     }
     setDefaultAction(autoSleepACAction, defaultAutoSleepACAction);
 
-    /*int defaultLowBattery = LOW_BATTERY;
-    if (Common::validPowerSettings("lowBattery")) {
-        defaultLowBattery = Common::loadPowerSettings("lowBattery").toInt();
-    }
-    setDefaultAction(lowBattery, defaultLowBattery);*/
-
     int defaultCriticalBattery = CRITICAL_BATTERY;
-    if (Common::validPowerSettings("criticalBattery")) {
-        defaultCriticalBattery = Common::loadPowerSettings("criticalBattery").toInt();
+    if (Common::validPowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT)) {
+        defaultCriticalBattery = Common::loadPowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
     }
     setDefaultAction(criticalBattery, defaultCriticalBattery);
 
     int defaultLidActionBattery = LID_BATTERY_DEFAULT;
-    if (Common::validPowerSettings("lidBattery")) {
-        defaultLidActionBattery = Common::loadPowerSettings("lidBattery").toInt();
+    if (Common::validPowerSettings(CONF_LID_BATTERY_ACTION)) {
+        defaultLidActionBattery = Common::loadPowerSettings(CONF_LID_BATTERY_ACTION).toInt();
     }
     setDefaultAction(lidActionBattery, defaultLidActionBattery);
 
     int defaultLidActionAC = LID_AC_DEFAULT;
-    if (Common::validPowerSettings("lidAC")) {
-        defaultLidActionAC = Common::loadPowerSettings("lidAC").toInt();
+    if (Common::validPowerSettings(CONF_LID_AC_ACTION)) {
+        defaultLidActionAC = Common::loadPowerSettings(CONF_LID_AC_ACTION).toInt();
     }
     setDefaultAction(lidActionAC, defaultLidActionAC);
 
     int defaultCriticalAction = CRITICAL_DEFAULT;
-    if (Common::validPowerSettings("criticalAction")) {
-        defaultCriticalAction = Common::loadPowerSettings("criticalAction").toInt();
+    if (Common::validPowerSettings(CONF_CRITICAL_BATTERY_ACTION)) {
+        defaultCriticalAction = Common::loadPowerSettings(CONF_CRITICAL_BATTERY_ACTION).toInt();
     }
     setDefaultAction(criticalActionBattery, defaultCriticalAction);
 
     bool defaultDesktopSS = true;
-    if (Common::validPowerSettings("desktop_ss")) {
-        defaultDesktopSS = Common::loadPowerSettings("desktop_ss").toBool();
+    if (Common::validPowerSettings(CONF_FREEDESKTOP_SS)) {
+        defaultDesktopSS = Common::loadPowerSettings(CONF_FREEDESKTOP_SS).toBool();
     }
     desktopSS->setChecked(defaultDesktopSS);
 
     bool defaultDesktopPM = true;
-    if (Common::validPowerSettings("desktop_pm")) {
-        defaultDesktopPM = Common::loadPowerSettings("desktop_pm").toBool();
+    if (Common::validPowerSettings(CONF_FREEDESKTOP_PM)) {
+        defaultDesktopPM = Common::loadPowerSettings(CONF_FREEDESKTOP_PM).toBool();
     }
     desktopPM->setChecked(defaultDesktopPM);
 
     bool defaultShowNotifications = true;
-    if (Common::validPowerSettings("tray_notify")) {
-        defaultShowNotifications = Common::loadPowerSettings("tray_notify").toBool();
+    if (Common::validPowerSettings(CONF_TRAY_NOTIFY)) {
+        defaultShowNotifications = Common::loadPowerSettings(CONF_TRAY_NOTIFY).toBool();
     }
     showNotifications->setChecked(defaultShowNotifications);
 
     bool defaultShowTray = true;
-    if (Common::validPowerSettings("show_tray")) {
-        defaultShowTray = Common::loadPowerSettings("show_tray").toBool();
+    if (Common::validPowerSettings(CONF_TRAY_SHOW)) {
+        defaultShowTray = Common::loadPowerSettings(CONF_TRAY_SHOW).toBool();
     }
     showSystemTray->setChecked(defaultShowTray);
 
     bool defaultDisableLidAction = true;
-    if (Common::validPowerSettings("disable_lid_action_external_monitor")) {
-        defaultDisableLidAction = Common::loadPowerSettings("disable_lid_action_external_monitor").toBool();
+    if (Common::validPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL)) {
+        defaultDisableLidAction = Common::loadPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
     }
     disableLidAction->setChecked(defaultDisableLidAction);
 
@@ -695,49 +684,43 @@ void Dialog::setDefaultRotation(QString value)
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
 {
-    Common::savePowerSettings("lidBattery", index);
+    Common::savePowerSettings(CONF_LID_BATTERY_ACTION, index);
     updatePM();
 }
 
 void Dialog::handleLidActionAC(int index)
 {
-    Common::savePowerSettings("lidAC", index);
+    Common::savePowerSettings(CONF_LID_AC_ACTION, index);
     updatePM();
 }
 
 void Dialog::handleCriticalAction(int index)
 {
-    Common::savePowerSettings("criticalAction", index);
+    Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
     updatePM();
 }
 
-/*void Dialog::handleLowBattery(int value)
-{
-    Common::savePowerSettings("lowBattery", value);
-    updatePM();
-}*/
-
 void Dialog::handleCriticalBattery(int value)
 {
-    Common::savePowerSettings("criticalBattery", value);
+    Common::savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT, value);
     updatePM();
 }
 
 void Dialog::handleAutoSleepBattery(int value)
 {
-    Common::savePowerSettings("suspend_battery_timeout", value);
+    Common::savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT, value);
     updatePM();
 }
 
 void Dialog::handleAutoSleepAC(int value)
 {
-    Common::savePowerSettings("suspend_ac_timeout", value);
+    Common::savePowerSettings(CONF_SUSPEND_AC_TIMEOUT, value);
     updatePM();
 }
 
 void Dialog::handleDesktopSS(bool triggered)
 {
-    Common::savePowerSettings("desktop_ss", triggered);
+    Common::savePowerSettings(CONF_FREEDESKTOP_SS, triggered);
     updatePM();
     QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
@@ -745,7 +728,7 @@ void Dialog::handleDesktopSS(bool triggered)
 
 void Dialog::handleDesktopPM(bool triggered)
 {
-    Common::savePowerSettings("desktop_pm", triggered);
+    Common::savePowerSettings(CONF_FREEDESKTOP_PM, triggered);
     updatePM();
     QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
@@ -753,31 +736,31 @@ void Dialog::handleDesktopPM(bool triggered)
 
 void Dialog::handleShowNotifications(bool triggered)
 {
-    Common::savePowerSettings("tray_notify", triggered);
+    Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
     updatePM();
 }
 
 void Dialog::handleShowSystemTray(bool triggered)
 {
-    Common::savePowerSettings("show_tray", triggered);
+    Common::savePowerSettings(CONF_TRAY_SHOW, triggered);
     updatePM();
 }
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
-    Common::savePowerSettings("disable_lid_action_external_monitor", triggered);
+    Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
     updatePM();
 }
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
-    Common::savePowerSettings("suspend_battery_action", index);
+    Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
     updatePM();
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
-    Common::savePowerSettings("suspend_ac_action", index);
+    Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
     updatePM();
 }
 
@@ -854,12 +837,6 @@ void Dialog::handlePoweroffButton()
                                     " or you may not have the required permissions."));
     }
 }
-
-/*void Dialog::handleLowBatteryAction(int value)
-{
-    Common::savePowerSettings("low_battery_action", value);
-    updatePM();
-}*/
 
 #ifdef USE_XRANDR
 bool Dialog::monitorExists(QString display)

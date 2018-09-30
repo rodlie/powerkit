@@ -280,68 +280,67 @@ void SysTray::loadSettings()
     }
 
     // set default settings
-    if (Common::validPowerSettings("startup_xscreensaver")) {
-        startupScreensaver = Common::loadPowerSettings("startup_xscreensaver").toInt();
+    if (Common::validPowerSettings(CONF_START_SCREENSAVER)) {
+        startupScreensaver = Common::loadPowerSettings(CONF_START_SCREENSAVER).toInt();
     }
-    if (Common::validPowerSettings("suspend_battery_timeout")) {
-        autoSuspendBattery = Common::loadPowerSettings("suspend_battery_timeout").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT)) {
+        autoSuspendBattery = Common::loadPowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
     }
-    if (Common::validPowerSettings("suspend_ac_timeout")) {
-        autoSuspendAC = Common::loadPowerSettings("suspend_ac_timeout").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_AC_TIMEOUT)) {
+        autoSuspendAC = Common::loadPowerSettings(CONF_SUSPEND_AC_TIMEOUT).toInt();
     }
-    if (Common::validPowerSettings("suspend_battery_action")) {
-        autoSuspendBatteryAction = Common::loadPowerSettings("suspend_battery_action").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_BATTERY_ACTION)) {
+        autoSuspendBatteryAction = Common::loadPowerSettings(CONF_SUSPEND_BATTERY_ACTION).toInt();
     }
-    if (Common::validPowerSettings("suspend_ac_action")) {
-        autoSuspendACAction = Common::loadPowerSettings("suspend_ac_action").toInt();
+    if (Common::validPowerSettings(CONF_SUSPEND_AC_ACTION)) {
+        autoSuspendACAction = Common::loadPowerSettings(CONF_SUSPEND_AC_ACTION).toInt();
     }
-    if (Common::validPowerSettings("lowBattery")) {
+    /*if (Common::validPowerSettings("lowBattery")) {
         lowBatteryValue = Common::loadPowerSettings("lowBattery").toInt();
+    }*/
+    if (Common::validPowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT)) {
+        critBatteryValue = Common::loadPowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
     }
-    if (Common::validPowerSettings("criticalBattery")) {
-        critBatteryValue = Common::loadPowerSettings("criticalBattery").toInt();
+    if (Common::validPowerSettings(CONF_LID_BATTERY_ACTION)) {
+        lidActionBattery = Common::loadPowerSettings(CONF_LID_BATTERY_ACTION).toInt();
     }
-    if (Common::validPowerSettings("lidBattery")) {
-        lidActionBattery = Common::loadPowerSettings("lidBattery").toInt();
+    if (Common::validPowerSettings(CONF_LID_AC_ACTION)) {
+        lidActionAC = Common::loadPowerSettings(CONF_LID_AC_ACTION).toInt();
     }
-    if (Common::validPowerSettings("lidAC")) {
-        lidActionAC = Common::loadPowerSettings("lidAC").toInt();
+    if (Common::validPowerSettings(CONF_CRITICAL_BATTERY_ACTION)) {
+        criticalAction = Common::loadPowerSettings(CONF_CRITICAL_BATTERY_ACTION).toInt();
     }
-    if (Common::validPowerSettings("criticalAction")) {
-        criticalAction = Common::loadPowerSettings("criticalAction").toInt();
+    if (Common::validPowerSettings(CONF_FREEDESKTOP_SS)) {
+        desktopSS = Common::loadPowerSettings(CONF_FREEDESKTOP_SS).toBool();
     }
-    if (Common::validPowerSettings("desktop_ss")) {
-        desktopSS = Common::loadPowerSettings("desktop_ss").toBool();
+    if (Common::validPowerSettings(CONF_FREEDESKTOP_PM)) {
+        desktopPM = Common::loadPowerSettings(CONF_FREEDESKTOP_PM).toBool();
     }
-    if (Common::validPowerSettings("desktop_pm")) {
-        desktopPM = Common::loadPowerSettings("desktop_pm").toBool();
+    if (Common::validPowerSettings(CONF_TRAY_NOTIFY)) {
+        showNotifications = Common::loadPowerSettings(CONF_TRAY_NOTIFY).toBool();
     }
-    if (Common::validPowerSettings("tray_notify")) {
-        showNotifications = Common::loadPowerSettings("tray_notify").toBool();
+    if (Common::validPowerSettings(CONF_TRAY_SHOW)) {
+        showTray = Common::loadPowerSettings(CONF_TRAY_SHOW).toBool();
     }
-    if (Common::validPowerSettings("show_tray")) {
-        showTray = Common::loadPowerSettings("show_tray").toBool();
-    }
-    if (Common::validPowerSettings("disable_lid_action_external_monitor")) {
-        disableLidOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_external_monitor").toBool();
+    if (Common::validPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL)) {
+        disableLidOnExternalMonitors = Common::loadPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
     }
 
-    qDebug() << "SETTINGS";
-    qDebug() << "startup_xscreensaver" << startupScreensaver;
-    qDebug() << "disable_lid_action_external_monitor" << disableLidOnExternalMonitors;
-    qDebug() << "show_tray" << showTray;
-    qDebug() << "tray_notify" << showNotifications;
-    qDebug() << "desktop_ss" << desktopSS;
-    qDebug() << "desktop_pm" << desktopPM;
-    qDebug() << "suspend_battery_timeout" << autoSuspendBattery;
-    qDebug() << "suspend_ac_timeout" << autoSuspendAC;
-    qDebug() << "suspend_battery_action" << autoSuspendBatteryAction;
-    qDebug() << "suspend_ac_action" << autoSuspendACAction;
-    qDebug() << "low battery setting" << lowBatteryValue;
-    qDebug() << "critical battery setting" << critBatteryValue;
-    qDebug() << "lid_battery" << lidActionBattery;
-    qDebug() << "lid_ac" << lidActionAC;
-    qDebug() << "critical action" << criticalAction;
+    qDebug() << CONF_START_SCREENSAVER << startupScreensaver;
+    qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
+    qDebug() << CONF_TRAY_SHOW << showTray;
+    qDebug() << CONF_TRAY_NOTIFY << showNotifications;
+    qDebug() << CONF_FREEDESKTOP_SS << desktopSS;
+    qDebug() << CONF_FREEDESKTOP_PM << desktopPM;
+    qDebug() << CONF_SUSPEND_BATTERY_TIMEOUT << autoSuspendBattery;
+    qDebug() << CONF_SUSPEND_AC_TIMEOUT << autoSuspendAC;
+    qDebug() << CONF_SUSPEND_BATTERY_ACTION << autoSuspendBatteryAction;
+    qDebug() << CONF_SUSPEND_AC_ACTION << autoSuspendACAction;
+    //qDebug() << "low battery setting" << lowBatteryValue;
+    qDebug() << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
+    qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
+    qDebug() << CONF_LID_AC_ACTION << lidActionAC;
+    qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
 
     // start xscreensaver
     if (startupScreensaver && !xscreensaver->isReadable()) {
@@ -438,7 +437,8 @@ void SysTray::drawBattery(double left)
         tray->setIcon(icon);
         return;
     }
-    if (left<=(double)lowBatteryValue && man->onBattery()) {
+    qDebug() << "LOW is" << (double)(lowBatteryValue+critBatteryValue);
+    if (left<=(double)(lowBatteryValue+critBatteryValue) && man->onBattery()) {
         icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW);
         if (!wasLowBattery) { showMessage(tr("Low Battery!"),
                                           tr("You battery is almost empty,"
@@ -448,7 +448,7 @@ void SysTray::drawBattery(double left)
         wasLowBattery = true;
     } else {
         wasLowBattery = false;
-        if (left<=(double)lowBatteryValue) { // low (on ac)
+        if (left<=(double)(lowBatteryValue+critBatteryValue)) { // low (on ac)
             qDebug() << "low on ac";
             icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW_AC);
         } else if (left<=critBatteryValue) { // critical
@@ -458,7 +458,7 @@ void SysTray::drawBattery(double left)
             } else {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT_AC);
             }
-        } else if (left>(double)lowBatteryValue && left<90) { // good
+        } else if (left>(double)(lowBatteryValue+critBatteryValue) && left<90) { // good
             qDebug() << "good";
             if (man->onBattery()) {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_GOOD);
@@ -606,13 +606,29 @@ void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
     //emit updatedMonitors();
 }
 
+void SysTray::setInternalMonitor()
+{
+    qDebug() << "find and set internal monitor";
+    internalMonitor = Common::loadPowerSettings(CONF_INTERNAL_MONITOR).toString();
+    QMap<QString,bool> map = Monitor::getX();
+    if (map.size()>0) {
+        QString newInternal = map.begin().key();
+        qDebug() << "internal monitor is?" << newInternal;
+        if (!newInternal.isEmpty() && newInternal != internalMonitor) {
+            internalMonitor = newInternal;
+            Common::savePowerSettings(CONF_INTERNAL_MONITOR, internalMonitor);
+        }
+    }
+    qDebug() << "internal monitor set to" << internalMonitor;
+}
+
 // is "internal" monitor connected? Anything starting with LVDS is ok.
 bool SysTray::internalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(monitors);
     while (i.hasNext()) {
         i.next();
-        if (i.key().startsWith(INTERNAL_MONITOR)) {
+        if (i.key() == internalMonitor) {
             qDebug() << "internal monitor connected?" << i.key() << i.value();
             return i.value();
         }
@@ -626,7 +642,7 @@ bool SysTray::externalMonitorIsConnected()
     QMapIterator<QString, bool> i(monitors);
     while (i.hasNext()) {
         i.next();
-        if (!i.key().startsWith(INTERNAL_MONITOR) &&
+        if (i.key()!=internalMonitor &&
             !i.key().startsWith(VIRTUAL_MONITOR)) {
             qDebug() << "external monitor connected?" << i.key() << i.value();
             if (i.value()) { return true; }
@@ -677,6 +693,8 @@ void SysTray::handleScrensaverFinished(int exitcode)
 // setup monitors based settings
 void SysTray::setupMonitors()
 {
+    setInternalMonitor();
+#ifdef USE_XRANDR
     QMapIterator<QString, bool> monitors(Monitor::getX());
     while (monitors.hasNext()) {
         monitors.next();
@@ -693,6 +711,7 @@ void SysTray::setupMonitors()
         proc.waitForFinished();
         proc.close();
     }
+#endif
 }
 
 // show notifications
