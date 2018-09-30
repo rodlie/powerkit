@@ -73,15 +73,6 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=no_autostart_install``** : Do not install the XDG autostart desktop file.
  * **``CONFIG+=install_udev_rules``** : Install additional power related udev (backlight) rules
 
-### Build on Slackware
-
-```
-git clone https://github.com/rodlie/powerdwarf
-cd powerdwarf
-sudo GIT_COMMIT=`git rev-parse --short HEAD` ./powerdwarf.SlackBuild
-sudo upgradepkg --install-new /tmp/powerdwarf-<VERSION>.tgz
-```
-
 ### Build application
 
 ```
