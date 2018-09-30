@@ -79,7 +79,6 @@ private:
     bool showNotifications;
     bool desktopSS;
     bool desktopPM;
-    bool showBatteryPercent;
     bool showTray;
     QMap<QString, bool> monitors;
     bool disableLidACOnExternalMonitors;

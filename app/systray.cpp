@@ -34,7 +34,6 @@ SysTray::SysTray(QObject *parent)
     , showNotifications(true)
     , desktopSS(true)
     , desktopPM(true)
-    , showBatteryPercent(true)
     , showTray(true)
     , disableLidACOnExternalMonitors(true)
     , disableLidBatteryOnExternalMonitors(true)
@@ -326,9 +325,6 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings("tray_notify")) {
         showNotifications = Common::loadPowerSettings("tray_notify").toBool();
     }
-    if (Common::validPowerSettings("show_battery_percent")) {
-        showBatteryPercent = Common::loadPowerSettings("show_battery_percent").toBool();
-    }
     if (Common::validPowerSettings("show_tray")) {
         showTray = Common::loadPowerSettings("show_tray").toBool();
     }
@@ -344,7 +340,6 @@ void SysTray::loadSettings()
     qDebug() << "disable_lid_action_ac_external_monitor" << disableLidACOnExternalMonitors;
     qDebug() << "disable_lid_action_battery_external_monitor" << disableLidBatteryOnExternalMonitors;
     qDebug() << "show_tray" << showTray;
-    qDebug() << "battery_percent" << showBatteryPercent;
     qDebug() << "tray_notify" << showNotifications;
     qDebug() << "desktop_ss" << desktopSS;
     qDebug() << "desktop_pm" << desktopPM;
@@ -500,15 +495,15 @@ void SysTray::drawBattery(double left)
         }
     }
 
-    if (left > 99 ||
+    /*if (left > 99 ||
         left == 0.0 ||
-        !man->onBattery() ||
-        !showBatteryPercent) {
+        !man->onBattery()) {
         tray->setIcon(icon);
-        return;
-    }
+    }*/
 
-    QPixmap pixmap = icon.pixmap(QSize(24, 24));
+    tray->setIcon(icon);
+
+    /*QPixmap pixmap = icon.pixmap(QSize(24, 24));
     QPainter painter(&pixmap);
     painter.setPen(QColor(Qt::black));
     painter.drawText(pixmap.rect().adjusted(1, 1, 1, 1),
@@ -519,7 +514,7 @@ void SysTray::drawBattery(double left)
                      Qt::AlignCenter,
                      QString("%1").arg(left));
     painter.setPen(QColor(Qt::transparent));
-    tray->setIcon(pixmap);
+    tray->setIcon(pixmap);*/
 }
 
 // timeout, check if idle

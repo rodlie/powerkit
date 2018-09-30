@@ -24,7 +24,6 @@ Dialog::Dialog(QWidget *parent)
     , desktopSS(0)
     , desktopPM(0)
     , showNotifications(0)
-    , showBatteryPercent(0)
     , showSystemTray(0)
     , disableLidActionAC(0)
     , disableLidActionBattery(0)
@@ -265,11 +264,7 @@ Dialog::Dialog(QWidget *parent)
 
     showNotifications = new QCheckBox(this);
     showNotifications->setIcon(QIcon::fromTheme("user-available"));
-    showNotifications->setText(tr("Show notifications (messagebox if no tray is available)"));
-
-    showBatteryPercent = new QCheckBox(this);
-    showBatteryPercent->setIcon(QIcon::fromTheme("battery"));
-    showBatteryPercent->setText(tr("Show battery percent in system tray."));
+    showNotifications->setText(tr("Show notifications"));
 
     desktopSS = new QCheckBox(this);
     desktopSS->setIcon(QIcon::fromTheme("video-display"));
@@ -281,7 +276,6 @@ Dialog::Dialog(QWidget *parent)
 
     advContainerLayout->addWidget(showSystemTray);
     advContainerLayout->addWidget(showNotifications);
-    advContainerLayout->addWidget(showBatteryPercent);
     advContainerLayout->addWidget(desktopSS);
     advContainerLayout->addWidget(desktopPM);
     advContainerLayout->addStretch();
@@ -476,8 +470,6 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleDesktopPM(bool)));
     connect(showNotifications, SIGNAL(toggled(bool)),
             this, SLOT(handleShowNotifications(bool)));
-    connect(showBatteryPercent, SIGNAL(toggled(bool)),
-            this, SLOT(handleShowBatteryPercent(bool)));
     connect(showSystemTray, SIGNAL(toggled(bool)),
             this, SLOT(handleShowSystemTray(bool)));
     connect(disableLidActionAC, SIGNAL(toggled(bool)),
@@ -637,12 +629,6 @@ void Dialog::loadSettings()
     }
     showNotifications->setChecked(defaultShowNotifications);
 
-    bool defaultShowBatteryPercent = true;
-    if (Common::validPowerSettings("show_battery_percent")) {
-        defaultShowBatteryPercent = Common::loadPowerSettings("show_battery_percent").toBool();
-    }
-    showBatteryPercent->setChecked(defaultShowBatteryPercent);
-
     bool defaultShowTray = true;
     if (Common::validPowerSettings("show_tray")) {
         defaultShowTray = Common::loadPowerSettings("show_tray").toBool();
@@ -782,12 +768,6 @@ void Dialog::handleDesktopPM(bool triggered)
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings("tray_notify", triggered);
-    updatePM();
-}
-
-void Dialog::handleShowBatteryPercent(bool triggered)
-{
-    Common::savePowerSettings("show_battery_percent", triggered);
     updatePM();
 }
 

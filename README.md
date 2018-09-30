@@ -53,6 +53,8 @@ powerdwarf requires the following dependencies:
  * hicolor-icon-theme
  * adwaita-icon-theme (or similar)
 
+Tested on Slackware, Ubuntu and FreeBSD.
+
 ## Build
 
 First make sure you have the required dependencies installed, then review the build options.
@@ -63,7 +65,7 @@ First make sure you have the required dependencies installed, then review the bu
  * **``XDGDIR=</etc/xdg>``** : Path to xdg autostart directory.
  * **``DOCDIR=<PREFIX/share/doc>``** : Path to the system documentation.
  * **``MANDIR=<PREFIX/share/man>``** : Path to the system manual.
- * **``UDEVDIR=</etc/udev>``** : Path to the udev directory.
+ * **``UDEVDIR=</etc/udev>``** : Path to the udev directory (optional).
  * **``CONFIG+=release``** : Creates a release build
  * **``CONFIG+=no_doc_install``** : Do not install application documentation.
  * **``CONFIG+=no_man_install``** : Do not install application manual.

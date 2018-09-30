@@ -70,7 +70,6 @@ private:
     QCheckBox *desktopSS;
     QCheckBox *desktopPM;
     QCheckBox *showNotifications;
-    QCheckBox *showBatteryPercent;
     QCheckBox *showSystemTray;
     QCheckBox *disableLidActionAC;
     QCheckBox *disableLidActionBattery;
@@ -114,7 +113,6 @@ private slots:
     void handleDesktopSS(bool triggered);
     void handleDesktopPM(bool triggered);
     void handleShowNotifications(bool triggered);
-    void handleShowBatteryPercent(bool triggered);
     void handleShowSystemTray(bool triggered);
     void handleDisableLidActionAC(bool triggered);
     void handleDisableLidActionBattery(bool triggered);
