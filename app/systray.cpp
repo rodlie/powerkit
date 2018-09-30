@@ -35,8 +35,7 @@ SysTray::SysTray(QObject *parent)
     , desktopSS(true)
     , desktopPM(true)
     , showTray(true)
-    , disableLidACOnExternalMonitors(true)
-    , disableLidBatteryOnExternalMonitors(true)
+    , disableLidOnExternalMonitors(true)
     , autoSuspendBatteryAction(suspendSleep)
     , autoSuspendACAction(suspendNone)
     , xscreensaver(0)
@@ -215,18 +214,13 @@ void SysTray::handleClosedLid()
     int type = lidNone;
     if (man->onBattery()) {  // on battery
         type = lidActionBattery;
-        if (disableLidBatteryOnExternalMonitors &&
-            externalMonitorIsConnected()) {
-            qDebug() << "on battery, external monitor is connected, ignore lid action";
-            return;
-        }
     } else { // on ac
         type = lidActionAC;
-        if (disableLidACOnExternalMonitors &&
+    }
+    if (disableLidOnExternalMonitors &&
             externalMonitorIsConnected()) {
-            qDebug() << "on ac, external monitor is connected, ignore lid action";
-            return;
-        }
+        qDebug() << "external monitor is connected, ignore lid action";
+        return;
     }
     switch(type) {
     case lidLock:
@@ -328,17 +322,13 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings("show_tray")) {
         showTray = Common::loadPowerSettings("show_tray").toBool();
     }
-    if (Common::validPowerSettings("disable_lid_action_battery_external_monitor")) {
-        disableLidBatteryOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_battery_external_monitor").toBool();
-    }
-    if (Common::validPowerSettings("disable_lid_action_ac_external_monitor")) {
-        disableLidACOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_ac_external_monitor").toBool();
+    if (Common::validPowerSettings("disable_lid_action_external_monitor")) {
+        disableLidOnExternalMonitors = Common::loadPowerSettings("disable_lid_action_external_monitor").toBool();
     }
 
     qDebug() << "SETTINGS";
     qDebug() << "startup_xscreensaver" << startupScreensaver;
-    qDebug() << "disable_lid_action_ac_external_monitor" << disableLidACOnExternalMonitors;
-    qDebug() << "disable_lid_action_battery_external_monitor" << disableLidBatteryOnExternalMonitors;
+    qDebug() << "disable_lid_action_external_monitor" << disableLidOnExternalMonitors;
     qDebug() << "show_tray" << showTray;
     qDebug() << "tray_notify" << showNotifications;
     qDebug() << "desktop_ss" << desktopSS;

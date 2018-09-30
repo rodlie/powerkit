@@ -25,8 +25,7 @@ Dialog::Dialog(QWidget *parent)
     , desktopPM(0)
     , showNotifications(0)
     , showSystemTray(0)
-    , disableLidActionAC(0)
-    , disableLidActionBattery(0)
+    , disableLidAction(0)
     , autoSleepBatteryAction(0)
     , autoSleepACAction(0)
     , lockscreenButton(0)
@@ -50,7 +49,7 @@ Dialog::Dialog(QWidget *parent)
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
-    setMinimumSize(QSize(490,390));
+    setMinimumSize(QSize(380,380));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -96,21 +95,19 @@ Dialog::Dialog(QWidget *parent)
     lidActionBattery = new QComboBox(this);
     QLabel *lidActionBatteryLabel = new QLabel(this);
 
-    disableLidActionBattery = new QCheckBox(this);
-    disableLidActionBattery->setIcon(QIcon::fromTheme("video-display"));
-    disableLidActionBattery->setStyleSheet("margin:10px; font-style: italic;");
-    disableLidActionBattery->setText(tr("Disable if external monitor is connected."));
+    disableLidAction = new QCheckBox(this);
+    disableLidAction->setIcon(QIcon::fromTheme("video-display"));
+    disableLidAction->setText(tr("Disable lid action if external monitor(s) is on."));
 
     QLabel *lidActionBatteryIcon = new QLabel(this);
-    lidActionBatteryIcon->setMaximumSize(24,24);
-    lidActionBatteryIcon->setMinimumSize(24,24);
-    lidActionBatteryIcon->setPixmap(QIcon::fromTheme("video-display").pixmap(QSize(24, 24)));
-    lidActionBatteryLabel->setText(tr("<strong>Lid Action</strong>"));
+    lidActionBatteryIcon->setMaximumSize(48,48);
+    lidActionBatteryIcon->setMinimumSize(48,48);
+    lidActionBatteryIcon->setPixmap(QIcon::fromTheme("video-display").pixmap(QSize(48, 48)));
+    lidActionBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Lid Action</h2>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
     batteryContainerLayout->addWidget(lidActionBatteryContainer);
-    batteryContainerLayout->addWidget(disableLidActionBattery);
 
     QWidget *lowBatteryContainer = new QWidget(this);
     QHBoxLayout *lowBatteryContainerLayout = new QHBoxLayout(lowBatteryContainer);
@@ -209,15 +206,10 @@ Dialog::Dialog(QWidget *parent)
     lidActionAC = new QComboBox(this);
     QLabel *lidActionACLabel = new QLabel(this);
 
-    disableLidActionAC = new QCheckBox(this);
-    disableLidActionAC->setStyleSheet("margin: 10px; font-style: italic;");
-    disableLidActionAC->setText(tr("Disable if external monitor is connected."));
-
-    lidActionACLabel->setText(tr("<strong>Lid Action</strong>"));
+    lidActionACLabel->setText(tr("<h2 style=\"font-weight:normal;\">Lid Action</h2>"));
     lidActionACContainerLayout->addWidget(lidActionACLabel);
     lidActionACContainerLayout->addWidget(lidActionAC);
     acContainerLayout->addWidget(lidActionACContainer);
-    acContainerLayout->addWidget(disableLidActionAC);
 
     QWidget *sleepACContainer = new QWidget(this);
     QHBoxLayout *sleepACContainerLayout = new QHBoxLayout(sleepACContainer);
@@ -276,6 +268,7 @@ Dialog::Dialog(QWidget *parent)
 
     advContainerLayout->addWidget(showSystemTray);
     advContainerLayout->addWidget(showNotifications);
+    advContainerLayout->addWidget(disableLidAction);
     advContainerLayout->addWidget(desktopSS);
     advContainerLayout->addWidget(desktopPM);
     advContainerLayout->addStretch();
@@ -472,10 +465,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleShowNotifications(bool)));
     connect(showSystemTray, SIGNAL(toggled(bool)),
             this, SLOT(handleShowSystemTray(bool)));
-    connect(disableLidActionAC, SIGNAL(toggled(bool)),
-            this, SLOT(handleDisableLidActionAC(bool)));
-    connect(disableLidActionBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleDisableLidActionBattery(bool)));
+    connect(disableLidAction, SIGNAL(toggled(bool)),
+            this, SLOT(handleDisableLidAction(bool)));
     connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)),
             this, SLOT(handleAutoSleepBatteryAction(int)));
     connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
@@ -635,17 +626,11 @@ void Dialog::loadSettings()
     }
     showSystemTray->setChecked(defaultShowTray);
 
-    bool defaultDisableLidActionBattery = true;
-    if (Common::validPowerSettings("disable_lid_action_battery_external_monitor")) {
-        defaultDisableLidActionBattery = Common::loadPowerSettings("disable_lid_action_battery_external_monitor").toBool();
+    bool defaultDisableLidAction = true;
+    if (Common::validPowerSettings("disable_lid_action_external_monitor")) {
+        defaultDisableLidAction = Common::loadPowerSettings("disable_lid_action_external_monitor").toBool();
     }
-    disableLidActionBattery->setChecked(defaultDisableLidActionBattery);
-
-    bool defaultDisableLidActionAC = true;
-    if (Common::validPowerSettings("disable_lid_action_ac_external_monitor")) {
-        defaultDisableLidActionAC = Common::loadPowerSettings("disable_lid_action_ac_external_monitor").toBool();
-    }
-    disableLidActionAC->setChecked(defaultDisableLidActionAC);
+    disableLidAction->setChecked(defaultDisableLidAction);
 
     if (Login1::hasService()) {
         sleepButton->setEnabled(Login1::canSuspend());
@@ -777,15 +762,9 @@ void Dialog::handleShowSystemTray(bool triggered)
     updatePM();
 }
 
-void Dialog::handleDisableLidActionAC(bool triggered)
+void Dialog::handleDisableLidAction(bool triggered)
 {
-    Common::savePowerSettings("disable_lid_action_ac_external_monitor", triggered);
-    updatePM();
-}
-
-void Dialog::handleDisableLidActionBattery(bool triggered)
-{
-    Common::savePowerSettings("disable_lid_action_battery_external_monitor", triggered);
+    Common::savePowerSettings("disable_lid_action_external_monitor", triggered);
     updatePM();
 }
 

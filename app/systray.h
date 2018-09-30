@@ -81,8 +81,7 @@ private:
     bool desktopPM;
     bool showTray;
     QMap<QString, bool> monitors;
-    bool disableLidACOnExternalMonitors;
-    bool disableLidBatteryOnExternalMonitors;
+    bool disableLidOnExternalMonitors;
     int autoSuspendBatteryAction;
     int autoSuspendACAction;
     QProcess *xscreensaver;
