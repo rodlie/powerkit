@@ -35,5 +35,10 @@ CONFIG(release, debug|release) {
     CONFIG += staticlib
 }
 
-CONFIG += link_pkgconfig
-PKGCONFIG += x11 xscrnsaver xrandr xinerama
+freebsd {
+    INCLUDEPATH += /usr/local/include
+    LIBS += -lX11 -lXss -lXrandr -lXinerama
+} else {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += x11 xscrnsaver xrandr xinerama
+}
