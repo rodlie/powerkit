@@ -2,6 +2,8 @@
 
 powerdwarf is a lightweight full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina and others.
 
+![screenshot1](app/share/images/screenshot-0.9.0.png)
+
 ## Features
 
  * Implements org.freedesktop.ScreenSaver daemon
