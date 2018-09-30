@@ -15,8 +15,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp systray.cpp dialog.cpp
 HEADERS += systray.h dialog.h
-RESOURCES += ../$${TARGET}.qrc
-OTHER_FILES += share/man/powerdwarf.8
+OTHER_FILES += share/man/powerdwarf.1
 LIBS += -L../lib -lPowerDwarf
 INCLUDEPATH += ../lib
 
@@ -31,8 +30,8 @@ include(../powerdwarf.pri)
         INSTALLS += target_docs
     }
     !CONFIG(no_man_install) {
-        target_man.path = $${MANDIR}/man8
-        target_man.files = share/man/powerdwarf.8
+        target_man.path = $${MANDIR}/man1
+        target_man.files = share/man/powerdwarf.1
         INSTALLS += target_man
     }
     !CONFIG(no_desktop_install) {

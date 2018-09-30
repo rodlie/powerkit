@@ -89,7 +89,6 @@ find -L . \
 # Configure application
 $QMAKE \
 CONFIG+=release \
-CONFIG+=staticlib \
 PREFIX=/usr \
 XDGDIR=/etc/xdg \
 DOCDIR=/usr/doc \

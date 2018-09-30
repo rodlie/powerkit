@@ -48,7 +48,7 @@ Dialog::Dialog(QWidget *parent)
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
-    setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON, QIcon(":/icons/battery.png")));
+    setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
     setMinimumSize(QSize(490,390));
 
     // setup dbus
@@ -96,16 +96,14 @@ Dialog::Dialog(QWidget *parent)
     QLabel *lidActionBatteryLabel = new QLabel(this);
 
     disableLidActionBattery = new QCheckBox(this);
-    disableLidActionBattery->setIcon(QIcon::fromTheme("video-display",
-                                                      QIcon(":/icons/video-display.png")));
+    disableLidActionBattery->setIcon(QIcon::fromTheme("video-display"));
     disableLidActionBattery->setStyleSheet("margin:10px; font-style: italic;");
     disableLidActionBattery->setText(tr("Disable if external monitor is connected."));
 
     QLabel *lidActionBatteryIcon = new QLabel(this);
     lidActionBatteryIcon->setMaximumSize(24,24);
     lidActionBatteryIcon->setMinimumSize(24,24);
-    lidActionBatteryIcon->setPixmap(QIcon::fromTheme("video-display",
-                                                     QIcon(":/icons/video-display.png")).pixmap(QSize(24,24)));
+    lidActionBatteryIcon->setPixmap(QIcon::fromTheme("video-display").pixmap(QSize(24, 24)));
     lidActionBatteryLabel->setText(tr("<strong>Lid Action</strong>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
@@ -137,8 +135,7 @@ Dialog::Dialog(QWidget *parent)
     QLabel *lowBatteryIcon = new QLabel(this);
     lowBatteryIcon->setMaximumSize(48,48);
     lowBatteryIcon->setMinimumSize(48,48);
-    lowBatteryIcon->setPixmap(QIcon::fromTheme("battery-low-charging",
-                                               QIcon(":/icons/battery-low-charging.png")).pixmap(QSize(48,48)));
+    lowBatteryIcon->setPixmap(QIcon::fromTheme("battery-low-charging").pixmap(QSize(48, 48)));
     lowBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Low battery</h2>"));
     lowBatteryContainerLayout->addWidget(lowBatteryIcon);
     lowBatteryContainerLayout->addWidget(lowBatteryLabel);
@@ -165,8 +162,7 @@ Dialog::Dialog(QWidget *parent)
     QLabel *criticalBatteryIcon = new QLabel(this);
     criticalBatteryIcon->setMaximumSize(48,48);
     criticalBatteryIcon->setMinimumSize(48,48);
-    criticalBatteryIcon->setPixmap(QIcon::fromTheme("battery-caution",
-                                                    QIcon(":/icons/battery-caution.png")).pixmap(QSize(48,48)));
+    criticalBatteryIcon->setPixmap(QIcon::fromTheme("battery-caution").pixmap(QSize(48, 48)));
     criticalBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Critical battery</h2>"));
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
@@ -193,8 +189,7 @@ Dialog::Dialog(QWidget *parent)
     QLabel *sleepBatteryIcon = new QLabel(this);
     sleepBatteryIcon->setMaximumSize(48,48);
     sleepBatteryIcon->setMinimumSize(48,48);
-    sleepBatteryIcon->setPixmap(QIcon::fromTheme("system-suspend",
-                                                 QIcon(":/icons/system-suspend.png")).pixmap(QSize(48,48)));
+    sleepBatteryIcon->setPixmap(QIcon::fromTheme("system-suspend").pixmap(QSize(48, 48)));
     sleepBatteryLabel->setText(tr("<h2 style=\"font-weight:normal;\">Suspend after</h2>"));
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
@@ -250,8 +245,7 @@ Dialog::Dialog(QWidget *parent)
     QLabel *sleepACIcon = new QLabel(this);
     sleepACIcon->setMaximumSize(48,48);
     sleepACIcon->setMinimumSize(48,48);
-    sleepACIcon->setPixmap(QIcon::fromTheme("system-suspend",
-                                            QIcon(":/icons/system-suspend.png")).pixmap(QSize(48,48)));
+    sleepACIcon->setPixmap(QIcon::fromTheme("system-suspend").pixmap(QSize(48, 48)));
     sleepACLabel->setText(tr("<h2 style=\"font-weight:normal;\">Suspend after</h2>"));
     sleepACContainerLayout->addWidget(sleepACIcon);
     sleepACContainerLayout->addWidget(sleepACLabel);
@@ -264,28 +258,23 @@ Dialog::Dialog(QWidget *parent)
     QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
 
     showSystemTray  = new QCheckBox(this);
-    showSystemTray->setIcon(QIcon::fromTheme("preferences-other",
-                                             QIcon(":/icons/preferences-other.png")));
+    showSystemTray->setIcon(QIcon::fromTheme("preferences-other"));
     showSystemTray->setText(tr("Show system tray"));
 
     showNotifications = new QCheckBox(this);
-    showNotifications->setIcon(QIcon::fromTheme("user-available",
-                                                QIcon(":/icons/user-available.png")));
+    showNotifications->setIcon(QIcon::fromTheme("user-available"));
     showNotifications->setText(tr("Show notifications (messagebox if no tray is available)"));
 
     showBatteryPercent = new QCheckBox(this);
-    showBatteryPercent->setIcon(QIcon::fromTheme("battery",
-                                                 QIcon(":/icons/battery.png")));
+    showBatteryPercent->setIcon(QIcon::fromTheme("battery"));
     showBatteryPercent->setText(tr("Show battery percent in system tray."));
 
     desktopSS = new QCheckBox(this);
-    desktopSS->setIcon(QIcon::fromTheme("video-display",
-                                        QIcon(":/icons/video-display.png")));
+    desktopSS->setIcon(QIcon::fromTheme("video-display"));
     desktopSS->setText("org.freedesktop.ScreenSaver");
 
     desktopPM = new QCheckBox(this);
-    desktopPM->setIcon(QIcon::fromTheme("battery",
-                                        QIcon(":/icons/battery.png")));
+    desktopPM->setIcon(QIcon::fromTheme("battery"));
     desktopPM->setText("org.freedesktop.PowerManagement");
 
     advContainerLayout->addWidget(showSystemTray);
@@ -303,8 +292,7 @@ Dialog::Dialog(QWidget *parent)
                            "powerdwarf</a> version %1<br>&copy; 2018 Ole-André Rodlie").arg(QApplication::applicationVersion()));
 
     lockscreenButton = new QPushButton(this);
-    lockscreenButton->setIcon(QIcon::fromTheme("system-lock-screen",
-                                               QIcon(":/icons/system-lock-screen.png")));
+    lockscreenButton->setIcon(QIcon::fromTheme("system-lock-screen"));
     lockscreenButton->setIconSize(QSize(24,24));
     lockscreenButton->setToolTip(tr("Lock the screen now."));
     if (lockscreenButton->icon().isNull()) {
@@ -312,8 +300,7 @@ Dialog::Dialog(QWidget *parent)
     }
 
     sleepButton = new QPushButton(this);
-    sleepButton->setIcon(QIcon::fromTheme("system-suspend",
-                                          QIcon(":/icons/system-suspend.png")));
+    sleepButton->setIcon(QIcon::fromTheme("system-suspend"));
     sleepButton->setIconSize(QSize(24,24));
     sleepButton->setToolTip(tr("Suspend computer now."));
     if (sleepButton->icon().isNull()) {
@@ -321,8 +308,7 @@ Dialog::Dialog(QWidget *parent)
     }
 
     hibernateButton = new QPushButton(this);
-    hibernateButton->setIcon(QIcon::fromTheme("system-hibernate",
-                                              QIcon(":/icons/system-hibernate.png")));
+    hibernateButton->setIcon(QIcon::fromTheme("system-hibernate"));
     hibernateButton->setIconSize(QSize(24,24));
     hibernateButton->setToolTip(tr("Hibernate computer now."));
     if (hibernateButton->icon().isNull()) {
@@ -330,8 +316,7 @@ Dialog::Dialog(QWidget *parent)
     }
 
     poweroffButton = new QPushButton(this);
-    poweroffButton->setIcon(QIcon::fromTheme("system-shutdown",
-                                             QIcon(":/icons/system-shutdown.png")));
+    poweroffButton->setIcon(QIcon::fromTheme("system-shutdown"));
     poweroffButton->setIconSize(QSize(24,24));
     poweroffButton->setToolTip(tr("Shutdown computer now."));
     if (poweroffButton->icon().isNull()) {
@@ -423,10 +408,18 @@ Dialog::Dialog(QWidget *parent)
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
 
-    containerWidget->addTab(batteryContainer, QIcon::fromTheme("battery", QIcon(":/icons/battery.png")), tr("Battery"));
-    containerWidget->addTab(acContainer, QIcon::fromTheme("ac-adapter", QIcon(":/icons/ac-adapter.png")), tr("AC"));
-    containerWidget->addTab(monitorContainer, QIcon::fromTheme("video-display", QIcon(":/icons/video-display.png")), tr("Monitors"));
-    containerWidget->addTab(advContainer, QIcon::fromTheme("preferences-other", QIcon(":/icons/preferences-other.png")), tr("Advanced"));
+    containerWidget->addTab(batteryContainer,
+                            QIcon::fromTheme("battery"),
+                            tr("Battery"));
+    containerWidget->addTab(acContainer,
+                            QIcon::fromTheme("ac-adapter"),
+                            tr("AC"));
+    containerWidget->addTab(monitorContainer,
+                            QIcon::fromTheme("video-display"),
+                            tr("Monitors"));
+    containerWidget->addTab(advContainer,
+                            QIcon::fromTheme("preferences-other"),
+                            tr("Advanced"));
 
     populate(); // populate boxes
     loadSettings(); // load settings
@@ -827,8 +820,7 @@ void Dialog::handleUpdatedMonitors()
         QListWidgetItem *item = new QListWidgetItem(monitorList);
         item->setText(i.key());
         item->setData(MONITOR_DATA_CONNECTED, i.value());
-        item->setIcon(QIcon::fromTheme("video-display",
-                                       QIcon(":/icons/video-display.png")));
+        item->setIcon(QIcon::fromTheme("video-display"));
         monitorList->setCurrentItem(item);
     }
     for (int i=0;i<monitorList->count();++i) {
