@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #include "systray.h"
@@ -58,7 +57,6 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this,
             SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
-    //if (tray->isSystemTrayAvailable()) { tray->show(); }
 
     // setup manager
     man = new Power(this);
@@ -89,7 +87,6 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(HasInhibitChanged(bool)),
             this,
             SLOT(handleHasInhibitChanged(bool)));
-    //connect(pm, SIGNAL(update()), this, SLOT(loadSettings()));
     connect(pm,
             SIGNAL(newInhibit(QString,QString,quint32)),
             this,
@@ -139,7 +136,7 @@ SysTray::SysTray(QObject *parent)
     connect(xscreensaver,
             SIGNAL(finished(int)),
             this,
-            SLOT(handleScrensaverFinished(int)));
+            SLOT(handleScreensaverFinished(int)));
 
     // setup timer
     timer = new QTimer(this);
@@ -185,6 +182,7 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::Trigger:
     default:;
     }*/
+    // TODO : use dialog
     QString config = QString("%1 --config").arg(qApp->applicationFilePath());
     QProcess::startDetached(config);
 }
@@ -203,7 +201,7 @@ void SysTray::checkDevices()
         QIcon::themeName() == "hicolor")) {
         showMessage(tr("No icon theme found!"),
                     tr("Unable to find any icon theme,"
-                       " please install an icon theme and restart powerdwarf."),
+                       " please install a theme and restart powerdwarf."),
                     true);
     }
 
@@ -245,6 +243,7 @@ void SysTray::handleClosedLid()
         qDebug() << "external monitor is connected, ignore lid action";
         return;
     }
+    qDebug() << "lid action" << type;
     switch(type) {
     case lidLock:
         man->lockScreen();
@@ -271,20 +270,16 @@ void SysTray::handleOpenedLid()
 // do something when switched to battery power
 void SysTray::handleOnBattery()
 {
-    if (showNotifications) {
-        showMessage(tr("On Battery"),
-                    tr("Switched to battery power."));
-    }
+    showMessage(tr("On Battery"),
+                tr("Switched to battery power."));
     // TODO: add brightness
 }
 
 // do something when switched to ac power
 void SysTray::handleOnAC()
 {
-    if (showNotifications) {
-        showMessage(tr("On AC"),
-                    tr("Switched to AC power."));
-    }
+    showMessage(tr("On AC"),
+                tr("Switched to AC power."));
     // TODO: add brightness
 }
 
@@ -691,7 +686,7 @@ void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
 
 // TODO
 // if xscreensaver was started by us, then restart if it quits
-void SysTray::handleScrensaverFinished(int exitcode)
+void SysTray::handleScreensaverFinished(int exitcode)
 {
     Q_UNUSED(exitcode)
 }
@@ -699,7 +694,7 @@ void SysTray::handleScrensaverFinished(int exitcode)
 // show notifications
 void SysTray::showMessage(QString title, QString msg, bool critical)
 {
-    if (tray->isVisible()) {
+    if (tray->isVisible() && showNotifications) {
         if (critical) {
             tray->showMessage(title, msg, QSystemTrayIcon::Critical, 900000);
         } else {

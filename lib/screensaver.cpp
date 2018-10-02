@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #include "screensaver.h"
@@ -74,7 +73,8 @@ void ScreenSaver::timeOut()
 
 void ScreenSaver::pingPM()
 {
-    QDBusInterface iface(PM_SERVICE, PM_PATH, PM_SERVICE, QDBusConnection::sessionBus());
+    QDBusInterface iface(PM_SERVICE, PM_PATH, PM_SERVICE,
+                         QDBusConnection::sessionBus());
     if (!iface.isValid()) {
         return;
     }
@@ -83,7 +83,10 @@ void ScreenSaver::pingPM()
 
 void ScreenSaver::SimulateUserActivity()
 {
-    QProcess::startDetached(XSCREENSAVER);
+    QProcess proc;
+    proc.start(XSCREENSAVER);
+    proc.waitForFinished();
+    proc.close();
     pingPM();
 }
 

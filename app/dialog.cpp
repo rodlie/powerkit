@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #include "dialog.h"
@@ -31,42 +30,17 @@ Dialog::Dialog(QWidget *parent)
     , sleepButton(0)
     , hibernateButton(0)
     , poweroffButton(0)
-#ifdef USE_XRANDR
-    , monitorList(0)
-    , monitorModes(0)
-    , monitorRates(0)
-    , monitorPrimary(0)
-    , monitorSaveButton(0)
-    , monitorApplyButton(0)
-    , monitorRotation(0)
-    , monitorPosition(0)
-    , monitorPositionOther(0)
-#endif
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
     setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
-    setMinimumSize(QSize(380,320));
+    setMinimumSize(QSize(380, 320));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
-    dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE, session, this);
-    if (dbus->isValid()) {
-        session.connect(dbus->service(),
-                        dbus->path(),
-                        dbus->service(),
-                        "updatedMonitors",
-                        this,
-                        SLOT(handleUpdatedMonitors()));
-    }
-#ifdef USE_XRANDR
-    else {
-        QMessageBox::warning(this, tr("Power manager not running"),
-                             tr("Power manager is not running, please start it before running settings."));
-        QTimer::singleShot(100, this, SLOT(close()));
-    }
-#endif
+    dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE,
+                              session, this);
 
     // setup theme
     Common::setIconTheme();
@@ -79,7 +53,7 @@ Dialog::Dialog(QWidget *parent)
     QTabWidget *containerWidget = new QTabWidget(this);
 
     QWidget *wrapper = new QWidget(this);
-    wrapper->setContentsMargins(0,0,0,0);
+    wrapper->setContentsMargins(0, 0, 0, 0);
 
     QVBoxLayout *wrapperLayout = new QVBoxLayout(wrapper);
     wrapperLayout->setMargin(0);
@@ -98,11 +72,11 @@ Dialog::Dialog(QWidget *parent)
 
     disableLidAction = new QCheckBox(this);
     disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-    disableLidAction->setText(tr("Disable lid action if external monitor(s) is on."));
+    disableLidAction->setText(tr("Disable lid action if external monitor(s) is connected"));
 
     QLabel *lidActionBatteryIcon = new QLabel(this);
-    lidActionBatteryIcon->setMaximumSize(48,48);
-    lidActionBatteryIcon->setMinimumSize(48,48);
+    lidActionBatteryIcon->setMaximumSize(48, 48);
+    lidActionBatteryIcon->setMinimumSize(48, 48);
     lidActionBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON).pixmap(QSize(48, 48)));
     lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
@@ -119,7 +93,7 @@ Dialog::Dialog(QWidget *parent)
     QLabel *criticalBatteryLabel = new QLabel(this);
 
     QWidget *criticalActionBatteryContainer = new QWidget(this);
-    criticalActionBatteryContainer->setContentsMargins(0,0,0,0);
+    criticalActionBatteryContainer->setContentsMargins(0, 0, 0, 0);
     QVBoxLayout *criticalActionBatteryContainerLayout = new QVBoxLayout(criticalActionBatteryContainer);
     criticalActionBatteryContainerLayout->setMargin(0);
     criticalActionBatteryContainerLayout->setSpacing(0);
@@ -128,8 +102,8 @@ Dialog::Dialog(QWidget *parent)
     criticalActionBatteryContainerLayout->addWidget(criticalActionBattery);
 
     QLabel *criticalBatteryIcon = new QLabel(this);
-    criticalBatteryIcon->setMaximumSize(48,48);
-    criticalBatteryIcon->setMinimumSize(48,48);
+    criticalBatteryIcon->setMaximumSize(48, 48);
+    criticalBatteryIcon->setMinimumSize(48, 48);
     criticalBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT).pixmap(QSize(48, 48)));
     criticalBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Critical battery</h3>"));
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
@@ -145,7 +119,7 @@ Dialog::Dialog(QWidget *parent)
     QLabel *sleepBatteryLabel = new QLabel(this);
 
     QWidget *sleepActionBatteryContainer = new QWidget(this);
-    sleepActionBatteryContainer->setContentsMargins(0,0,0,0);
+    sleepActionBatteryContainer->setContentsMargins(0, 0, 0, 0);
     QVBoxLayout *sleepActionBatteryContainerLayout = new QVBoxLayout(sleepActionBatteryContainer);
     sleepActionBatteryContainerLayout->setMargin(0);
     sleepActionBatteryContainerLayout->setSpacing(0);
@@ -154,8 +128,8 @@ Dialog::Dialog(QWidget *parent)
     sleepActionBatteryContainerLayout->addWidget(autoSleepBatteryAction);
 
     QLabel *sleepBatteryIcon = new QLabel(this);
-    sleepBatteryIcon->setMaximumSize(48,48);
-    sleepBatteryIcon->setMinimumSize(48,48);
+    sleepBatteryIcon->setMaximumSize(48, 48);
+    sleepBatteryIcon->setMinimumSize(48, 48);
     sleepBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON).pixmap(QSize(48, 48)));
     sleepBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
@@ -179,8 +153,8 @@ Dialog::Dialog(QWidget *parent)
 
 
     QLabel *lidActionACIcon = new QLabel(this);
-    lidActionACIcon->setMaximumSize(48,48);
-    lidActionACIcon->setMinimumSize(48,48);
+    lidActionACIcon->setMaximumSize(48, 48);
+    lidActionACIcon->setMinimumSize(48, 48);
     lidActionACIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON).pixmap(QSize(48, 48)));
     lidActionACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionACContainerLayout->addWidget(lidActionACIcon);
@@ -200,7 +174,7 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(sleepACContainer);
 
     QWidget *sleepActionACContainer = new QWidget(this);
-    sleepActionACContainer->setContentsMargins(0,0,0,0);
+    sleepActionACContainer->setContentsMargins(0, 0, 0, 0);
     QVBoxLayout *sleepActionACContainerLayout = new QVBoxLayout(sleepActionACContainer);
     sleepActionACContainerLayout->setMargin(0);
     sleepActionACContainerLayout->setSpacing(0);
@@ -255,7 +229,7 @@ Dialog::Dialog(QWidget *parent)
 
     lockscreenButton = new QPushButton(this);
     lockscreenButton->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
-    lockscreenButton->setIconSize(QSize(24,24));
+    lockscreenButton->setIconSize(QSize(24, 24));
     lockscreenButton->setToolTip(tr("Lock the screen now."));
     if (lockscreenButton->icon().isNull()) {
         lockscreenButton->setText(tr("Lock screen"));
@@ -263,7 +237,7 @@ Dialog::Dialog(QWidget *parent)
 
     sleepButton = new QPushButton(this);
     sleepButton->setIcon(QIcon::fromTheme(DEFAULT_SUSPEND_ICON));
-    sleepButton->setIconSize(QSize(24,24));
+    sleepButton->setIconSize(QSize(24, 24));
     sleepButton->setToolTip(tr("Suspend computer now."));
     if (sleepButton->icon().isNull()) {
         sleepButton->setText(tr("Suspend"));
@@ -271,7 +245,7 @@ Dialog::Dialog(QWidget *parent)
 
     hibernateButton = new QPushButton(this);
     hibernateButton->setIcon(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON));
-    hibernateButton->setIconSize(QSize(24,24));
+    hibernateButton->setIconSize(QSize(24, 24));
     hibernateButton->setToolTip(tr("Hibernate computer now."));
     if (hibernateButton->icon().isNull()) {
         hibernateButton->setText(tr("Hibernate"));
@@ -279,7 +253,7 @@ Dialog::Dialog(QWidget *parent)
 
     poweroffButton = new QPushButton(this);
     poweroffButton->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
-    poweroffButton->setIconSize(QSize(24,24));
+    poweroffButton->setIconSize(QSize(24, 24));
     poweroffButton->setToolTip(tr("Shutdown computer now."));
     if (poweroffButton->icon().isNull()) {
         poweroffButton->setText(tr("Shutdown"));
@@ -292,83 +266,6 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addWidget(hibernateButton);
     extraContainerLayout->addWidget(poweroffButton);
 
-#ifdef USE_XRANDR
-    QWidget *monitorContainer = new QWidget(this);
-    QVBoxLayout *monitorContainerLayout = new QVBoxLayout(monitorContainer);
-
-    monitorList = new QListWidget(this);
-    monitorList->setIconSize(QSize(24,24));
-
-    QWidget *monitorModesContainer = new QWidget(this);
-    QHBoxLayout *monitorModesContainerLayout = new QHBoxLayout(monitorModesContainer);
-
-    QLabel *monitorModesLabel = new QLabel(this);
-    monitorModesLabel->setText(tr("Screen resolution"));
-    monitorModes = new QComboBox(this);
-
-    monitorModesContainerLayout->addWidget(monitorModesLabel);
-    monitorModesContainerLayout->addWidget(monitorModes);
-
-    QWidget *monitorRatesContainer = new QWidget(this);
-    QHBoxLayout *monitorRatesContainerLayout = new QHBoxLayout(monitorRatesContainer);
-
-    QLabel *monitorRatesLabel = new QLabel(this);
-    monitorRatesLabel->setText(tr("Screen refresh rate"));
-    monitorRates = new QComboBox(this);
-
-    monitorRatesContainerLayout->addWidget(monitorRatesLabel);
-    monitorRatesContainerLayout->addWidget(monitorRates);
-
-    QWidget *monitorRotateContainer = new QWidget(this);
-    QHBoxLayout *monitorRotateContainerLayout = new QHBoxLayout(monitorRotateContainer);
-
-    QLabel *monitorRotateLabel = new QLabel(this);
-    monitorRotateLabel->setText(tr("Screen rotation"));
-    monitorRotation = new QComboBox(this);
-
-    monitorRotateContainerLayout->addWidget(monitorRotateLabel);
-    monitorRotateContainerLayout->addWidget(monitorRotation);
-
-    QWidget *monitorPosContainer = new QWidget(this);
-    QHBoxLayout *monitorPosContainerLayout = new QHBoxLayout(monitorPosContainer);
-
-    QLabel *monitorPosLabel = new QLabel(this);
-    monitorPosLabel->setText(tr("Screen position"));
-    monitorPosition = new QComboBox(this);
-    monitorPositionOther = new QComboBox(this);
-
-    monitorPosContainerLayout->addWidget(monitorPosLabel);
-    monitorPosContainerLayout->addWidget(monitorPosition);
-    monitorPosContainerLayout->addWidget(monitorPositionOther);
-
-    monitorPrimary = new QCheckBox(this);
-    monitorPrimary->setText(tr("Primary screen"));
-
-    QWidget *monitorButtonsContainer = new QWidget(this);
-    monitorButtonsContainer->setContentsMargins(0,0,0,0);
-
-    QHBoxLayout *monitorButtonsContainerLayout = new QHBoxLayout(monitorButtonsContainer);
-    monitorButtonsContainerLayout->setMargin(0);
-    monitorButtonsContainerLayout->addStretch();
-
-    monitorApplyButton = new QPushButton(this);
-    monitorApplyButton->setText(tr("Apply monitor changes"));
-
-    monitorSaveButton = new QPushButton(this);
-    monitorSaveButton->setText(tr("Save monitor settings"));
-
-    monitorButtonsContainerLayout->addWidget(monitorApplyButton);
-    monitorButtonsContainerLayout->addWidget(monitorSaveButton);
-
-    monitorContainerLayout->addWidget(monitorList);
-    monitorContainerLayout->addWidget(monitorModesContainer);
-    monitorContainerLayout->addWidget(monitorRatesContainer);
-    monitorContainerLayout->addWidget(monitorRotateContainer);
-    monitorContainerLayout->addWidget(monitorPosContainer);
-    monitorContainerLayout->addWidget(monitorPrimary);
-    monitorContainerLayout->addWidget(monitorButtonsContainer);
-#endif
-
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
 
@@ -378,11 +275,6 @@ Dialog::Dialog(QWidget *parent)
     containerWidget->addTab(acContainer,
                             QIcon::fromTheme(DEFAULT_AC_ICON),
                             tr("AC"));
-#ifdef USE_XRANDR
-    containerWidget->addTab(monitorContainer,
-                            QIcon::fromTheme(DEFAULT_VIDEO_ICON),
-                            tr("Monitors"));
-#endif
     containerWidget->addTab(advContainer,
                             QIcon::fromTheme(DEFAULT_TRAY_ICON),
                             tr("Advanced"));
@@ -391,23 +283,6 @@ Dialog::Dialog(QWidget *parent)
     loadSettings(); // load settings
 
     // connect various widgets
-#ifdef USE_XRANDR
-    connect(monitorSaveButton, SIGNAL(released()),
-            this, SLOT(monitorSaveSettings()));
-    connect(monitorApplyButton, SIGNAL(released()),
-            this, SLOT(monitorApplySettings()));
-    connect(monitorModes, SIGNAL(currentIndexChanged(QString)),
-            this, SLOT(handleMonitorModeChanged(QString)));
-    connect(monitorList, SIGNAL(itemActivated(QListWidgetItem*)),
-            this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
-    connect(monitorList, SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),
-            this, SLOT(handleMonitorListICurrentitemChanged(QListWidgetItem*,QListWidgetItem*)));
-    //connect(monitorList, SIGNAL(itemChanged(QListWidgetItem*)), this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
-    connect(monitorList, SIGNAL(itemClicked(QListWidgetItem*)),
-            this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
-    connect(monitorList, SIGNAL(itemPressed(QListWidgetItem*)),
-            this, SLOT(handleMonitorListItemChanged(QListWidgetItem*)));
-#endif
     connect(lockscreenButton, SIGNAL(released()),
             this, SLOT(handleLockscreenButton()));
     connect(sleepButton, SIGNAL(released()),
@@ -499,24 +374,6 @@ void Dialog::populate()
                                tr("Hibernate"), suspendHibernate);
     autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
                                tr("Shutdown"), suspendShutdown);
-
-#ifdef USE_XRANDR
-    monitorRotation->clear();
-    monitorRotation->addItem(tr("Normal"), "normal");
-    monitorRotation->addItem(tr("Left"), "left");
-    monitorRotation->addItem(tr("Right"), "right");
-    monitorRotation->addItem(tr("Inverted"), "inverted");
-
-    monitorPosition->clear();
-    monitorPosition->addItem(tr("Auto"), randrAuto);
-    monitorPosition->addItem(tr("Left Of"), randrLeftOf);
-    monitorPosition->addItem(tr("Right Of"), randrRightOf);
-    monitorPosition->addItem(tr("Above"), randrAbove);
-    monitorPosition->addItem(tr("Below"), randrBelow);
-    monitorPosition->addItem(tr("Same As"), randrSameAs);
-#endif
-
-    handleUpdatedMonitors();
 }
 
 // load settings and set defaults
@@ -615,13 +472,6 @@ void Dialog::loadSettings()
     }
 }
 
-// tell power manager to update settings
-void Dialog::updatePM()
-{
-    if (!dbus->isValid()) { return; }
-    dbus->call("refresh");
-}
-
 // set default action in combobox
 void Dialog::setDefaultAction(QComboBox *box, int action)
 {
@@ -650,131 +500,84 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
     }
 }
 
-// set default monitor rotation
-#ifdef USE_XRANDR
-void Dialog::setDefaultRotation(QString value)
-{
-    for (int i=0;i<monitorRotation->count();i++) {
-        if (monitorRotation->itemData(i) == value) {
-            monitorRotation->setCurrentIndex(i);
-            return;
-        }
-    }
-}
-#endif
-
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
 {
     Common::savePowerSettings(CONF_LID_BATTERY_ACTION, index);
-    //updatePM();
 }
 
 void Dialog::handleLidActionAC(int index)
 {
     Common::savePowerSettings(CONF_LID_AC_ACTION, index);
-    //updatePM();
 }
 
 void Dialog::handleCriticalAction(int index)
 {
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
-    //updatePM();
 }
 
 void Dialog::handleCriticalBattery(int value)
 {
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT, value);
-    //updatePM();
 }
 
 void Dialog::handleAutoSleepBattery(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT, value);
-    //updatePM();
-}
+ }
 
 void Dialog::handleAutoSleepAC(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_AC_TIMEOUT, value);
-    //updatePM();
 }
 
 void Dialog::handleDesktopSS(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_SS, triggered);
-    //updatePM();
-    QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
+    QMessageBox::information(this, tr("Restart required"),
+                             tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
 }
 
 void Dialog::handleDesktopPM(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_PM, triggered);
-    //updatePM();
-    QMessageBox::information(this, tr("Restart required"), tr("You must restart the power daemon to apply this setting"));
+    QMessageBox::information(this, tr("Restart required"),
+                             tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
 }
 
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
-    //updatePM();
 }
 
 void Dialog::handleShowSystemTray(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_SHOW, triggered);
-    //updatePM();
 }
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
-    //updatePM();
 }
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
-    //updatePM();
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
     Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
-    //updatePM();
-}
-
-void Dialog::handleUpdatedMonitors()
-{
-    qDebug() << "monitors changed";
-#ifdef USE_XRANDR
-    QMap<QString,bool> map = Monitor::getX();
-    QMapIterator<QString, bool> i(map);
-    while (i.hasNext()) {
-        i.next();
-        if (monitorExists(i.key())) { continue; }
-        QListWidgetItem *item = new QListWidgetItem(monitorList);
-        item->setText(i.key());
-        item->setData(MONITOR_DATA_CONNECTED, i.value());
-        item->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-        monitorList->setCurrentItem(item);
-    }
-    for (int i=0;i<monitorList->count();++i) {
-        QListWidgetItem *item = monitorList->item(i);
-        if (!item) { continue; }
-        if (map.contains(item->text())) { continue; }
-        else {
-            delete monitorList->takeItem(i);
-        }
-    }
-#endif
 }
 
 void Dialog::handleLockscreenButton()
 {
-    QProcess::startDetached(XSCREENSAVER_LOCK);
+    QProcess proc;
+    proc.start(XSCREENSAVER_LOCK);
+    proc.waitForFinished();
+    proc.close();
 }
 
 void Dialog::handleSleepButton()
@@ -819,154 +622,3 @@ void Dialog::handlePoweroffButton()
                                     " or you may not have the required permissions."));
     }
 }
-
-#ifdef USE_XRANDR
-bool Dialog::monitorExists(QString display)
-{
-    for (int i=0;i<monitorList->count();++i) {
-        QListWidgetItem *item = monitorList->item(i);
-        if (!item) { continue; }
-        if (item->text() == display) { return true; }
-    }
-    return false;
-}
-
-void Dialog::handleMonitorListItemChanged(QListWidgetItem *item)
-{
-    if (!item) { return; }
-
-    monitorModes->clear();
-    monitorRates->clear();
-    monitorPrimary->setChecked(false);
-    monitorPositionOther->clear();
-    monitorPositionOther->addItem(tr("None"));
-
-    currentMonitorInfo = Monitor::getMonitorInfo(item->text());
-    monitorPrimary->setChecked(currentMonitorInfo.isPrimary);
-
-    for (int i=0;i<currentMonitorInfo.modes.size();++i) {
-        QString mode = currentMonitorInfo.modes.at(i).at(0);
-        if (mode.isEmpty()) { continue; }
-        monitorModes->addItem(mode);
-    }
-    for (int i=0;i<monitorList->count();++i) {
-        QListWidgetItem *monitor = monitorList->item(i);
-        if (!monitor) { continue; }
-        if (monitor->text() == item->text() ||
-            monitor->text().isEmpty()) { continue; }
-        monitorPositionOther->addItem(monitor->text());
-    }
-
-    int pos = randrAuto;
-    QString posOther = tr("None");
-    if (Common::validPowerSettings(QString("%1_option").arg(item->text()))) {
-        pos = Common::loadPowerSettings(QString("%1_option").arg(item->text())).toInt();
-    }
-    if (Common::validPowerSettings(QString("%1_option_value").arg(item->text()))) {
-        posOther = Common::loadPowerSettings(QString("%1_option_value").arg(item->text())).toString();
-    }
-    monitorPosition->setCurrentIndex(pos);
-    monitorPositionOther->setCurrentIndex(monitorPositionOther->findText(posOther));
-    setDefaultAction(monitorModes, currentMonitorInfo.currentMode);
-    setDefaultRotation(currentMonitorInfo.rotate);
-}
-
-void Dialog::handleMonitorListICurrentitemChanged(QListWidgetItem *item, QListWidgetItem *item2)
-{
-    Q_UNUSED(item2)
-    handleMonitorListItemChanged(item);
-}
-
-void Dialog::handleMonitorModeChanged(QString mode)
-{
-    if (mode.isEmpty()) { return; }
-    monitorRates->clear();
-    QString currentRate;
-    for (int i=0;i<currentMonitorInfo.modes.size();++i) {
-        if (currentMonitorInfo.modes.at(i).at(0) == mode) {
-            QStringList rates = currentMonitorInfo.modes.at(i);
-            for (int y=0;y<rates.size();++y) {
-                QString rate = rates.at(y);
-                if (rate.isEmpty() || rate == mode) { continue; }
-                if (rate.contains("*")) { currentRate = rate.replace("*","");}
-                if (rate.contains("+")) { rate.replace("+",""); }
-                monitorRates->addItem(rate);
-            }
-        }
-    }
-    if (!currentRate.isEmpty()) {
-        setDefaultAction(monitorRates, currentRate);
-    }
-}
-
-void Dialog::monitorSaveSettings()
-{
-    QListWidgetItem *item = monitorList->currentItem();
-    if (!item) { return; }
-    if (item->text().isEmpty()) { return; }
-
-    Common::savePowerSettings(QString("%1_mode").arg(item->text()),
-                              monitorModes->currentText());
-    Common::savePowerSettings(QString("%1_rate").arg(item->text()),
-                              monitorRates->currentText());
-    Common::savePowerSettings(QString("%1_rotate").arg(item->text()),
-                              monitorRotation->itemData(monitorRotation->currentIndex()).toString());
-    Common::savePowerSettings(QString("%1_option").arg(item->text()),
-                              monitorPosition->itemData(monitorPosition->currentIndex()).toInt());
-    Common::savePowerSettings(QString("%1_option_value").arg(item->text()),
-                              monitorPositionOther->currentText());
-    //Common::savePowerSettings(QString("%1_").arg(item->text()),"");
-}
-
-void Dialog::monitorApplySettings()
-{
-    QListWidgetItem *item = monitorList->currentItem();
-    if (!item) { return; }
-    if (item->text().isEmpty()) { return; }
-    QString xrandr = QString("%1 --output %2").arg(XRANDR).arg(item->text());
-    if (!monitorModes->currentText().isEmpty()) {
-        xrandr.append(QString(" --mode %1").arg(monitorModes->currentText()));
-    }
-    if (!monitorRates->currentText().isEmpty()) {
-        xrandr.append(QString(" --rate %1").arg(monitorRates->currentText()));
-    }
-    if (monitorPrimary->isChecked()) {
-        xrandr.append(" --primary");
-    }
-    if (!monitorRotation->currentText().isEmpty()) {
-        xrandr.append(QString(" --rotate %1").arg(monitorRotation->itemData(monitorRotation->currentIndex()).toString()));
-    }
-    if (!monitorPosition->currentText().isEmpty() &&
-        !monitorPositionOther->currentText().isEmpty()) {
-        QString pos;
-        switch(monitorPosition->itemData(monitorPosition->currentIndex()).toInt()) {
-        case randrLeftOf:
-            pos.append(" --left-of ");
-            break;
-        case randrRightOf:
-            pos.append(" --right-of ");
-            break;
-        case randrAbove:
-            pos.append(" --above ");
-            break;
-        case randrBelow:
-            pos.append(" --below ");
-            break;
-        case randrSameAs:
-            pos.append(" --same-as ");
-            break;
-        default:
-            break;
-        }
-        if (!pos.isEmpty() && monitorPositionOther->currentText() != tr("None")) {
-            pos.append(monitorPositionOther->currentText());
-            xrandr.append(pos);
-        }
-    }
-    qDebug() << "run" << xrandr;
-    QProcess proc;
-    proc.start(xrandr);
-    proc.waitForFinished();
-    handleMonitorListItemChanged(item);
-}
-#endif

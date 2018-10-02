@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #ifndef SYSTRAY_H
@@ -121,7 +120,7 @@ private slots:
                                          quint32 cookie);
     void handleDelInhibitScreenSaver(quint32 cookie);
     void handleDelInhibitPowerManagement(quint32 cookie);
-    void handleScrensaverFinished(int exitcode);
+    void handleScreensaverFinished(int exitcode);
     void showMessage(QString title, QString msg, bool critical = false);
     void handleConfChanged(QString file);
 };

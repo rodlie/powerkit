@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #include "power.h"
@@ -105,9 +104,7 @@ void Power::sleep()
 
 // do hibernate if available
 // TODO:
-// Some distros (Slackware) uses Lilo, if lilo.conf don't have resume=swap_partition then hibernate will fail
-// add a check for resume= in lilo.conf
-// also check for elilo.conf
+// check for resume=swap_partition !!!
 void Power::hibernate()
 {
     if (canHibernate()) {
@@ -122,7 +119,10 @@ void Power::hibernate()
 // lock screen using xscreensaver
 void Power::lockScreen()
 {
-    QProcess::startDetached(XSCREENSAVER_LOCK);
+    QProcess proc;
+    proc.start(XSCREENSAVER_LOCK);
+    proc.waitForFinished();
+    proc.close();
 }
 
 void Power::shutdown()
@@ -295,6 +295,6 @@ void Power::notifyResume()
 // do stuff before sleep
 void Power::notifySleep()
 {
-    //qDebug() << "system is about to sleep ...";
+    emit notifyStatus(tr("About to suspend"), tr("System is about to suspend ..."));
     lockScreen();
 }

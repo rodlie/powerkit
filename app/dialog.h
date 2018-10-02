@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #ifndef DIALOG_H
@@ -16,7 +15,6 @@
 #include <QCheckBox>
 #include <QVBoxLayout>
 #include <QIcon>
-#include <QDebug>
 #include <QLabel>
 #include <QPixmap>
 #include <QTabWidget>
@@ -24,16 +22,12 @@
 #include <QDBusInterface>
 #include <QMessageBox>
 #include <QPushButton>
-#include <QProcess>
-#include <QTimer>
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QApplication>
+#include <QProcess>
 
 #include "def.h"
 #include "common.h"
 #include "upower.h"
-//#include "monitor.h"
 
 // fix X11 inc
 #undef CursorShape
@@ -63,7 +57,6 @@ private:
     QComboBox *lidActionBattery;
     QComboBox *lidActionAC;
     QComboBox *criticalActionBattery;
-    //QSpinBox *lowBattery;
     QSpinBox *criticalBattery;
     QSpinBox *autoSleepBattery;
     QSpinBox *autoSleepAC;
@@ -78,34 +71,16 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
-    //QComboBox *lowBatteryAction;
-#ifdef USE_XRANDR
-    QListWidget *monitorList;
-    QComboBox *monitorModes;
-    QComboBox *monitorRates;
-    QCheckBox *monitorPrimary;
-    monitorInfo currentMonitorInfo;
-    QPushButton *monitorSaveButton;
-    QPushButton *monitorApplyButton;
-    QComboBox *monitorRotation;
-    QComboBox *monitorPosition;
-    QComboBox *monitorPositionOther;
-#endif
 
 private slots:
     void populate();
     void loadSettings();
-    void updatePM();
     void setDefaultAction(QComboBox *box, int action);
     void setDefaultAction(QSpinBox *box, int action);
     void setDefaultAction(QComboBox *box, QString value);
-#ifdef USE_XRANDR
-    void setDefaultRotation(QString value);
-#endif
     void handleLidActionBattery(int index);
     void handleLidActionAC(int index);
     void handleCriticalAction(int index);
-    //void handleLowBattery(int value);
     void handleCriticalBattery(int value);
     void handleAutoSleepBattery(int value);
     void handleAutoSleepAC(int value);
@@ -116,21 +91,10 @@ private slots:
     void handleDisableLidAction(bool triggered);
     void handleAutoSleepBatteryAction(int index);
     void handleAutoSleepACAction(int index);
-    void handleUpdatedMonitors();
     void handleLockscreenButton();
     void handleSleepButton();
     void handleHibernateButton();
     void handlePoweroffButton();
-    //void handleLowBatteryAction(int value);
-#ifdef USE_XRANDR
-    bool monitorExists(QString display);
-    void handleMonitorListItemChanged(QListWidgetItem *item);
-    void handleMonitorListICurrentitemChanged(QListWidgetItem *item,
-                                              QListWidgetItem *item2);
-    void handleMonitorModeChanged(QString mode);
-    void monitorSaveSettings();
-    void monitorApplySettings();
-#endif
 };
 
 #endif // DIALOG_H

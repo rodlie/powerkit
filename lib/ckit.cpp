@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #include "ckit.h"
@@ -25,7 +24,8 @@ bool CKit::hasService()
 
 bool CKit::canRestart()
 {
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
+                         QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call("CanRestart");
     bool result = reply.arguments().first().toBool();
@@ -35,7 +35,8 @@ bool CKit::canRestart()
 
 QString CKit::restart()
 {
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
+                         QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
     QDBusMessage reply = iface.call("Restart");
     return reply.errorMessage();
@@ -43,7 +44,8 @@ QString CKit::restart()
 
 bool CKit::canPowerOff()
 {
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
+                         QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call("CanPowerOff");
     bool result = reply.arguments().first().toBool();
@@ -53,7 +55,8 @@ bool CKit::canPowerOff()
 
 QString CKit::poweroff()
 {
-    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER, QDBusConnection::systemBus());
+    QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
+                         QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
     QDBusMessage reply = iface.call("PowerOff");
     return reply.errorMessage();

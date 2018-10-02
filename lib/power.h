@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #ifndef POWER_H
@@ -40,6 +39,7 @@ signals:
     void openedLid();
     void switchedToBattery();
     void switchedToAC();
+    void notifyStatus(QString title, QString msg);
 
 public slots:
     bool isDocked();

@@ -4,7 +4,6 @@
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
-#
 */
 
 #include "upower.h"
@@ -14,7 +13,6 @@
 #include <QDBusReply>
 #include <QDBusInterface>
 #include <QXmlStreamReader>
-#include <QDebug>
 #include <QStringList>
 
 #include "def.h"
@@ -33,7 +31,6 @@ bool UPower::canSuspend()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    //QDBusMessage reply = iface.call("CanSuspend");
     QDBusMessage reply = iface.call("SuspendAllowed");
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
@@ -52,7 +49,6 @@ bool UPower::canHibernate()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    //QDBusMessage reply = iface.call("CanHibernate");
     QDBusMessage reply = iface.call("HibernateAllowed");
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }

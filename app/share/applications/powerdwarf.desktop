@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Power Manager Configuration
-Comment=Power Manager Configuration
+Name=powerdwarf
+Comment=Power Manager
 Icon=battery
 Exec=powerdwarf --config
 Terminal=false
