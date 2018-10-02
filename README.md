@@ -88,6 +88,7 @@ Recommended settings are:
   * Off After: ``0 minutes``
   * Quick Power-off in Blank Only Mode: ``enabled``
   
+Note that powerdwarf will start XScreenSaver during startup (unless ``freedesktop_ss`` is disabled).
 
 ## Requirements
 
@@ -180,5 +181,25 @@ sudo make install
 ```
 qmake CONFIG+=release PREFIX=/usr
 make
-make INSTALL_ROOT=/pkg/path install
+make INSTALL_ROOT=pkg_path install
+```
+```
+pkg/
+├── etc
+│   └── xdg
+│       └── autostart
+│           └── powerdwarf.desktop
+└── usr
+    ├── bin
+    │   └── powerdwarf
+    └── share
+        ├── applications
+        │   └── powerdwarf.desktop
+        ├── doc
+        │   └── powerdwarf-VERSION
+        │       ├── LICENSE
+        │       └── README.md
+        └── man
+            └── man1
+                └── powerdwarf.1
 ```
