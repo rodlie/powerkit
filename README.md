@@ -90,6 +90,32 @@ Recommended settings are:
   
 Note that powerdwarf will start XScreenSaver during startup (unless ``freedesktop_ss`` is disabled).
 
+## FAQ
+
+### Slackware-only?
+
+No, powerdwarf should work on any Linux distro (check requirements). However, powerdwarf is developed on Slackware and sees minimal testing on other distros.
+
+### How does an application inhibit the screen saver?
+
+The prefered way to inhibit the screen saver from an application is to use the ``org.freedesktop.ScreenSaver`` specification. Any application that uses ``org.freedesktop.ScreenSaver`` will work with powerdwarf. Note that powerdwarf also includes ``SimulateUserActivity`` for backwards compatibility.
+
+Popular applications that uses this feature is Mozilla Firefox (for audio/video), VideoLAN VLC and many more.
+
+### How does an application inhibit suspend actions?
+
+The prefered way to inhibit suspend actions from an application is to use the ``org.freedesktop.PowerManagement`` specification. Any application that uses ``org.freedesktop.PowerManagement`` will work with powerdwarf.
+
+Common use cases are audio playback, downloading and more.
+
+### Hybrid suspend?
+
+Not at this moment. Note that powerdwarf will trigger the critical battery action (hibernate/shutdown) even when suspended.
+
+### FreeBSD support?
+
+Yes, but hibernate has not been tested.
+
 ## Requirements
 
 powerdwarf requires the following dependencies to work:
