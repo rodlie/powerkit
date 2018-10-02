@@ -116,6 +116,22 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(update()),
             this,
             SLOT(loadSettings()));
+    connect(ss,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            pd,
+            SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
+    connect(ss,
+            SIGNAL(removedInhibit(quint32)),
+            pd,
+            SLOT(handleDelInhibitScreenSaver(quint32)));
+    connect(pm,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            pd,
+            SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
+    connect(pm,
+            SIGNAL(removedInhibit(quint32)),
+            pd,
+            SLOT(handleDelInhibitPowerManagement(quint32)));
 
     // setup xscreensaver
     xscreensaver = new QProcess(this);
