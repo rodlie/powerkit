@@ -71,6 +71,7 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
+    QCheckBox *lidXrandr;
 
 private slots:
     void populate();
@@ -86,6 +87,7 @@ private slots:
     void handleAutoSleepAC(int value);
     void handleDesktopSS(bool triggered);
     void handleDesktopPM(bool triggered);
+    void handleLidXrandr(bool triggered);
     void handleShowNotifications(bool triggered);
     void handleShowSystemTray(bool triggered);
     void handleDisableLidAction(bool triggered);

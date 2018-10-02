@@ -86,6 +86,7 @@ private:
     QMap<quint32,QString> pmInhibitors;
     QString internalMonitor;
     QFileSystemWatcher *watcher;
+    bool lidXrandr;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);

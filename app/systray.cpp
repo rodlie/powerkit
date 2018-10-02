@@ -40,6 +40,7 @@ SysTray::SysTray(QObject *parent)
     , xscreensaver(0)
     , startupScreensaver(true)
     , watcher(0)
+    , lidXrandr(false)
 {
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -247,6 +248,15 @@ void SysTray::handleClosedLid()
     } else { // on ac
         type = lidActionAC;
     }
+
+    if (lidXrandr) {
+        qDebug() << "using xrandr to turn off internal monitor";
+        QProcess xrandr;
+        xrandr.start(QString(TURN_OFF_MONITOR).arg(internalMonitor));
+        xrandr.waitForFinished();
+        xrandr.close();
+    }
+
     if (disableLidOnExternalMonitors &&
             externalMonitorIsConnected()) {
         qDebug() << "external monitor is connected, ignore lid action";
@@ -274,6 +284,13 @@ void SysTray::handleClosedLid()
 void SysTray::handleOpenedLid()
 {
     qDebug() << "lid is now open";
+    if (lidXrandr) {
+        qDebug() << "using xrandr to turn on internal monitor";
+        QProcess xrandr;
+        xrandr.start(QString(TURN_ON_MONITOR).arg(internalMonitor));
+        xrandr.waitForFinished();
+        xrandr.close();
+    }
 }
 
 // do something when switched to battery power
@@ -339,6 +356,9 @@ void SysTray::loadSettings()
     }
     if (Common::validPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL)) {
         disableLidOnExternalMonitors = Common::loadPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
+    }
+    if (Common::validPowerSettings(CONF_LID_XRANDR)) {
+        lidXrandr = Common::loadPowerSettings(CONF_LID_XRANDR).toBool();
     }
 
     // verify

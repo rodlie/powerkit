@@ -43,11 +43,10 @@ enum criticalAction
     criticalShutdown
 };
 
-//#define XRANDR "xrandr"
 #define VIRTUAL_MONITOR "VIRTUAL"
-//#define TURN_OFF_MONITOR "xrandr --output %1 --off"
-//#define TURN_ON_MONITOR "xrandr --output %1"
-//#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
+#define TURN_OFF_MONITOR "xrandr --output %1 --off"
+#define TURN_ON_MONITOR "xrandr --output %1 --auto"
+#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
 
 #define LID_BATTERY_DEFAULT lidSleep
 #define LID_AC_DEFAULT lidLock
@@ -131,5 +130,7 @@ enum criticalAction
 #define CONF_FREEDESKTOP_PM "freedesktop_pm"
 #define CONF_TRAY_NOTIFY "tray_notify"
 #define CONF_TRAY_SHOW "show_tray"
+#define CONF_LID_XRANDR "lid_xrandr_action"
+
 
 #endif // DEF_H

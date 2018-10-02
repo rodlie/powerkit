@@ -30,6 +30,7 @@ Dialog::Dialog(QWidget *parent)
     , sleepButton(0)
     , hibernateButton(0)
     , poweroffButton(0)
+    , lidXrandr(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -213,11 +214,16 @@ Dialog::Dialog(QWidget *parent)
     desktopPM->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
     desktopPM->setText("org.freedesktop.PowerManagement");
 
+    lidXrandr = new QCheckBox(this);
+    lidXrandr->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
+    lidXrandr->setText(tr("Switch internal monitor on/off on lid action"));
+
     advContainerLayout->addWidget(showSystemTray);
     advContainerLayout->addWidget(showNotifications);
     advContainerLayout->addWidget(disableLidAction);
     advContainerLayout->addWidget(desktopSS);
     advContainerLayout->addWidget(desktopPM);
+    advContainerLayout->addWidget(lidXrandr);
     advContainerLayout->addStretch();
 
     QWidget *extraContainer = new QWidget(this);
@@ -317,6 +323,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleAutoSleepBatteryAction(int)));
     connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
             this, SLOT(handleAutoSleepACAction(int)));
+    connect(lidXrandr, SIGNAL(toggled(bool)),
+            this, SLOT(handleLidXrandr(bool)));
 }
 
 Dialog::~Dialog()
@@ -442,6 +450,12 @@ void Dialog::loadSettings()
         defaultDesktopPM = Common::loadPowerSettings(CONF_FREEDESKTOP_PM).toBool();
     }
     desktopPM->setChecked(defaultDesktopPM);
+
+    bool defaultLidXrandr = false;
+    if (Common::validPowerSettings(CONF_LID_XRANDR)) {
+        defaultLidXrandr = Common::loadPowerSettings(CONF_LID_XRANDR).toBool();
+    }
+    lidXrandr->setChecked(defaultLidXrandr);
 
     bool defaultShowNotifications = true;
     if (Common::validPowerSettings(CONF_TRAY_NOTIFY)) {
@@ -573,6 +587,11 @@ void Dialog::handleDesktopPM(bool triggered)
     QMessageBox::information(this, tr("Restart required"),
                              tr("You must restart the power daemon to apply this setting"));
     // TODO: add restart now?
+}
+
+void Dialog::handleLidXrandr(bool triggered)
+{
+    Common::savePowerSettings(CONF_LID_XRANDR, triggered);
 }
 
 void Dialog::handleShowNotifications(bool triggered)
