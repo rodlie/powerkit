@@ -92,9 +92,41 @@ powerdwarf requires the following dependencies to work:
  * ConsoleKit (or logind)
  * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
- * adwaita-icon-theme (or similar, must have battery status icons)
+ * adwaita-icon-theme (or similar)
 
 Tested on Slackware, Ubuntu and FreeBSD.
+
+### Icons
+
+powerdwarf does not bundle any icons, so you will need a compatible theme installed (in ``share/applications``). powerdwarf will use the existing icon theme from your running DE/WM or will else fallback to known themes:
+
+ * Adwaita
+ * gnome
+ * oxygen
+ * Tango
+ 
+ The following icons are required:
+ 
+ * battery
+ * battery-caution
+ * battery-caution-charging
+ * battery-low
+ * battery-low-charging
+ * battery-good
+ * battery-good-charging
+ * battery-full
+ * battery-full-charging
+ * battery-full-charged
+ * battery-empty
+ * battery-missing
+ * video-display
+ * system-suspend
+ * preferences-other
+ * user-available
+ * system-lock-screen
+ * system-hibernate
+ * system-shutdown
+ * emblem-unreadable
 
 ## Build
 
