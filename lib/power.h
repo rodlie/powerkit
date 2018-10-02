@@ -40,6 +40,8 @@ signals:
     void switchedToBattery();
     void switchedToAC();
     void notifyStatus(QString title, QString msg, bool critical = false);
+    void aboutToSuspend();
+    void aboutToResume();
 
 public slots:
     bool isDocked();

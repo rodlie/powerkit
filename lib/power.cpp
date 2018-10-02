@@ -289,12 +289,14 @@ void Power::checkUPower()
 void Power::notifyResume()
 {
     //qDebug() << "system is about to resume ...";
+    emit aboutToResume();
     lockScreen(); // in case lockScreen didn't trigger on sleep
 }
 
 // do stuff before sleep
 void Power::notifySleep()
 {
+    emit aboutToSuspend();
     emit notifyStatus(tr("About to suspend"), tr("System is about to suspend ..."));
     lockScreen();
 }

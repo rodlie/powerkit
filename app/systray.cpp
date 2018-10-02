@@ -41,6 +41,7 @@ SysTray::SysTray(QObject *parent)
     , startupScreensaver(true)
     , watcher(0)
     , lidXrandr(false)
+    , lidWasClosed(false)
 {
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -84,6 +85,14 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(notifyStatus(QString,QString,bool)),
             this,
             SLOT(showMessage(QString,QString,bool)));*/
+    connect(man,
+            SIGNAL(aboutToResume()),
+            this,
+            SLOT(handleResume()));
+    connect(man,
+            SIGNAL(aboutToSuspend()),
+            this,
+            SLOT(handleSuspend()));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
@@ -241,6 +250,7 @@ void SysTray::checkDevices()
 void SysTray::handleClosedLid()
 {
     qDebug() << "lid closed";
+    lidWasClosed = true;
 
     int type = lidNone;
     if (man->onBattery()) {  // on battery
@@ -249,19 +259,13 @@ void SysTray::handleClosedLid()
         type = lidActionAC;
     }
 
-    if (lidXrandr) {
-        qDebug() << "using xrandr to turn off internal monitor";
-        QProcess xrandr;
-        xrandr.start(QString(TURN_OFF_MONITOR).arg(internalMonitor));
-        xrandr.waitForFinished();
-        xrandr.close();
-    }
-
     if (disableLidOnExternalMonitors &&
             externalMonitorIsConnected()) {
         qDebug() << "external monitor is connected, ignore lid action";
+        switchInternalMonitor(false /* turn off screen */);
         return;
     }
+
     qDebug() << "lid action" << type;
     switch(type) {
     case lidLock:
@@ -284,12 +288,9 @@ void SysTray::handleClosedLid()
 void SysTray::handleOpenedLid()
 {
     qDebug() << "lid is now open";
-    if (lidXrandr) {
-        qDebug() << "using xrandr to turn on internal monitor";
-        QProcess xrandr;
-        xrandr.start(QString(TURN_ON_MONITOR).arg(internalMonitor));
-        xrandr.waitForFinished();
-        xrandr.close();
+    lidWasClosed = false;
+    if (disableLidOnExternalMonitors) {
+        switchInternalMonitor(true /* turn on screen */);
     }
 }
 
@@ -734,4 +735,28 @@ void SysTray::disableSuspend()
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
     }
+}
+
+void SysTray::handleResume()
+{
+    qDebug() << "handle resume";
+    /*if (lidWasClosed && !man->lidIsClosed()) {
+        switchInternalMonitor(true);
+    }*/
+}
+
+void SysTray::handleSuspend()
+{
+    qDebug() << "handle suspend";
+    //lidWasClosed = man->lidIsClosed();
+}
+
+void SysTray::switchInternalMonitor(bool toggle)
+{
+    if (!lidXrandr) { return; }
+    qDebug() << "using xrandr to turn on/off internal monitor" << toggle;
+    QProcess xrandr;
+    xrandr.start(QString(toggle?TURN_ON_MONITOR:TURN_OFF_MONITOR).arg(internalMonitor));
+    xrandr.waitForFinished();
+    xrandr.close();
 }

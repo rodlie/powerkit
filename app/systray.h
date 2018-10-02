@@ -87,6 +87,7 @@ private:
     QString internalMonitor;
     QFileSystemWatcher *watcher;
     bool lidXrandr;
+    bool lidWasClosed;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -121,6 +122,9 @@ private slots:
     void handleConfChanged(QString file);
     void disableHibernate();
     void disableSuspend();
+    void handleResume();
+    void handleSuspend();
+    void switchInternalMonitor(bool toggle);
 };
 
 #endif // SYSTRAY_H
