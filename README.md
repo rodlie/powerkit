@@ -71,7 +71,23 @@ You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
  * ``show_tray`` = ``<bool>`` true/false (show system tray)
  * ``icon_theme`` = ``<string>`` valid icon theme name (fallback)
 
-You do not need to restart powerdwarf after editing the configuration file, powerdwarf will auto-detect if the file has changed.
+You will only need to restart powerdwarf if you edit ``freedesktop_ss``, ``freedesktop_pm`` or ``icon_theme``. Note that ``show_tray`` will not hide/show the system tray instantly, but the next time an event happens.
+
+### Screensaver
+
+powerdwarf depends on XScreenSaver to lock and paint the screen, the default settings may need to be adjusted. You can launch the configuration GUI with the ``xscreensaver-demo`` command or use the ``.desktop`` file.
+
+Recommended settings are:
+
+* Mode: ``Blank Screen Only``
+* Blank After: ``5 minutes``
+* Lock Screen After: ``enabled + 0 minutes``
+* Display Power Management: ``enabled``
+  * Standby After: ``0 minutes``
+  * Suspend After: ``0 minutes``
+  * Off After: ``0 minutes``
+  * Quick Power-off in Blank Only Mode: ``enabled``
+  
 
 ## Requirements
 
