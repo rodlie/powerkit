@@ -25,6 +25,11 @@ public:
     static QString confFile();
     static QString confDir();
     static bool kernelCanResume();
+    static QString backlightDevice();
+    static bool canAdjustBacklight(QString device);
+    static int backlightMax(QString device);
+    static int backlightValue(QString device);
+    static bool adjustBacklight(QString device, int value);
 };
 
 #endif // COMMON_H

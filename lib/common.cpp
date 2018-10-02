@@ -8,11 +8,14 @@
 
 #include "common.h"
 #include <QFile>
+#include <QFileInfo>
 #include <QIcon>
 #include <QApplication>
 #include <QDir>
 #include <QSettings>
 #include <QDebug>
+#include <QDirIterator>
+#include <QTextStream>
 
 #include "def.h"
 
@@ -106,6 +109,73 @@ bool Common::kernelCanResume()
         QByteArray result = cmdline.readAll();
         cmdline.close();
         if (result.contains("resume=")) { return true;}
+    }
+    return false;
+}
+
+QString Common::backlightDevice()
+{
+#ifdef __FreeBSD__
+    // ???
+    return QString();
+#else
+    QString path = "/sys/class/backlight";
+    QDirIterator it(path, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        QString foundDir = it.next();
+        qDebug() << foundDir;
+        if (foundDir.startsWith(QString("%1/radeon").arg(path))) {
+            return foundDir;
+        } else if (foundDir.startsWith(QString("%1/intel").arg(path))) {
+            return foundDir;
+        } else if (foundDir.startsWith(QString("%1/acpi").arg(path))) {
+            return foundDir;
+        }
+    }
+    return QString();
+#endif
+}
+
+bool Common::canAdjustBacklight(QString device)
+{
+    QFileInfo backlight(QString("%1/brightness").arg(device));
+    qDebug() << backlight.absoluteFilePath() << backlight.isWritable();
+    if (backlight.isWritable()) { return true; }
+    qDebug() << "backlight not writable";
+    return false;
+}
+
+int Common::backlightMax(QString device)
+{
+    int result = 0;
+    QFile backlight(QString("%1/max_brightness").arg(device));
+    if (backlight.open(QIODevice::ReadOnly)) {
+        result = backlight.readAll().trimmed().toInt();
+        backlight.close();
+    }
+    return result;
+}
+
+int Common::backlightValue(QString device)
+{
+    int result = 0;
+    QFile backlight(QString("%1/brightness").arg(device));
+    if (backlight.open(QIODevice::ReadOnly)) {
+        result = backlight.readAll().trimmed().toInt();
+        backlight.close();
+    }
+    return result;
+}
+
+bool Common::adjustBacklight(QString device, int value)
+{
+    if (!canAdjustBacklight(device)) { return false; }
+    QFile backlight(QString("%1/brightness").arg(device));
+    if (backlight.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QTextStream out(&backlight);
+        out << QString::number(value);
+        backlight.close();
+        if (value == backlightValue(device)) { return true;}
     }
     return false;
 }

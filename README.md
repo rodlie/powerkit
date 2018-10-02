@@ -10,10 +10,11 @@ powerdwarf is a lightweight full featured power manager created for Slackware fo
  * Inhibit lid action if external monitor(s) is connected
  * Automatically suspend (sleep/hibernate)
  * Hibernate/Shutdown on critical battery
- * Configuration GUI
+ * Simple configuration GUI
  * Implements org.freedesktop.ScreenSaver
  * Implements org.freedesktop.PowerManagement
  * Supports XScreenSaver
+ * Backlight support
 
 ## Usage
 
@@ -65,6 +66,7 @@ You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
    * ``3`` = ``hibernate``
    * ``4`` = ``shutdown``
  * ``disable_lid_action_external_monitor`` = ``<bool>`` true/false (disable lid action if external monitor is connected)
+   * ``lid_xrandr_action`` = ``<bool>`` turn internal monitor on/off with xrandr when lid is triggered
  * ``freedesktop_ss`` = ``<bool>`` true/false (enable org.freedesktop.ScreenSaver)
  * ``freedesktop_pm`` = ``<bool>`` true/false (enable org.freedesktop.PowerManagement)
  * ``tray_notify`` = ``<bool>`` true/false (show notifications)
@@ -94,7 +96,7 @@ Note that powerdwarf will start XScreenSaver during startup (unless ``freedeskto
 
 ### Slackware-only?
 
-No, powerdwarf should work on any Linux distro (check requirements). However, powerdwarf is developed on Slackware and sees minimal testing on other distros.
+No, powerdwarf should work on any Linux/FreeBSD system (check requirements). However, powerdwarf is developed on/for Slackware and sees minimal testing on other distros.
 
 ### How does an application inhibit the screen saver?
 
@@ -111,10 +113,6 @@ Common use cases are audio playback, downloading and more.
 ### Hybrid suspend?
 
 Not at this moment. Note that powerdwarf will trigger the critical battery action (hibernate/shutdown) even when suspended.
-
-### FreeBSD support?
-
-Yes, but hibernate has not been tested.
 
 ## Requirements
 
@@ -170,6 +168,7 @@ powerdwarf does not bundle any icons, so you will need a compatible theme instal
  * system-hibernate
  * system-shutdown
  * emblem-unreadable
+ * weather-clear
 
 ## Build
 
@@ -212,19 +211,19 @@ make INSTALL_ROOT=pkg_path install
 ```
 pkg/
 ├── etc
-│   └── xdg
-│       └── autostart
-│           └── powerdwarf.desktop
+│   └── xdg
+│       └── autostart
+│           └── powerdwarf.desktop
 └── usr
     ├── bin
-    │   └── powerdwarf
+    │   └── powerdwarf
     └── share
         ├── applications
-        │   └── powerdwarf.desktop
+        │   └── powerdwarf.desktop
         ├── doc
-        │   └── powerdwarf-VERSION
-        │       ├── LICENSE
-        │       └── README.md
+        │   └── powerdwarf-VERSION
+        │       ├── LICENSE
+        │       └── README.md
         └── man
             └── man1
                 └── powerdwarf.1

@@ -24,6 +24,8 @@
 #include <QPushButton>
 #include <QApplication>
 #include <QProcess>
+#include <QDebug>
+#include <QSlider>
 
 #include "def.h"
 #include "common.h"
@@ -72,6 +74,9 @@ private:
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
     QCheckBox *lidXrandr;
+    QString backlightDevice;
+    bool hasBacklight;
+    QSlider *backlightSlider;
 
 private slots:
     void populate();
@@ -98,6 +103,7 @@ private slots:
     void handleHibernateButton();
     void handlePoweroffButton();
     void checkPerms();
+    void handleBacklightSlider(int value);
 };
 
 #endif // DIALOG_H

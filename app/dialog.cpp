@@ -31,6 +31,8 @@ Dialog::Dialog(QWidget *parent)
     , hibernateButton(0)
     , poweroffButton(0)
     , lidXrandr(0)
+    , hasBacklight(false)
+    , backlightSlider(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -229,9 +231,9 @@ Dialog::Dialog(QWidget *parent)
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
 
-    QLabel *powerLabel = new QLabel(this);
-    powerLabel->setText(QString("<a href=\"https://github.com/rodlie/powerdwarf\">"
-                           "powerdwarf</a> version %1<br>&copy; 2018 Ole-André Rodlie").arg(QApplication::applicationVersion()));
+    //QLabel *powerLabel = new QLabel(this);
+    //powerLabel->setText(QString("<a href=\"https://github.com/rodlie/powerdwarf\">"
+    //                       "powerdwarf</a> version %1<br>&copy; 2018 Ole-André Rodlie").arg(QApplication::applicationVersion()));
 
     lockscreenButton = new QPushButton(this);
     lockscreenButton->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
@@ -265,7 +267,17 @@ Dialog::Dialog(QWidget *parent)
         poweroffButton->setText(tr("Shutdown"));
     }
 
-    extraContainerLayout->addWidget(powerLabel);
+    backlightSlider = new QSlider(this);
+    backlightSlider->hide();
+    backlightSlider->setSingleStep(1);
+    backlightSlider->setOrientation(Qt::Horizontal);
+
+    QLabel *backlightLabel = new QLabel(this);
+    backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON).pixmap(24, 24));
+
+    //extraContainerLayout->addWidget(powerLabel);
+    extraContainerLayout->addWidget(backlightLabel);
+    extraContainerLayout->addWidget(backlightSlider);
     extraContainerLayout->addStretch();
     extraContainerLayout->addWidget(lockscreenButton);
     extraContainerLayout->addWidget(sleepButton);
@@ -325,6 +337,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleAutoSleepACAction(int)));
     connect(lidXrandr, SIGNAL(toggled(bool)),
             this, SLOT(handleLidXrandr(bool)));
+    connect(backlightSlider, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightSlider(int)));
 }
 
 Dialog::~Dialog()
@@ -486,6 +500,22 @@ void Dialog::loadSettings()
     }
 
     checkPerms();
+
+    // backlight
+    backlightDevice = Common::backlightDevice();
+    hasBacklight = Common::canAdjustBacklight(backlightDevice);
+    if (hasBacklight) {
+        qDebug() << "enable backlight";
+        backlightSlider->setMinimum(1);
+        backlightSlider->setMaximum(Common::backlightMax(backlightDevice));
+        backlightSlider->setValue(Common::backlightValue(backlightDevice));
+        backlightSlider->show();
+        backlightSlider->setEnabled(true);
+    } else {
+        qDebug() << "disable backlight";
+        backlightSlider->hide();
+        backlightSlider->setDisabled(true);
+    }
 }
 
 // set default action in combobox
@@ -606,6 +636,9 @@ void Dialog::handleShowSystemTray(bool triggered)
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
+    if (triggered && !lidXrandr->isEnabled()) {
+        lidXrandr->setEnabled(true);
+    } else { lidXrandr->setDisabled(true); }
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
 }
 
@@ -736,5 +769,12 @@ void Dialog::checkPerms()
             autoSleepBatteryAction->setCurrentIndex(suspendNone);
             handleAutoSleepBatteryAction(suspendNone);
         }
+    }
+}
+
+void Dialog::handleBacklightSlider(int value)
+{
+    if (Common::backlightValue(backlightDevice) != value) {
+        Common::adjustBacklight(backlightDevice, value);
     }
 }
