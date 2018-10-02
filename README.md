@@ -22,6 +22,57 @@ powerdwarf is a user session daemon and should be started during the X11 startup
  * In Fluxbox add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file
  * In Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file.
 
+## Configuration
+
+powerdwarf can be configured through the included GUI or by manually editing the configuration file.
+
+### GUI
+
+Click on the powerdwarf system tray, or run the command (or use powerdwarf.desktop):
+``` powerdwarf --config```
+
+### Configuration file
+
+You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
+
+ * ``suspend_battery_timeout`` = ``<int>`` in min (suspend on battery after)
+ * ``suspend_battery_action`` = ``<int>`` action taken when auto suspend on battery
+   * ``0`` = ``none``
+   * ``1`` = ``sleep``
+   * ``2`` = ``hibernate``
+   * ``3`` = ``shutdown``
+ * ``suspend_ac_timeout`` = ``<int>`` in min (suspend on AC after)
+ * ``suspend_ac_action`` = ``<int>`` action taken when auto suspend on AC
+   * ``0`` = ``none``
+   * ``1`` = ``sleep``
+   * ``2`` = ``hibernate``
+   * ``3`` = ``shutdown``
+ * ``critical_battery_timeout`` = ``<int>`` in % (critical batter percent)
+ * ``critical_battery_action`` = ``<int>`` action taken when battery is critical
+   * ``0`` = ``none``
+   * ``1`` = ``hibernate``
+   * ``2`` = ``shutdown``
+ * ``lid_battery_action`` = ``<int>`` action taken when lid is closed on battery
+   * ``0`` = ``none``
+   * ``1`` = ``lock``
+   * ``2`` = ``sleep``
+   * ``3`` = ``hibernate``
+   * ``4`` = ``shutdown``
+ * ``lid_ac_action`` = ``<int>`` action taken when lid is closed on AC
+   * ``0`` = ``none``
+   * ``1`` = ``lock``
+   * ``2`` = ``sleep``
+   * ``3`` = ``hibernate``
+   * ``4`` = ``shutdown``
+ * ``disable_lid_action_external_monitor`` = ``<bool>`` true/false (disable lid action if external monitor is connected)
+ * ``freedesktop_ss`` = ``<bool>`` true/false (enable org.freedesktop.ScreenSaver)
+ * ``freedesktop_pm`` = ``<bool>`` true/false (enable org.freedesktop.PowerManagement)
+ * ``tray_notify`` = ``<bool>`` true/false (show notifications)
+ * ``show_tray`` = ``<bool>`` true/false (show system tray)
+ * ``icon_theme`` = ``<string>`` valid icon theme name (fallback)
+
+You do not need to restart powerdwarf after editing the configuration file, powerdwarf will auto-detect if the file has changed.
+
 ## Requirements
 
 powerdwarf requires the following dependencies to work:
