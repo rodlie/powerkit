@@ -19,7 +19,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QCoreApplication::setApplicationName("freedesktop");
     QCoreApplication::setOrganizationDomain("org");
-    QCoreApplication::setApplicationVersion("0.9.0");
+    QCoreApplication::setApplicationVersion(APP_VERSION);
 
     // get user input
     QString userArg;

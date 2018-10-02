@@ -8,7 +8,6 @@
 
 #include "systray.h"
 #include "def.h"
-#include "screens.h"
 #include <QMessageBox>
 #include <QApplication>
 
@@ -18,7 +17,6 @@ SysTray::SysTray(QObject *parent)
     , man(0)
     , pm(0)
     , ss(0)
-    , ht(0)
     , pd(0)
     , wasLowBattery(false)
     , wasVeryLowBattery(false)
@@ -112,25 +110,8 @@ SysTray::SysTray(QObject *parent)
             this,
             SLOT(handleDelInhibitScreenSaver(quint32)));
 
-    // setup monitor hotplug watcher
-    ht = new HotPlug();
-    qRegisterMetaType<QMap<QString,bool> >("QMap<QString,bool>");
-    connect(ht,
-            SIGNAL(status(QString,bool)),
-            this,
-            SLOT(handleDisplay(QString,bool)));
-    connect(ht,
-            SIGNAL(found(QMap<QString,bool>)),
-            this,
-            SLOT(handleFoundDisplays(QMap<QString,bool>)));
-    ht->requestScan();
-
     // setup org.freedesktop.PowerDwarf
     pd = new PowerDwarf();
-    connect(this,
-            SIGNAL(updatedMonitors()),
-            pd,
-            SLOT(updateMonitors()));
     connect(pd,
             SIGNAL(update()),
             this,
@@ -174,7 +155,6 @@ SysTray::~SysTray()
     if (xscreensaver->isOpen()) { xscreensaver->close(); }
     pm->deleteLater();
     ss->deleteLater();
-    ht->deleteLater();
     pd->deleteLater();
 }
 
@@ -338,6 +318,20 @@ void SysTray::loadSettings()
     }
     if (Common::validPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL)) {
         disableLidOnExternalMonitors = Common::loadPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
+    }
+
+    // verify
+    if (!Common::kernelCanResume()) {
+        qDebug() << "hibernate is not activated in kernel (add resume=...)";
+        disableHibernate();
+    }
+    if (!man->canHibernate()) {
+        qDebug() << "hibernate is not supported";
+        disableHibernate();
+    }
+    if (!man->canSuspend()) {
+        qDebug() << "suspend not supported";
+        disableSuspend();
     }
 
     /*qDebug() << CONF_START_SCREENSAVER << startupScreensaver;
@@ -504,9 +498,8 @@ void SysTray::timeout()
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    qDebug() << "timeouts?" << timeouts;
-    qDebug() << "user idle?" << xIdle();
-    qDebug() << "pm inhibit?" << pm->HasInhibit();
+    int uIdle = xIdle();
+    qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit();
 
     int autoSuspend = 0;
     int autoSuspendAction = suspendNone;
@@ -522,7 +515,7 @@ void SysTray::timeout()
     bool doSuspend = false;
     if (autoSuspend>0 &&
         timeouts>=autoSuspend &&
-        xIdle()>=autoSuspend &&
+        uIdle>=autoSuspend &&
         !pm->HasInhibit()) { doSuspend = true; }
     if (!doSuspend) { timeouts++; }
     else {
@@ -568,22 +561,6 @@ void SysTray::resetTimer()
     timeouts = 0;
 }
 
-// handle connected and disconnected monitors
-void SysTray::handleDisplay(QString display, bool connected)
-{
-    qDebug() << "handle display output" << display << connected;
-    if (monitors[display] == connected) { return; }
-    monitors[display] = connected;
-    emit updatedMonitors();
-}
-
-// update monitor list
-void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
-{
-    qDebug() << "found display outputs" << displays;
-    monitors = displays;
-}
-
 // set "internal" monitor
 void SysTray::setInternalMonitor()
 {
@@ -594,7 +571,7 @@ void SysTray::setInternalMonitor()
 // is "internal" monitor connected?
 bool SysTray::internalMonitorIsConnected()
 {
-    QMapIterator<QString, bool> i(monitors);
+    QMapIterator<QString, bool> i(Screens::outputs());
     while (i.hasNext()) {
         i.next();
         if (i.key() == internalMonitor) {
@@ -608,7 +585,7 @@ bool SysTray::internalMonitorIsConnected()
 // is "external" monitor(s) connected?
 bool SysTray::externalMonitorIsConnected()
 {
-    QMapIterator<QString, bool> i(monitors);
+    QMapIterator<QString, bool> i(Screens::outputs());
     while (i.hasNext()) {
         i.next();
         if (i.key()!=internalMonitor &&
@@ -674,4 +651,50 @@ void SysTray::handleConfChanged(QString file)
 {
     Q_UNUSED(file)
     loadSettings();
+}
+
+// disable hibernate if enabled
+void SysTray::disableHibernate()
+{
+    if (criticalAction == criticalHibernate) {
+        qWarning() << "reset critical action to shutdown";
+        criticalAction = criticalShutdown;
+    }
+    if (lidActionBattery == lidHibernate) {
+        qWarning() << "reset lid battery action to lock";
+        lidActionBattery = lidLock;
+    }
+    if (lidActionAC == lidHibernate) {
+        qWarning() << "reset lid ac action to lock";
+        lidActionAC = lidLock;
+    }
+    if (autoSuspendBatteryAction == suspendHibernate) {
+        qWarning() << "reset auto suspend battery action to none";
+        autoSuspendBatteryAction = suspendNone;
+    }
+    if (autoSuspendACAction == suspendHibernate) {
+        qWarning() << "reset auto suspend ac action to none";
+        autoSuspendACAction = suspendNone;
+    }
+}
+
+// disable suspend if enabled
+void SysTray::disableSuspend()
+{
+    if (lidActionBattery == lidSleep) {
+        qWarning() << "reset lid battery action to lock";
+        lidActionBattery = lidLock;
+    }
+    if (lidActionAC == lidSleep) {
+        qWarning() << "reset lid ac action to lock";
+        lidActionAC = lidLock;
+    }
+    if (autoSuspendBatteryAction == suspendSleep) {
+        qWarning() << "reset auto suspend battery action to none";
+        autoSuspendBatteryAction = suspendNone;
+    }
+    if (autoSuspendACAction == suspendSleep) {
+        qWarning() << "reset auto suspend ac action to none";
+        autoSuspendACAction = suspendNone;
+    }
 }

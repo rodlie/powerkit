@@ -470,6 +470,8 @@ void Dialog::loadSettings()
         hibernateButton->setEnabled(UPower::canHibernate());
         poweroffButton->setEnabled(CKit::canPowerOff());
     }
+
+    checkPerms();
 }
 
 // set default action in combobox
@@ -503,16 +505,42 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
 {
+    if (index == lidHibernate &&
+            (!Common::kernelCanResume() ||
+             !hibernateButton->isEnabled())) {
+        QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
+        return;
+    } else if (index == lidSleep &&
+               !sleepButton->isEnabled()) {
+        QMessageBox::warning(this, tr("Error"), tr("Suspend is not supported"));
+        return;
+    }
     Common::savePowerSettings(CONF_LID_BATTERY_ACTION, index);
 }
 
 void Dialog::handleLidActionAC(int index)
 {
+    if (index == lidHibernate &&
+            (!Common::kernelCanResume() ||
+             !hibernateButton->isEnabled())) {
+        QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
+        return;
+    } else if (index == lidSleep &&
+               !sleepButton->isEnabled()) {
+        QMessageBox::warning(this, tr("Error"), tr("Suspend is not supported"));
+        return;
+    }
     Common::savePowerSettings(CONF_LID_AC_ACTION, index);
 }
 
 void Dialog::handleCriticalAction(int index)
 {
+    if (index == criticalHibernate &&
+            (!Common::kernelCanResume() ||
+             !hibernateButton->isEnabled())) {
+        QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
+        return;
+    }
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
 }
 
@@ -564,11 +592,31 @@ void Dialog::handleDisableLidAction(bool triggered)
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
+    if (index == suspendHibernate &&
+            (!Common::kernelCanResume() ||
+             !hibernateButton->isEnabled())) {
+        QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
+        return;
+    } else if (index == suspendSleep &&
+               !sleepButton->isEnabled()) {
+        QMessageBox::warning(this, tr("Error"), tr("Suspend is not supported"));
+        return;
+    }
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
+    if (index == suspendHibernate &&
+            (!Common::kernelCanResume() ||
+             !hibernateButton->isEnabled())) {
+        QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
+        return;
+    } else if (index == suspendSleep &&
+               !sleepButton->isEnabled()) {
+        QMessageBox::warning(this, tr("Error"), tr("Suspend is not supported"));
+        return;
+    }
     Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
 }
 
@@ -620,5 +668,54 @@ void Dialog::handlePoweroffButton()
                                  tr("System denied power request."
                                     " Maybe the required daemon is not running,"
                                     " or you may not have the required permissions."));
+    }
+}
+
+void Dialog::checkPerms()
+{
+    if (!Common::kernelCanResume() || !hibernateButton->isEnabled()) {
+        QMessageBox::warning(this, tr("Hibernate not supported"),
+                             tr("The kernel command line does not contain resume=<swap partition/file>."
+                                "Add resume=<swap partition/file> to the boot loader configuration"
+                                " (GRUB/LILO etc) to enable hibernate."));
+        hibernateButton->setDisabled(true);
+        if (criticalActionBattery->currentIndex() == criticalHibernate) {
+            criticalActionBattery->setCurrentIndex(criticalShutdown);
+            handleCriticalAction(criticalShutdown);
+        }
+        if (lidActionAC->currentIndex() == lidHibernate) {
+            lidActionAC->setCurrentIndex(lidLock);
+            handleLidActionAC(lidLock);
+        }
+        if (lidActionBattery->currentIndex() == lidHibernate) {
+            lidActionBattery->setCurrentIndex(lidLock);
+            handleLidActionBattery(lidLock);
+        }
+        if (autoSleepACAction->currentIndex() == suspendHibernate) {
+            autoSleepACAction->setCurrentIndex(suspendNone);
+            handleAutoSleepACAction(suspendNone);
+        }
+        if (autoSleepBatteryAction->currentIndex() == suspendHibernate) {
+            autoSleepBatteryAction->setCurrentIndex(suspendNone);
+            handleAutoSleepBatteryAction(suspendNone);
+        }
+    }
+    if (!sleepButton->isEnabled()) {
+        if (lidActionAC->currentIndex() == lidSleep) {
+            lidActionAC->setCurrentIndex(lidLock);
+            handleLidActionAC(lidLock);
+        }
+        if (lidActionBattery->currentIndex() == lidSleep) {
+            lidActionBattery->setCurrentIndex(lidLock);
+            handleLidActionBattery(lidLock);
+        }
+        if (autoSleepACAction->currentIndex() == suspendSleep) {
+            autoSleepACAction->setCurrentIndex(suspendNone);
+            handleAutoSleepACAction(suspendNone);
+        }
+        if (autoSleepBatteryAction->currentIndex() == suspendSleep) {
+            autoSleepBatteryAction->setCurrentIndex(suspendNone);
+            handleAutoSleepBatteryAction(suspendNone);
+        }
     }
 }

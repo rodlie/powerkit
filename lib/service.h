@@ -19,14 +19,7 @@ public:
     explicit PowerDwarf(){}
 
 signals:
-    void updatedMonitors();
     void update();
-
-private slots:
-    void updateMonitors()
-    {
-        emit updatedMonitors();
-    }
 
 public slots:
     void refresh()

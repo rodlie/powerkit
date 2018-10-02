@@ -95,6 +95,7 @@ private slots:
     void handleSleepButton();
     void handleHibernateButton();
     void handlePoweroffButton();
+    void checkPerms();
 };
 
 #endif // DIALOG_H

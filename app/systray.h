@@ -29,10 +29,9 @@
 #include "service.h"
 #include "powermanagement.h"
 #include "screensaver.h"
+#include "screens.h"
 
 #include <X11/extensions/scrnsaver.h>
-#include "hotplug.h"
-// fix X11 inc
 #undef CursorShape
 #undef Bool
 #undef Status
@@ -56,15 +55,11 @@ public:
     explicit SysTray(QObject *parent = NULL);
     ~SysTray();
 
-signals:
-    void updatedMonitors();
-
 private:
     QSystemTrayIcon *tray;
     Power *man;
     PowerManagement *pm;
     ScreenSaver *ss;
-    HotPlug *ht;
     PowerDwarf *pd;
     bool wasLowBattery;
     bool wasVeryLowBattery;
@@ -110,8 +105,6 @@ private slots:
     void timeout();
     int xIdle();
     void resetTimer();
-    void handleDisplay(QString display, bool connected);
-    void handleFoundDisplays(QMap<QString,bool> displays);
     void setInternalMonitor();
     bool internalMonitorIsConnected();
     bool externalMonitorIsConnected();
@@ -126,6 +119,8 @@ private slots:
     void handleScreensaverFinished(int exitcode);
     void showMessage(QString title, QString msg, bool critical = false);
     void handleConfChanged(QString file);
+    void disableHibernate();
+    void disableSuspend();
 };
 
 #endif // SYSTRAY_H

@@ -94,3 +94,18 @@ QString Common::confDir()
 {
     return QString("%1/.config/powerdwarf").arg(QDir::homePath());
 }
+
+bool Common::kernelCanResume()
+{
+#ifdef __FreeBSD__
+    // ???
+    return true;
+#endif
+    QFile cmdline("/proc/cmdline");
+    if (cmdline.open(QIODevice::ReadOnly)) {
+        QByteArray result = cmdline.readAll();
+        cmdline.close();
+        if (result.contains("resume=")) { return true;}
+    }
+    return false;
+}

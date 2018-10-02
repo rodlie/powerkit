@@ -24,6 +24,7 @@ public:
     static void setIconTheme();
     static QString confFile();
     static QString confDir();
+    static bool kernelCanResume();
 };
 
 #endif // COMMON_H

@@ -19,6 +19,7 @@ LIBS += -L../lib -lPowerDwarf
 INCLUDEPATH += ../lib
 
 include(../powerdwarf.pri)
+DEFINES += APP_VERSION=\"\\\"$${VERSION}\\\"\"
 
 !CONFIG(no_app_install) {
     target.path = $${PREFIX}/bin

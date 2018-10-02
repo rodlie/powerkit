@@ -17,7 +17,6 @@ SOURCES += \
     upower.cpp \
     powermanagement.cpp \
     screensaver.cpp \
-    hotplug.cpp \
     login1.cpp \
     device.cpp \
     ckit.cpp \
@@ -28,7 +27,6 @@ HEADERS += \
     upower.h \
     powermanagement.h \
     screensaver.h \
-    hotplug.h \
     def.h \
     service.h \
     login1.h \
