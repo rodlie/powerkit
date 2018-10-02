@@ -39,7 +39,7 @@ signals:
     void openedLid();
     void switchedToBattery();
     void switchedToAC();
-    void notifyStatus(QString title, QString msg);
+    void notifyStatus(QString title, QString msg, bool critical = false);
 
 public slots:
     bool isDocked();

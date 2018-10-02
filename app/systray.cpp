@@ -21,6 +21,7 @@ SysTray::SysTray(QObject *parent)
     , ht(0)
     , pd(0)
     , wasLowBattery(false)
+    , wasVeryLowBattery(false)
     , lowBatteryValue(LOW_BATTERY)
     , critBatteryValue(CRITICAL_BATTERY)
     , hasService(false)
@@ -80,6 +81,10 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(switchedToAC()),
             this,
             SLOT(handleOnAC()));
+    connect(man,
+            SIGNAL(notifyStatus(QString,QString,bool)),
+            this,
+            SLOT(showMessage(QString,QString,bool)));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
@@ -177,12 +182,6 @@ SysTray::~SysTray()
 void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
-    /*switch(reason) {
-    case QSystemTrayIcon::Context:
-    case QSystemTrayIcon::Trigger:
-    default:;
-    }*/
-    // TODO : use dialog
     QString config = QString("%1 --config").arg(qApp->applicationFilePath());
     QProcess::startDetached(config);
 }
@@ -218,6 +217,12 @@ void SysTray::checkDevices()
     // draw battery systray
     drawBattery(batteryLeft);
 
+    // low battery?
+    handleLow(batteryLeft);
+
+    // very low battery?
+    handleVeryLow(batteryLeft);
+
     // critical battery?
     if (batteryLeft > 0 &&
         batteryLeft<=(double)critBatteryValue &&
@@ -230,7 +235,7 @@ void SysTray::checkDevices()
 // what to do when user close lid
 void SysTray::handleClosedLid()
 {
-    qDebug() << "lid closed" << internalMonitorIsConnected() << externalMonitorIsConnected();
+    qDebug() << "lid closed";
 
     int type = lidNone;
     if (man->onBattery()) {  // on battery
@@ -280,6 +285,9 @@ void SysTray::handleOnAC()
 {
     showMessage(tr("On AC"),
                 tr("Switched to AC power."));
+
+    wasLowBattery = false;
+    wasVeryLowBattery = false;
     // TODO: add brightness
 }
 
@@ -332,7 +340,7 @@ void SysTray::loadSettings()
         disableLidOnExternalMonitors = Common::loadPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
     }
 
-    qDebug() << CONF_START_SCREENSAVER << startupScreensaver;
+    /*qDebug() << CONF_START_SCREENSAVER << startupScreensaver;
     qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
     qDebug() << CONF_TRAY_SHOW << showTray;
     qDebug() << CONF_TRAY_NOTIFY << showNotifications;
@@ -345,7 +353,7 @@ void SysTray::loadSettings()
     qDebug() << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
     qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
     qDebug() << CONF_LID_AC_ACTION << lidActionAC;
-    qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
+    qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;*/
 
     // start xscreensaver
     if (startupScreensaver && !xscreensaver->isReadable()) {
@@ -408,6 +416,36 @@ void SysTray::handleHasInhibitChanged(bool has_inhibit)
     if (has_inhibit) { resetTimer(); }
 }
 
+void SysTray::handleLow(double left)
+{
+    double batteryLow = (double)(lowBatteryValue+critBatteryValue);
+    if (left<=batteryLow && man->onBattery()) {
+        if (!wasLowBattery) {
+            showMessage(tr("Low Battery! (%1%)").arg(left),
+                        tr("You battery is low,"
+                           " please consider connecting"
+                           " your computer to a power supply."),
+                        true);
+            wasLowBattery = true;
+        }
+    }
+}
+
+void SysTray::handleVeryLow(double left)
+{
+    double batteryVeryLow = (double)(critBatteryValue+1);
+    if (left<=batteryVeryLow && man->onBattery()) {
+        if (!wasVeryLowBattery) {
+            showMessage(tr("Very Low Battery! (%1%)").arg(left),
+                        tr("You battery is almost empty,"
+                           " please connect"
+                           " your computer to a power supply."),
+                        true);
+            wasVeryLowBattery = true;
+        }
+    }
+}
+
 // handle critical battery
 void SysTray::handleCritical()
 {
@@ -442,89 +480,18 @@ void SysTray::drawBattery(double left)
         return;
     }
 
-    if (left<= 10) { // critical
+    if (left<= 10) {
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left<=25) { // low
+    } else if (left<=25) {
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left<=75) { // good
+    } else if (left<=75) {
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left<=90) { // almost
+    } else if (left<=90) {
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
-    } else { // full
+    } else {
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
     }
     tray->setIcon(icon);
-
-
-
-
-
-
-
-
-    /*double batteryLow = (double)(lowBatteryValue+critBatteryValue);
-    double batteryVeryLow = (double)(critBatteryValue+2);
-    double batteryCritical = (double)(critBatteryValue);
-
-    qDebug() << "low" << batteryLow << "verylow" << batteryVeryLow << "crit" << batteryCritical << "left" << left;*/
-
-    /*
-
-    if (left<=batteryVeryLow && man->onBattery()) {
-        icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT);
-        if (!wasLowBattery) { showMessage(tr("Very Low Battery! (%1%)").arg(left),
-                                          tr("You battery is very low,"
-                                             " please connect"
-                                             " your computer to a power supply."),
-                                          true); }
-        wasLowBattery = true;
-    } else if (left<=batteryLow && man->onBattery()) {
-        icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW);
-        if (!wasLowBattery) { showMessage(tr("Low Battery! (%1%)").arg(left),
-                                          tr("You battery is almost empty,"
-                                             " please consider connecting"
-                                             " your computer to a power supply."),
-                                          true); }
-        wasLowBattery = true;
-    } else {
-        wasLowBattery = false;
-
-        if (left<=batteryLow) { // low (on ac)
-            qDebug() << "low on ac" << left;
-            icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW_AC);
-        } else if (left<=batteryVeryLow) { // critical
-            qDebug() << "critical" << left;
-            if (man->onBattery()) {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT);
-            } else {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT_AC);
-            }
-        } else if (left>batteryLow && left<80) { // good
-            qDebug() << "good";
-            if (man->onBattery()) {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_GOOD);
-            } else {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_GOOD_AC);
-            }
-        } else if (left>=80 && left<99) { // almost full
-            qDebug() << "almost full";
-            if (man->onBattery()) {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_FULL);
-            } else {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_FULL_AC);
-            }
-        } else if(left>=99) { // full
-            qDebug() << "full";
-            if (man->onBattery()) {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_FULL);
-            } else {
-                icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CHARGED);
-            }
-        } else {
-            qDebug() << "something else";
-        }
-    }*/
-
 }
 
 // timeout, check if idle
@@ -604,7 +571,7 @@ void SysTray::resetTimer()
 // handle connected and disconnected monitors
 void SysTray::handleDisplay(QString display, bool connected)
 {
-    qDebug() << "handle display connected/disconnected" << display << connected;
+    qDebug() << "handle display output" << display << connected;
     if (monitors[display] == connected) { return; }
     monitors[display] = connected;
     emit updatedMonitors();
@@ -613,7 +580,7 @@ void SysTray::handleDisplay(QString display, bool connected)
 // update monitor list
 void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
 {
-    qDebug() << "handle found displays" << displays;
+    qDebug() << "found display outputs" << displays;
     monitors = displays;
 }
 
@@ -684,8 +651,7 @@ void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
     }
 }
 
-// TODO
-// if xscreensaver was started by us, then restart if it quits
+// what to do when xscreensaver ends
 void SysTray::handleScreensaverFinished(int exitcode)
 {
     Q_UNUSED(exitcode)
@@ -703,6 +669,7 @@ void SysTray::showMessage(QString title, QString msg, bool critical)
     }
 }
 
+// reload settings if conf changed
 void SysTray::handleConfChanged(QString file)
 {
     Q_UNUSED(file)

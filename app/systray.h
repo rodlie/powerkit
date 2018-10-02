@@ -67,6 +67,7 @@ private:
     HotPlug *ht;
     PowerDwarf *pd;
     bool wasLowBattery;
+    bool wasVeryLowBattery;
     int lowBatteryValue;
     int critBatteryValue;
     bool hasService;
@@ -102,6 +103,8 @@ private slots:
     void loadSettings();
     void registerService();
     void handleHasInhibitChanged(bool has_inhibit);
+    void handleLow(double left);
+    void handleVeryLow(double left);
     void handleCritical();
     void drawBattery(double left);
     void timeout();
