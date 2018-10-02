@@ -47,7 +47,7 @@ You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
    * ``1`` = ``sleep``
    * ``2`` = ``hibernate``
    * ``3`` = ``shutdown``
- * ``critical_battery_timeout`` = ``<int>`` in % (critical batter percent)
+ * ``critical_battery_timeout`` = ``<int>`` in % (critical battery percent)
  * ``critical_battery_action`` = ``<int>`` action taken when battery is critical
    * ``0`` = ``none``
    * ``1`` = ``hibernate``

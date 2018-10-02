@@ -142,6 +142,14 @@ SysTray::SysTray(QObject *parent)
     // load settings and register service
     loadSettings();
     registerService();
+
+    // start xscreensaver
+    if (desktopSS) {
+        qDebug() << "run xscreensaver";
+        xscreensaver->start(XSCREENSAVER_RUN);
+    }
+
+    // device check
     QTimer::singleShot(10000,
                        this,
                        SLOT(checkDevices()));
@@ -277,9 +285,6 @@ void SysTray::loadSettings()
     qDebug() << "(re)load settings...";
 
     // set default settings
-    if (Common::validPowerSettings(CONF_START_SCREENSAVER)) {
-        startupScreensaver = Common::loadPowerSettings(CONF_START_SCREENSAVER).toInt();
-    }
     if (Common::validPowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT)) {
         autoSuspendBattery = Common::loadPowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
     }
@@ -334,7 +339,7 @@ void SysTray::loadSettings()
         disableSuspend();
     }
 
-    /*qDebug() << CONF_START_SCREENSAVER << startupScreensaver;
+/*
     qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
     qDebug() << CONF_TRAY_SHOW << showTray;
     qDebug() << CONF_TRAY_NOTIFY << showNotifications;
@@ -347,13 +352,8 @@ void SysTray::loadSettings()
     qDebug() << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
     qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
     qDebug() << CONF_LID_AC_ACTION << lidActionAC;
-    qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;*/
-
-    // start xscreensaver
-    if (startupScreensaver && !xscreensaver->isReadable()) {
-        qDebug() << "run xscreensaver";
-        xscreensaver->start(XSCREENSAVER_RUN);
-    }
+    qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
+*/
 }
 
 // register session services
