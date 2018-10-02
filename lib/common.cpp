@@ -35,25 +35,6 @@ bool Common::validPowerSettings(QString type)
     return settings.value(type).isValid();
 }
 
-QString Common::vendor()
-{
-    if (QFile::exists("/etc/slackware-version")) {
-        return "slackware";
-    }
-    return QString();
-}
-
-bool Common::isDarkTheme()
-{
-    return loadPowerSettings("dark_theme").toBool();
-}
-
-void Common::setDarkTheme()
-{}
-
-void Common::setNormalTheme()
-{}
-
 void Common::setIconTheme()
 {
     QString theme = QIcon::themeName();

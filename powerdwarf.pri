@@ -37,8 +37,8 @@ CONFIG(release, debug|release) {
 
 freebsd {
     INCLUDEPATH += /usr/local/include
-    LIBS += -lX11 -lXss -lXrandr -lXinerama
+    LIBS += -lX11 -lXss -lXrandr
 } else {
     CONFIG += link_pkgconfig
-    PKGCONFIG += x11 xscrnsaver xrandr xinerama
+    PKGCONFIG += x11 xscrnsaver xrandr
 }

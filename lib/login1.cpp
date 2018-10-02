@@ -4,7 +4,6 @@
 #include <QDBusMessage>
 #include <QDBusReply>
 #include <QDBusInterface>
-#include <QDebug>
 
 #include "def.h"
 
@@ -26,7 +25,6 @@ bool Login1::canRestart()
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call("CanReboot");
-    qDebug() << "can restart?" << reply;
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -50,7 +48,6 @@ bool Login1::canPowerOff()
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call("CanPowerOff");
-    qDebug() << "can poweroff?" << reply;
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -74,7 +71,6 @@ bool Login1::canSuspend()
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call("CanSuspend");
-    qDebug() << "can suspend?" << reply;
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -98,7 +94,6 @@ bool Login1::canHibernate()
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call("CanHibernate");
-    qDebug() << "can hibernate?" << reply;
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }

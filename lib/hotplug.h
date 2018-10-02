@@ -13,11 +13,9 @@
 #include <QObject>
 #include <QThread>
 #include <QMap>
-#include <QDebug>
 
-#include "monitor.h"
+#include "screens.h"
 #include <X11/extensions/Xrandr.h>
-#include <X11/extensions/Xinerama.h>
 
 #undef Bool // fix X11 inc
 #define OCNE(X) ((XRROutputChangeNotifyEvent*)X)

@@ -17,24 +17,24 @@ SOURCES += \
     upower.cpp \
     powermanagement.cpp \
     screensaver.cpp \
-    monitor.cpp \
     hotplug.cpp \
     login1.cpp \
     device.cpp \
-    ckit.cpp
+    ckit.cpp \
+    screens.cpp
 HEADERS += \
     common.h \
     power.h \
     upower.h \
     powermanagement.h \
     screensaver.h \
-    monitor.h \
     hotplug.h \
     def.h \
     service.h \
     login1.h \
     device.h \
-    ckit.h
+    ckit.h \
+    screens.h
 
 include(../powerdwarf.pri)
 

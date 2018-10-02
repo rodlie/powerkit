@@ -9,7 +9,6 @@
 
 #include "power.h"
 #include "upower.h"
-#include <QDebug>
 #include <QTimer>
 #include <QProcess>
 
@@ -89,7 +88,6 @@ double Power::batteryLeft()
             batteryLeft += device.value()->percentage;
         } else { continue; }
     }
-    qDebug() << "battery left" << batteryLeft;
     return batteryLeft;
 }
 
@@ -207,7 +205,6 @@ void Power::setupDBus()
 // scan for new devices
 void Power::scanDevices()
 {
-    qDebug() << "scanning devices...";
     QStringList foundDevices = UPower::getDevices();
     for (int i=0; i < foundDevices.size(); i++) {
         QString foundDevicePath = foundDevices.at(i);
@@ -228,7 +225,6 @@ void Power::deviceAdded(const QDBusObjectPath &obj)
 {
     if (!upower->isValid()) { return; }
     QString path = obj.path();
-    qDebug() << "upower device added?" << path;
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
     scanDevices();
 }
@@ -238,7 +234,6 @@ void Power::deviceRemoved(const QDBusObjectPath &obj)
 {
     if (!upower->isValid()) { return; }
     QString path = obj.path();
-    qDebug() << "upower device removed?" << path;
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
     if (deviceExists) {
@@ -275,9 +270,7 @@ void Power::deviceChanged()
 // handle device changes
 void Power::handleDeviceChanged(QString devicePath)
 {
-    //Q_UNUSED(devicePath)
     if (devicePath.isEmpty()) { return; }
-    qDebug() << "handle device changed" << devicePath;
     deviceChanged();
 }
 
@@ -295,13 +288,13 @@ void Power::checkUPower()
 // this does not work on newer upower/logind
 void Power::notifyResume()
 {
-    qDebug() << "system is about to resume ...";
+    //qDebug() << "system is about to resume ...";
     lockScreen(); // in case lockScreen didn't trigger on sleep
 }
 
 // do stuff before sleep
 void Power::notifySleep()
 {
-    qDebug() << "system is about to sleep ...";
+    //qDebug() << "system is about to sleep ...";
     lockScreen();
 }

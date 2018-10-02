@@ -12,7 +12,6 @@
 
 #include <QDBusInterface>
 #include <QDBusMessage>
-#include <QDebug>
 
 bool CKit::hasService()
 {
@@ -31,7 +30,6 @@ bool CKit::canRestart()
     QDBusMessage reply = iface.call("CanRestart");
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
-    qDebug() << "can restart" << result << reply;
     return result;
 }
 
@@ -50,7 +48,6 @@ bool CKit::canPowerOff()
     QDBusMessage reply = iface.call("CanPowerOff");
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
-    qDebug() << "can poweroff" << result << reply;
     return result;
 }
 

@@ -50,4 +50,3 @@ include(../powerdwarf.pri)
         INSTALLS += target_udev
     }
 }
-CONFIG(xrandr): DEFINES += USE_XRANDR

@@ -13,7 +13,6 @@
 #include <QDBusInterface>
 #include <QCoreApplication>
 #include <QProcess>
-#include <QDebug>
 
 #include "def.h"
 

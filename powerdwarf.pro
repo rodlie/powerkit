@@ -10,5 +10,4 @@
 TEMPLATE = subdirs
 CONFIG -= ordered
 SUBDIRS += lib app
-OTHER_FILES += README.md LICENSE
 app.depends += lib

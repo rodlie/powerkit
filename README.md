@@ -6,60 +6,50 @@ powerdwarf is a lightweight full featured power manager created for Slackware fo
 
 ## Features
 
- * Implements org.freedesktop.ScreenSaver daemon
-   * Enables applications to inhibit the screen saver
-   * Supports XScreenSaver
- * Implements org.freedesktop.PowerManagement daemon
-   * Enables applications to inhibit suspend actions
- * Lid action
- * Lock screen
- * Sleep
- * Hibernate
- * Shutdown
- * Inhibit suspend if external monitor connected
- * Automatically suspend based on timer/idle
- * Low and critical battery actions
+ * Enables applications to inhibit the screen saver
+ * Enables applications to inhibit suspend actions
+ * Sleep/Hibernate/Lock screen on lid action
+ * Inhibit lid action if external monitor(s) is connected
+ * Automatically suspend (sleep/hibernate)
+ * Hibernate/Shutdown on critical battery
  * Configuration GUI
-
-## Links
-
- * [Project](https://github.com/rodlie/powerdwarf)
- * [Tracker](https://github.com/rodlie/powerdwarf/issues)
- * [Milestones](https://github.com/rodlie/powerdwarf/milestones)
- * [Releases](https://github.com/rodlie/powerdwarf/releases)
+ * Implements org.freedesktop.ScreenSaver
+ * Implements org.freedesktop.PowerManagement
+ * Supports XScreenSaver
 
 ## Usage
 
-powerdwarf is a user session daemon and should be started during the user X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
+powerdwarf is a user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
 
- * In Fluxbox you need to add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file
+ * In Fluxbox add ``powerdwarf &`` to the ``~/.fluxbox/startup`` file
  * In Openbox add ``powerdwarf &`` to the ``~/.config/openbox/autostart`` file.
-
- **powerdwarf should not be used in GNOME or KDE.**
 
 ## Requirements
 
-powerdwarf requires the following dependencies:
+powerdwarf requires the following dependencies to work:
+
+### Build dependencies
 
  * X11
  * Xss
  * Xrandr
- * Xinerama
  * QtDBus
  * QtXml
  * QtGui
  * QtCore
+
+### Run-time dependencies
+
  * ConsoleKit (or logind)
  * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
- * hicolor-icon-theme
- * adwaita-icon-theme (or similar)
+ * adwaita-icon-theme (or similar, must have battery status icons)
 
 Tested on Slackware, Ubuntu and FreeBSD.
 
 ## Build
 
-First make sure you have the required dependencies installed, then review the build options.
+First make sure you have the required dependencies installed, then review the build options:
 
 ### Build options
 
@@ -81,6 +71,9 @@ First make sure you have the required dependencies installed, then review the bu
 mkdir build && cd build
 qmake CONFIG+=release .. && make
 ```
+
+Then just run ``app/powerdwarf`` or install with:
+
 ```
 sudo make install
 ```

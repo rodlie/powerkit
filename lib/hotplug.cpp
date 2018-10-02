@@ -73,7 +73,7 @@ void HotPlug::requestSetScan(bool scanning)
 void HotPlug::getScreens(Display *dpy)
 {
     if (dpy == NULL) { return; }
-    QMap<QString,bool> result = Monitor::get(dpy);
+    QMap<QString,bool> result = Screens::outputsDpy(dpy);
     emit found(result);
 }
 

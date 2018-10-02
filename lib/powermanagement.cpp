@@ -11,7 +11,6 @@
 #include <QMapIterator>
 #include <QDBusConnection>
 #include <QCoreApplication>
-#include <QDebug>
 #include <QProcess>
 
 #include "def.h"

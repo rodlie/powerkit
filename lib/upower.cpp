@@ -37,7 +37,6 @@ bool UPower::canSuspend()
     QDBusMessage reply = iface.call("SuspendAllowed");
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
-    qDebug() << "can suspend?" << result << reply;
     return result;
 }
 
@@ -57,7 +56,6 @@ bool UPower::canHibernate()
     QDBusMessage reply = iface.call("HibernateAllowed");
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
-    qDebug() << "can hibernate?" << result << reply.arguments();
     return result;
 }
 

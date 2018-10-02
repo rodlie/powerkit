@@ -9,6 +9,7 @@
 
 #include "systray.h"
 #include "def.h"
+#include "screens.h"
 #include <QMessageBox>
 #include <QApplication>
 
@@ -57,7 +58,7 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this,
             SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
-    if (tray->isSystemTrayAvailable()) { tray->show(); }
+    //if (tray->isSystemTrayAvailable()) { tray->show(); }
 
     // setup manager
     man = new Power(this);
@@ -149,15 +150,21 @@ SysTray::SysTray(QObject *parent)
             SLOT(timeout()));
     timer->start();
 
+    // setup theme
+    Common::setIconTheme();
+    if (tray->icon().isNull()) {
+        tray->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
+    }
+
     // load settings and register service
     loadSettings();
     registerService();
     QTimer::singleShot(10000,
                        this,
                        SLOT(checkDevices()));
-    QTimer::singleShot(5000,
+    QTimer::singleShot(1000,
                        this,
-                       SLOT(setupMonitors()));
+                       SLOT(setInternalMonitor()));
 }
 
 SysTray::~SysTray()
@@ -184,11 +191,21 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void SysTray::checkDevices()
 {
+    // show/hide tray
     if (tray->isSystemTrayAvailable() &&
         !tray->isVisible() &&
         showTray) { tray->show(); }
     if (!showTray &&
         tray->isVisible()) { tray->hide(); }
+
+    // warn if systray has no icons
+    if (tray->isVisible() && (QIcon::themeName().isEmpty() ||
+        QIcon::themeName() == "hicolor")) {
+        showMessage(tr("No icon theme found!"),
+                    tr("Unable to find any icon theme,"
+                       " please install an icon theme and restart powerdwarf."),
+                    true);
+    }
 
     // get battery left and add tooltip
     double batteryLeft = man->batteryLeft();
@@ -215,10 +232,7 @@ void SysTray::checkDevices()
 // what to do when user close lid
 void SysTray::handleClosedLid()
 {
-    qDebug() << "LID CLOSED";
-    qDebug() << "monitors?" << monitors;
-    qDebug() << "internal monitor connected?" << internalMonitorIsConnected();
-    qDebug() << "has external monitor?" << externalMonitorIsConnected();
+    qDebug() << "lid closed" << internalMonitorIsConnected() << externalMonitorIsConnected();
 
     int type = lidNone;
     if (man->onBattery()) {  // on battery
@@ -277,16 +291,7 @@ void SysTray::handleOnAC()
 // load default settings
 void SysTray::loadSettings()
 {
-    // setup theme
-    Common::setIconTheme();
-    if (QIcon::themeName().isEmpty() ||
-        QIcon::themeName() == "hicolor") {
-        QMessageBox::warning(NULL,
-                             tr("No icon theme found"),
-                             tr("Unable to find any icon theme,"
-                                " please install an icon theme!"
-                                " (adwaita-icon-theme is recommended)."));
-    }
+    qDebug() << "(re)load settings...";
 
     // set default settings
     if (Common::validPowerSettings(CONF_START_SCREENSAVER)) {
@@ -405,14 +410,13 @@ void SysTray::registerService()
 // dbus session inhibit status handler
 void SysTray::handleHasInhibitChanged(bool has_inhibit)
 {
-    qDebug() << "HasInhibitChanged?" << has_inhibit;
     if (has_inhibit) { resetTimer(); }
 }
 
 // handle critical battery
 void SysTray::handleCritical()
 {
-    qDebug() << "critical battery level, action?" << criticalAction;
+    qDebug() << "critical battery" << criticalAction;
     switch(criticalAction) {
     case criticalHibernate:
         man->hibernate();
@@ -442,10 +446,46 @@ void SysTray::drawBattery(double left)
         tray->setIcon(icon);
         return;
     }
-    qDebug() << "LOW is" << (double)(lowBatteryValue+critBatteryValue);
-    if (left<=(double)(lowBatteryValue+critBatteryValue) && man->onBattery()) {
+
+    if (left<= 10) { // critical
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
+    } else if (left<=25) { // low
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
+    } else if (left<=75) { // good
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
+    } else if (left<=90) { // almost
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
+    } else { // full
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
+    }
+    tray->setIcon(icon);
+
+
+
+
+
+
+
+
+    /*double batteryLow = (double)(lowBatteryValue+critBatteryValue);
+    double batteryVeryLow = (double)(critBatteryValue+2);
+    double batteryCritical = (double)(critBatteryValue);
+
+    qDebug() << "low" << batteryLow << "verylow" << batteryVeryLow << "crit" << batteryCritical << "left" << left;*/
+
+    /*
+
+    if (left<=batteryVeryLow && man->onBattery()) {
+        icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT);
+        if (!wasLowBattery) { showMessage(tr("Very Low Battery! (%1%)").arg(left),
+                                          tr("You battery is very low,"
+                                             " please connect"
+                                             " your computer to a power supply."),
+                                          true); }
+        wasLowBattery = true;
+    } else if (left<=batteryLow && man->onBattery()) {
         icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW);
-        if (!wasLowBattery) { showMessage(tr("Low Battery!"),
+        if (!wasLowBattery) { showMessage(tr("Low Battery! (%1%)").arg(left),
                                           tr("You battery is almost empty,"
                                              " please consider connecting"
                                              " your computer to a power supply."),
@@ -453,24 +493,25 @@ void SysTray::drawBattery(double left)
         wasLowBattery = true;
     } else {
         wasLowBattery = false;
-        if (left<=(double)(lowBatteryValue+critBatteryValue)) { // low (on ac)
-            qDebug() << "low on ac";
+
+        if (left<=batteryLow) { // low (on ac)
+            qDebug() << "low on ac" << left;
             icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_LOW_AC);
-        } else if (left<=critBatteryValue) { // critical
-            qDebug() << "critical";
+        } else if (left<=batteryVeryLow) { // critical
+            qDebug() << "critical" << left;
             if (man->onBattery()) {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT);
             } else {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT_AC);
             }
-        } else if (left>(double)(lowBatteryValue+critBatteryValue) && left<90) { // good
+        } else if (left>batteryLow && left<80) { // good
             qDebug() << "good";
             if (man->onBattery()) {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_GOOD);
             } else {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_GOOD_AC);
             }
-        } else if (left>=90 && left<99) { // almost full
+        } else if (left>=80 && left<99) { // almost full
             qDebug() << "almost full";
             if (man->onBattery()) {
                 icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON_FULL);
@@ -486,10 +527,9 @@ void SysTray::drawBattery(double left)
             }
         } else {
             qDebug() << "something else";
-            // TODO
         }
-    }
-    tray->setIcon(icon);
+    }*/
+
 }
 
 // timeout, check if idle
@@ -502,8 +542,7 @@ void SysTray::timeout()
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    qDebug() << "TIMEOUT CHECK";
-    qDebug() << "timeout?" << timeouts;
+    qDebug() << "timeouts?" << timeouts;
     qDebug() << "user idle?" << xIdle();
     qDebug() << "pm inhibit?" << pm->HasInhibit();
 
@@ -512,12 +551,10 @@ void SysTray::timeout()
     if (man->onBattery()) {
         autoSuspend = autoSuspendBattery;
         autoSuspendAction = autoSuspendBatteryAction;
-        qDebug() << "on battery" << autoSuspend << autoSuspendAction;
     }
     else {
         autoSuspend = autoSuspendAC;
         autoSuspendAction = autoSuspendACAction;
-        qDebug() << "on ac" << autoSuspend << autoSuspendAction;
     }
 
     bool doSuspend = false;
@@ -570,36 +607,12 @@ void SysTray::resetTimer()
 }
 
 // handle connected and disconnected monitors
-// Uses xrandr to turn on/off
 void SysTray::handleDisplay(QString display, bool connected)
 {
-    qDebug() << "ignore display" << display << connected;
-#ifdef USE_XRANDR
-    qDebug() << "handle display" << display << connected;
+    qDebug() << "handle display connected/disconnected" << display << connected;
     if (monitors[display] == connected) { return; }
-
-    bool wasConnected = monitors[display];
     monitors[display] = connected;
-    if (wasConnected && !connected) {
-        // Turn off monitor using xrandr when disconnected.
-        qDebug() << "remove screen" << display;
-        QProcess proc;
-        proc.start(QString(TURN_OFF_MONITOR).arg(display));
-        proc.waitForFinished();
-        emit updatedMonitors();
-    } else if (!wasConnected && connected) {
-        // Turn on monitor using xrandr when connected
-        qDebug() << "add screen" << display;
-        QString turnOn = Monitor::turnOnMonitorUsingXrandr(display);
-        qDebug() << "running" << turnOn;
-        QProcess proc;
-        proc.start(turnOn);
-        proc.waitForFinished();
-        emit updatedMonitors();
-        //TODO add detect for lumina
-        //QProcess::startDetached(LUMINA_XCONFIG);
-    }
-#endif
+    emit updatedMonitors();
 }
 
 // update monitor list
@@ -607,27 +620,16 @@ void SysTray::handleFoundDisplays(QMap<QString, bool> displays)
 {
     qDebug() << "handle found displays" << displays;
     monitors = displays;
-    //qDebug() << "emit updatedMonitors";
-    //emit updatedMonitors();
 }
 
+// set "internal" monitor
 void SysTray::setInternalMonitor()
 {
-    qDebug() << "find and set internal monitor";
-    internalMonitor = Common::loadPowerSettings(CONF_INTERNAL_MONITOR).toString();
-    QMap<QString,bool> map = Monitor::getX();
-    if (map.size()>0) {
-        QString newInternal = map.begin().key();
-        qDebug() << "internal monitor is?" << newInternal;
-        if (!newInternal.isEmpty() && newInternal != internalMonitor) {
-            internalMonitor = newInternal;
-            Common::savePowerSettings(CONF_INTERNAL_MONITOR, internalMonitor);
-        }
-    }
+    internalMonitor = Screens::internal();
     qDebug() << "internal monitor set to" << internalMonitor;
 }
 
-// is "internal" monitor connected? Anything starting with LVDS is ok.
+// is "internal" monitor connected?
 bool SysTray::internalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(monitors);
@@ -641,7 +643,7 @@ bool SysTray::internalMonitorIsConnected()
     return false;
 }
 
-// is "external" monitor(s) connected? This means anything not LVDS is ok.
+// is "external" monitor(s) connected?
 bool SysTray::externalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(monitors);
@@ -674,7 +676,7 @@ void SysTray::handleNewInhibitPowerManagement(QString application, QString reaso
 void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
 {
     if (ssInhibitors.contains(cookie)) {
-        qDebug() << "removed ss inhibitor" << ssInhibitors[cookie];
+        qDebug() << "removed screensaver inhibitor" << ssInhibitors[cookie];
         ssInhibitors.remove(cookie);
     }
 }
@@ -682,7 +684,7 @@ void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
 void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
 {
     if (pmInhibitors.contains(cookie)) {
-        qDebug() << "removed pm inhibitor" << pmInhibitors[cookie];
+        qDebug() << "removed powermanagement inhibitor" << pmInhibitors[cookie];
         pmInhibitors.remove(cookie);
     }
 }
@@ -692,31 +694,6 @@ void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
 void SysTray::handleScrensaverFinished(int exitcode)
 {
     Q_UNUSED(exitcode)
-    //qDebug() << "xscreensaver closed, was this on purpose?" << exitcode;
-}
-
-// setup monitors based settings
-void SysTray::setupMonitors()
-{
-    setInternalMonitor();
-#ifdef USE_XRANDR
-    QMapIterator<QString, bool> monitors(Monitor::getX());
-    while (monitors.hasNext()) {
-        monitors.next();
-        QString cmd = Monitor::turnOnMonitorUsingXrandr(monitors.key());
-        if (Common::validPowerSettings(QString("%1_enabled").arg(monitors.key()))) {
-            if (!Common::loadPowerSettings(QString("%1_enabled").arg(monitors.key())).toBool()) {
-                cmd = Monitor::turnOffMonitorUsingXrandr(monitors.key());
-            }
-        }
-        if (cmd.isEmpty()) { continue; }
-        qDebug() << cmd;
-        QProcess proc;
-        proc.start(cmd);
-        proc.waitForFinished();
-        proc.close();
-    }
-#endif
 }
 
 // show notifications

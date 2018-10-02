@@ -122,7 +122,6 @@ private slots:
     void handleDelInhibitScreenSaver(quint32 cookie);
     void handleDelInhibitPowerManagement(quint32 cookie);
     void handleScrensaverFinished(int exitcode);
-    void setupMonitors();
     void showMessage(QString title, QString msg, bool critical = false);
     void handleConfChanged(QString file);
 };

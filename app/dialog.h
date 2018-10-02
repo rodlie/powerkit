@@ -33,7 +33,7 @@
 #include "def.h"
 #include "common.h"
 #include "upower.h"
-#include "monitor.h"
+//#include "monitor.h"
 
 // fix X11 inc
 #undef CursorShape
