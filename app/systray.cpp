@@ -79,10 +79,10 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(switchedToAC()),
             this,
             SLOT(handleOnAC()));
-    connect(man,
+    /*connect(man,
             SIGNAL(notifyStatus(QString,QString,bool)),
             this,
-            SLOT(showMessage(QString,QString,bool)));
+            SLOT(showMessage(QString,QString,bool)));*/
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
@@ -499,7 +499,7 @@ void SysTray::timeout()
         showTray) { tray->show(); }
 
     int uIdle = xIdle();
-    qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit();
+    qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit() << pmInhibitors << ssInhibitors;
 
     int autoSuspend = 0;
     int autoSuspendAction = suspendNone;
@@ -639,7 +639,8 @@ void SysTray::showMessage(QString title, QString msg, bool critical)
 {
     if (tray->isVisible() && showNotifications) {
         if (critical) {
-            tray->showMessage(title, msg, QSystemTrayIcon::Critical, 900000);
+            tray->showMessage(title, msg,
+                              QSystemTrayIcon::Critical, 900000);
         } else {
             tray->showMessage(title, msg);
         }
