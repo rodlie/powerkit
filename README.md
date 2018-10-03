@@ -14,7 +14,7 @@ powerdwarf is a lightweight full featured power manager created for Slackware fo
  * Hibernate/Shutdown on critical battery
  * Simple and flexible configuration GUI
  * XScreenSaver support
- * Backlight support
+ * Back light support
 
 ## Usage
 
@@ -65,12 +65,12 @@ You can edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
    * ``2`` = ``sleep``
    * ``3`` = ``hibernate``
    * ``4`` = ``shutdown``
- * ``disable_lid_action_external_monitor`` = ``<bool>`` true/false (disable lid action if external monitor is connected)
-   * ``lid_xrandr_action`` = ``<bool>`` true/false (turn internal monitor on/off with xrandr when lid is triggered)
- * ``freedesktop_ss`` = ``<bool>`` true/false (enable org.freedesktop.ScreenSaver)
- * ``freedesktop_pm`` = ``<bool>`` true/false (enable org.freedesktop.PowerManagement)
- * ``tray_notify`` = ``<bool>`` true/false (show notifications)
- * ``show_tray`` = ``<bool>`` true/false (show system tray)
+ * ``disable_lid_action_external_monitor`` = ``<bool>`` disable lid action if external monitor is connected
+   * ``lid_xrandr_action`` = ``<bool>`` turn internal monitor on/off with xrandr when lid is triggered and external monitor connected
+ * ``freedesktop_ss`` = ``<bool>`` enable org.freedesktop.ScreenSaver service
+ * ``freedesktop_pm`` = ``<bool>`` enable org.freedesktop.PowerManagement service
+ * ``tray_notify`` = ``<bool>`` show notifications
+ * ``show_tray`` = ``<bool>`` show system tray
  * ``icon_theme`` = ``<string>`` valid icon theme name (fallback)
 
 You will only need to restart powerdwarf if you edit ``freedesktop_ss``, ``freedesktop_pm`` or ``icon_theme``. Note that ``show_tray`` will not hide/show the system tray instantly, but the next time an event happens.
@@ -92,17 +92,17 @@ Recommended settings are:
   
 Note that powerdwarf will start XScreenSaver during startup (unless ``freedesktop_ss`` is disabled).
 
-### Backlight
+### Back light
 
-powerdwarf supports backlight only on Linux through ``sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the systram tray icon or through the configuration GUI (bottom left slider).
+powerdwarf supports back light only on Linux through ``/sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the system tray icon or through the configuration GUI (bottom left slider).
 
 **Note!** udev permissions are required to adjust the brightness, on Slackware an [example](https://github.com/rodlie/powerdwarf/blob/master/app/share/udev/90-backlight.rules) rule file is included with the package (see ``/usr/doc/powerdwarf-VERSION/90-backlight.rules``). You can also let powerdwarf add the rule during build with the ``CONFIG+=install_udev_rules`` option.
 
 ### Hibernate
 
-powerdwarf supports hibernate, but not out-of-the-box (for the most part). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader (e)lilo/grub configuration and add ``resume=<swap_partition/swap_file>``, then save and restart. You should now have hibernate support.
+powerdwarf supports hibernate, but not out-of-the-box (for the most part). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader (e)lilo/grub configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart. You should now have hibernate support.
 
-**Note!** some distributions have hibernate disabled, then further actions are needed (for Ubuntu see [com.ubuntu.enable-hibernate.pkla](https://github.com/rodlie/powerdwarf/blob/master/app/share/polkit/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla)).
+**Note!** some distributions have hibernate disabled (for Ubuntu see [com.ubuntu.enable-hibernate.pkla](https://github.com/rodlie/powerdwarf/blob/master/app/share/polkit/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla)).
 ## FAQ
 
 ### Slackware-only?
@@ -111,7 +111,7 @@ No, powerdwarf should work on any Linux/FreeBSD system (check requirements). How
 
 ### How does an application inhibit the screen saver?
 
-The prefered way to inhibit the screen saver from an application is to use the ``org.freedesktop.ScreenSaver`` specification. Any application that uses ``org.freedesktop.ScreenSaver`` will work with powerdwarf. Note that powerdwarf also includes ``SimulateUserActivity`` for backwards compatibility.
+The preferred way to inhibit the screen saver from an application is to use the ``org.freedesktop.ScreenSaver`` specification. Any application that uses ``org.freedesktop.ScreenSaver`` will work with powerdwarf. Note that powerdwarf also includes ``SimulateUserActivity`` for backwards compatibility.
 
 Popular applications that uses this feature is Mozilla Firefox (for audio/video), VideoLAN VLC and many more.
 
@@ -191,13 +191,13 @@ First make sure you have the required dependencies installed, then review the bu
  * **``XDGDIR=</etc/xdg>``** : Path to xdg autostart directory.
  * **``DOCDIR=<PREFIX/share/doc>``** : Path to the system documentation.
  * **``MANDIR=<PREFIX/share/man>``** : Path to the system manual.
- * **``UDEVDIR=</etc/udev>``** : Path to the udev directory (optional).
  * **``CONFIG+=release``** : Creates a release build
  * **``CONFIG+=no_doc_install``** : Do not install application documentation.
  * **``CONFIG+=no_man_install``** : Do not install application manual.
  * **``CONFIG+=no_desktop_install``** : Do not install the application desktop file.
  * **``CONFIG+=no_autostart_install``** : Do not install the XDG autostart desktop file.
  * **``CONFIG+=install_udev_rules``** : Install additional power related udev (backlight) rules
+    * **``UDEVDIR=</etc/udev>``** : Path to the udev directory.
 
 ### Build application
 
@@ -218,24 +218,4 @@ sudo make install
 qmake CONFIG+=release PREFIX=/usr
 make
 make INSTALL_ROOT=pkg_path install
-```
-```
-pkg/
-├── etc
-│   └── xdg
-│       └── autostart
-│           └── powerdwarf.desktop
-└── usr
-    ├── bin
-    │   └── powerdwarf
-    └── share
-        ├── applications
-        │   └── powerdwarf.desktop
-        ├── doc
-        │   └── powerdwarf-VERSION
-        │       ├── LICENSE
-        │       └── README.md
-        └── man
-            └── man1
-                └── powerdwarf.1
 ```
