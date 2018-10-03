@@ -48,13 +48,12 @@ QString Screens::internalDpy(Display *dpy)
     QString result;
     if (dpy == NULL) { return result; }
     XRRScreenResources *sr;
-    XRROutputInfo *info;
     sr = XRRGetScreenResourcesCurrent(dpy, DefaultRootWindow(dpy));
     if (sr) {
-        info = XRRGetOutputInfo(dpy, sr, sr->outputs[0]);
+        XRROutputInfo *info = XRRGetOutputInfo(dpy, sr, sr->outputs[0]);
         if (info) { result = info->name; }
+        XRRFreeOutputInfo(info);
     }
-    XRRFreeOutputInfo(info);
     XRRFreeScreenResources(sr);
     return result;
 }

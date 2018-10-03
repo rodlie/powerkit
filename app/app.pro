@@ -26,7 +26,7 @@ DEFINES += APP_VERSION_EXTRA=\"\\\"$${VERSION_EXTRA}\\\"\"
     target.path = $${PREFIX}/bin
     INSTALLS += target
     !CONFIG(no_doc_install) {
-        target_docs.path = $${DOCDIR}/$${TARGET}-$${VERSION}
+        target_docs.path = $${DOCDIR}/$${TARGET}-$${VERSION}$${VERSION_EXTRA}
         target_docs.files = ../LICENSE ../README.md
         INSTALLS += target_docs
     }

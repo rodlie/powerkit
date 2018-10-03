@@ -10,3 +10,7 @@ TEMPLATE = subdirs
 CONFIG -= ordered
 SUBDIRS += lib app
 app.depends += lib
+
+OTHER_FILES += \
+            app/share/slackware/powerdwarf.info \
+            app/share/slackware/powerdwarf.SlackBuild

@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 #
 
-VERSION = 0.9.0
+VERSION = 1.0.0
 VERSION_EXTRA = "beta1"
 
 isEmpty(PREFIX) {

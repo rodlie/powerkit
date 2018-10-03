@@ -41,7 +41,7 @@ CONFIG(install_lib) {
     target.path = $${PREFIX}/lib$${LIBSUFFIX}
     INSTALLS += target
     !CONFIG(no_doc_install) {
-        target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}
+        target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}$${VERSION_EXTRA}
         target_docs.files = ../LICENSE ../README.md
         INSTALLS += target_docs
     }
