@@ -34,7 +34,7 @@ Click on the powerdwarf system tray, or run the command (or use powerdwarf.deskt
 
 ### Configuration file
 
-You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
+You can edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
 
  * ``suspend_battery_timeout`` = ``<int>`` in min (suspend on battery after)
  * ``suspend_battery_action`` = ``<int>`` action taken when auto suspend on battery
@@ -96,8 +96,13 @@ Note that powerdwarf will start XScreenSaver during startup (unless ``freedeskto
 
 powerdwarf supports backlight only on Linux through ``sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the systram tray icon or through the configuration GUI (bottom left slider).
 
-**Note!** udev permissions are required to adjust the brightness, on Slackware an example rule file is included with the package (see ``/usr/doc/powerdwarf-VERSION/90-backlight.rules``). You can also let powerdwarf add the rule during build with the ``CONFIG+=install_udev_rules`` option.
+**Note!** udev permissions are required to adjust the brightness, on Slackware an [example](https://github.com/rodlie/powerdwarf/blob/master/app/share/udev/90-backlight.rules) rule file is included with the package (see ``/usr/doc/powerdwarf-VERSION/90-backlight.rules``). You can also let powerdwarf add the rule during build with the ``CONFIG+=install_udev_rules`` option.
 
+### Hibernate
+
+powerdwarf supports hibernate, but not out-of-the-box (for the most part). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader (e)lilo/grub configuration and add ``resume=<swap_partition/swap_file>``, then save and restart. You should now have hibernate support.
+
+**Note!** some distributions have hibernate disabled, then further actions are needed (for Ubuntu see [com.ubuntu.enable-hibernate.pkla](https://github.com/rodlie/powerdwarf/blob/master/app/share/polkit/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla)).
 ## FAQ
 
 ### Slackware-only?
