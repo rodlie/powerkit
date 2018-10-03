@@ -19,7 +19,7 @@ class PowerDwarf : public QObject
     Q_OBJECT
 
 public:
-    explicit PowerDwarf(){}
+    explicit PowerDwarf(QObject *parent = NULL);
 
 private:
     QMap<quint32,QString> ssInhibitors;
@@ -33,54 +33,17 @@ signals:
 private slots:
     void handleNewInhibitScreenSaver(QString application,
                                      QString reason,
-                                     quint32 cookie)
-    {
-        Q_UNUSED(reason)
-        ssInhibitors[cookie] = application;
-        emit InhibitorsSSChanged();
-    }
+                                     quint32 cookie);
     void handleNewInhibitPowerManagement(QString application,
                                          QString reason,
-                                         quint32 cookie)
-    {
-        Q_UNUSED(reason)
-        pmInhibitors[cookie] = application;
-        emit InhibitorsPMChanged();
-    }
-    void handleDelInhibitScreenSaver(quint32 cookie)
-    {
-        if (ssInhibitors.contains(cookie)) {
-            ssInhibitors.remove(cookie);
-            emit InhibitorsSSChanged();
-        }
-    }
-    void handleDelInhibitPowerManagement(quint32 cookie)
-    {
-        if (pmInhibitors.contains(cookie)) {
-            pmInhibitors.remove(cookie);
-            emit InhibitorsPMChanged();
-        }
-    }
+                                         quint32 cookie);
+    void handleDelInhibitScreenSaver(quint32 cookie);
+    void handleDelInhibitPowerManagement(quint32 cookie);
 
 public slots:
-    void Refresh()
-    {
-        emit update();
-    }
-    QStringList InhibitorsSS()
-    {
-        QStringList result;
-        QMapIterator<quint32, QString> i(ssInhibitors);
-        while (i.hasNext()) { i.next(); result << i.value(); }
-        return result;
-    }
-    QStringList InhibitorsPM()
-    {
-        QStringList result;
-        QMapIterator<quint32, QString> i(pmInhibitors);
-        while (i.hasNext()) { i.next(); result << i.value(); }
-        return result;
-    }
+    void Refresh();
+    QStringList InhibitorsSS();
+    QStringList InhibitorsPM();
 };
 
 #endif // POWERDWARF_SERVICE_H

@@ -73,7 +73,7 @@ bool Power::canSuspend()
     return false;
 }
 
-// get total battery left
+// get total battery left FIXME!
 double Power::batteryLeft()
 {
     double batteryLeft = 0;
@@ -103,8 +103,6 @@ void Power::sleep()
 }
 
 // do hibernate if available
-// TODO:
-// check for resume=swap_partition !!!
 void Power::hibernate()
 {
     if (canHibernate()) {
@@ -136,6 +134,27 @@ void Power::shutdown()
     if (upower->isValid()) {
         if (CKit::canPowerOff()) { CKit::poweroff(); }
     }
+}
+
+bool Power::hasBattery()
+{
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery) { return true; }
+    }
+    return false;
+}
+
+qlonglong Power::timeToEmpty()
+{
+    qlonglong result = 0;
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery) { result += device.value()->timeToEmpty; }
+    }
+    return result;
 }
 
 // setup dbus connections

@@ -386,6 +386,7 @@ void SysTray::loadSettings()
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
 
 /*
+    qDebug() << CONF_LID_XRANDR << lidXrandr;
     qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
     qDebug() << CONF_TRAY_SHOW << showTray;
     qDebug() << CONF_TRAY_NOTIFY << showNotifications;
@@ -751,16 +752,12 @@ void SysTray::disableSuspend()
 
 void SysTray::handleResume()
 {
-    qDebug() << "handle resume";
-    /*if (lidWasClosed && !man->lidIsClosed()) {
-        switchInternalMonitor(true);
-    }*/
+    //qDebug() << "handle resume";
 }
 
 void SysTray::handleSuspend()
 {
-    qDebug() << "handle suspend";
-    //lidWasClosed = man->lidIsClosed();
+    //qDebug() << "handle suspend";
 }
 
 void SysTray::switchInternalMonitor(bool toggle)

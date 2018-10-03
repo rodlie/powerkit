@@ -34,16 +34,24 @@ Dialog::Dialog(QWidget *parent)
     , hasBacklight(false)
     , backlightSlider(0)
     , backlightWatcher(0)
+    , man(0)
+    , batteryIcon(0)
+    , batteryLabel(0)
+    , deviceTree(0)
+    , batteryLeftLCD(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
-    setMinimumSize(QSize(380, 320));
+    setMinimumSize(QSize(387, 309));
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
     dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE,
                               session, this);
+
+    // setup man
+    man = new Power(this);
 
     // setup theme
     Common::setIconTheme();
@@ -64,7 +72,10 @@ Dialog::Dialog(QWidget *parent)
     wrapperLayout->setSpacing(0);
     wrapperLayout->addWidget(containerWidget);
 
-    QWidget *batteryContainer = new QWidget(this);
+    QGroupBox *batteryContainer = new QGroupBox(this);
+    batteryContainer->setTitle(tr("On Battery"));
+    batteryContainer->setSizePolicy(QSizePolicy::Expanding,
+                                    QSizePolicy::Expanding);
     QVBoxLayout *batteryContainerLayout = new QVBoxLayout(batteryContainer);
     batteryContainerLayout->setMargin(0);
     batteryContainerLayout->setSpacing(0);
@@ -74,14 +85,11 @@ Dialog::Dialog(QWidget *parent)
     lidActionBattery = new QComboBox(this);
     QLabel *lidActionBatteryLabel = new QLabel(this);
 
-    disableLidAction = new QCheckBox(this);
-    disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-    disableLidAction->setText(tr("Disable lid action if external monitor(s) is connected"));
-
     QLabel *lidActionBatteryIcon = new QLabel(this);
     lidActionBatteryIcon->setMaximumSize(48, 48);
     lidActionBatteryIcon->setMinimumSize(48, 48);
-    lidActionBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON).pixmap(QSize(48, 48)));
+    lidActionBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON)
+                                    .pixmap(QSize(48, 48)));
     lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
@@ -108,7 +116,8 @@ Dialog::Dialog(QWidget *parent)
     QLabel *criticalBatteryIcon = new QLabel(this);
     criticalBatteryIcon->setMaximumSize(48, 48);
     criticalBatteryIcon->setMinimumSize(48, 48);
-    criticalBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT).pixmap(QSize(48, 48)));
+    criticalBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT)
+                                   .pixmap(QSize(48, 48)));
     criticalBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Critical battery</h3>"));
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
@@ -134,7 +143,8 @@ Dialog::Dialog(QWidget *parent)
     QLabel *sleepBatteryIcon = new QLabel(this);
     sleepBatteryIcon->setMaximumSize(48, 48);
     sleepBatteryIcon->setMinimumSize(48, 48);
-    sleepBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON).pixmap(QSize(48, 48)));
+    sleepBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON)
+                                .pixmap(QSize(48, 48)));
     sleepBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
@@ -145,7 +155,8 @@ Dialog::Dialog(QWidget *parent)
 
     batteryContainerLayout->addStretch();
 
-    QWidget *acContainer = new QWidget(this);
+    QGroupBox *acContainer = new QGroupBox(this);
+    acContainer->setTitle(tr("On AC"));
     QVBoxLayout *acContainerLayout = new QVBoxLayout(acContainer);
     acContainerLayout->setMargin(0);
     acContainerLayout->setSpacing(0);
@@ -158,7 +169,8 @@ Dialog::Dialog(QWidget *parent)
     QLabel *lidActionACIcon = new QLabel(this);
     lidActionACIcon->setMaximumSize(48, 48);
     lidActionACIcon->setMinimumSize(48, 48);
-    lidActionACIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON).pixmap(QSize(48, 48)));
+    lidActionACIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON)
+                               .pixmap(QSize(48, 48)));
     lidActionACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionACContainerLayout->addWidget(lidActionACIcon);
     lidActionACContainerLayout->addWidget(lidActionACLabel);
@@ -188,7 +200,8 @@ Dialog::Dialog(QWidget *parent)
     QLabel *sleepACIcon = new QLabel(this);
     sleepACIcon->setMaximumSize(48,48);
     sleepACIcon->setMinimumSize(48,48);
-    sleepACIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON).pixmap(QSize(48, 48)));
+    sleepACIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON)
+                           .pixmap(QSize(48, 48)));
     sleepACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
     sleepACContainerLayout->addWidget(sleepACIcon);
     sleepACContainerLayout->addWidget(sleepACLabel);
@@ -197,7 +210,8 @@ Dialog::Dialog(QWidget *parent)
 
     acContainerLayout->addStretch();
 
-    QWidget *advContainer = new QWidget(this);
+    QGroupBox *advContainer = new QGroupBox(this);
+    advContainer->setTitle(tr("Advanced"));
     QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
 
     showSystemTray  = new QCheckBox(this);
@@ -218,13 +232,19 @@ Dialog::Dialog(QWidget *parent)
 
     lidXrandr = new QCheckBox(this);
     lidXrandr->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-    lidXrandr->setText(tr("Switch internal monitor on/off on lid action"));
+    lidXrandr->setText(tr("Switch internal monitor on/off"
+                          "\nwith xrandr if lid action disabled"));
+
+    disableLidAction = new QCheckBox(this);
+    disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
+    disableLidAction->setText(tr("Disable lid action if external"
+                                 "\nmonitor(s) is connected"));
 
     advContainerLayout->addWidget(showSystemTray);
     advContainerLayout->addWidget(showNotifications);
-    advContainerLayout->addWidget(disableLidAction);
     advContainerLayout->addWidget(desktopSS);
     advContainerLayout->addWidget(desktopPM);
+    advContainerLayout->addWidget(disableLidAction);
     advContainerLayout->addWidget(lidXrandr);
     advContainerLayout->addStretch();
 
@@ -280,43 +300,68 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addWidget(hibernateButton);
     extraContainerLayout->addWidget(poweroffButton);
 
-    QWidget *aboutContainer = new QWidget(this);
-    QWidget *aboutContainer2 = new QWidget(this);
-    QVBoxLayout *aboutContainerLayout = new QVBoxLayout(aboutContainer);
-    QHBoxLayout *aboutContainerLayout2 = new QHBoxLayout(aboutContainer2);
-    QLabel *powerLabel = new QLabel(this);
-    powerLabel->setText(QString("<h1 style=\"text-align:center;\">powerdwarf</h1>"
-                                "<p style=\"text-align:center;\">"
-                                "<b>Lightweight Power Manager</b><br>"
+    QWidget *statusContainer = new QWidget(this);
+    QVBoxLayout *statusContainerLayout = new QVBoxLayout(statusContainer);
+
+    QGroupBox *batteryStatusBox = new QGroupBox(this);
+    batteryStatusBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    QHBoxLayout *batteryStatusLayout = new QHBoxLayout(batteryStatusBox);
+
+    batteryIcon = new QLabel(this);
+    batteryLabel = new QLabel(this);
+    batteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON).pixmap(QSize(48, 48)));
+
+    batteryLeftLCD = new QLCDNumber(this);
+    batteryLeftLCD->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    batteryLeftLCD->setFrameStyle(QFrame::NoFrame);
+    batteryLeftLCD->setSegmentStyle(QLCDNumber::Flat);
+    batteryLeftLCD->display("00:00");
+
+    deviceTree = new QTreeWidget(this);
+    deviceTree->setStyleSheet("QTreeWidget,QTreeWidget::item,"
+                              "QTreeWidget::item:selected"
+                              "{background:transparent;border:0;}");
+    deviceTree->setHeaderHidden(true);
+    deviceTree->setHeaderLabels(QStringList() << "1" << "2");
+    deviceTree->setColumnWidth(0, 150);
+
+    QLabel *aboutLabel = new QLabel(this);
+    aboutLabel->setText(QString("<p style=\"text-align:center;font-size:small;\">"
                                 "<a href=\"https://github.com/rodlie/powerdwarf\">"
-                                "https://github.com/rodlie/powerdwarf</a>"
-                                "</p><p style=\"text-align:center;\">"
-                                "version %1<br>"
-                                "&copy; 2018 Ole-Andr&eacute; Rodlie<br>"
-                                "All rights reserved."
-                                "</p>").arg(QApplication::applicationVersion()));
-    aboutContainerLayout2->addStretch();
-    aboutContainerLayout2->addWidget(powerLabel);
-    aboutContainerLayout2->addStretch();
-    aboutContainerLayout->addStretch();
-    aboutContainerLayout->addWidget(aboutContainer2);
-    aboutContainerLayout->addStretch();
+                                "powerdwarf</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
+                        .arg(qApp->applicationVersion()));
+
+    batteryStatusLayout->addWidget(batteryIcon);
+    batteryStatusLayout->addWidget(batteryLabel);
+    batteryStatusLayout->addStretch();
+    batteryStatusLayout->addWidget(batteryLeftLCD);
+
+    statusContainerLayout->addWidget(batteryStatusBox);
+    statusContainerLayout->addWidget(deviceTree);
+    statusContainerLayout->addStretch();
+    statusContainerLayout->addWidget(aboutLabel);
 
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
 
-    containerWidget->addTab(batteryContainer,
-                            QIcon::fromTheme(DEFAULT_BATTERY_ICON),
-                            tr("Battery"));
-    containerWidget->addTab(acContainer,
-                            QIcon::fromTheme(DEFAULT_AC_ICON),
-                            tr("AC"));
-    containerWidget->addTab(advContainer,
-                            QIcon::fromTheme(DEFAULT_TRAY_ICON),
-                            tr("Advanced"));
-    containerWidget->addTab(aboutContainer,
+    QWidget *settingsWidget = new QWidget(this);
+    QVBoxLayout *settingsLayout = new QVBoxLayout(settingsWidget);
+    QScrollArea *settingsContainerArea = new QScrollArea(this);
+    settingsContainerArea->setSizePolicy(QSizePolicy::Expanding,
+                                         QSizePolicy::Expanding);
+    settingsContainerArea->setStyleSheet("QScrollArea {border:0;}");
+    settingsContainerArea->setWidgetResizable(true);
+    settingsContainerArea->setWidget(settingsWidget);
+    settingsLayout->addWidget(batteryContainer);
+    settingsLayout->addWidget(acContainer);
+    settingsLayout->addWidget(advContainer);
+
+    containerWidget->addTab(statusContainer,
                             QIcon::fromTheme(DEFAULT_INFO_ICON),
-                            tr("About"));
+                            tr("Status"));
+    containerWidget->addTab(settingsContainerArea,
+                            QIcon::fromTheme(DEFAULT_BATTERY_ICON),
+                            tr("Settings"));
 
     populate(); // populate boxes
     loadSettings(); // load settings
@@ -362,6 +407,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightSlider(int)));
     connect(backlightWatcher, SIGNAL(fileChanged(QString)),
             this, SLOT(updateBacklight(QString)));
+    connect(man, SIGNAL(updatedDevices()),
+            this, SLOT(checkDevices()));
 }
 
 Dialog::~Dialog()
@@ -538,6 +585,9 @@ void Dialog::loadSettings()
         backlightSlider->hide();
         backlightSlider->setDisabled(true);
     }
+
+    // check devices
+    checkDevices();
 }
 
 // set default action in combobox
@@ -808,5 +858,90 @@ void Dialog::updateBacklight(QString file)
     int value = Common::backlightValue(backlightDevice);
     if (value != backlightSlider->value()) {
         backlightSlider->setValue(value);
+    }
+}
+
+void Dialog::checkDevices()
+{
+    QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
+    double left = man->batteryLeft();
+    if (left<= 10) {
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
+    } else if (left<=25) {
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
+    } else if (left<=75) {
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
+    } else if (left<=90) {
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
+    } else {
+        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
+        if (left>=100 && !man->onBattery()) {
+            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+        }
+    }
+
+    batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
+    batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
+    batteryLeftLCD->display(QDateTime::fromTime_t(man->timeToEmpty()).toUTC().toString("hh:mm"));
+
+    QMapIterator<QString, Device*> i(man->devices);
+    while (i.hasNext()) {
+        i.next();
+        //qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
+        QString uid = i.value()->path;
+        if (!i.value()->isPresent) {
+            if (deviceExists(uid)) { deviceRemove(uid); }
+            continue;
+        }
+        if (!deviceExists(uid)) {
+            QTreeWidgetItem *item = new QTreeWidgetItem(deviceTree);
+            item->setText(0, i.value()->model.isEmpty()?i.value()->name:i.value()->model);
+            item->setData(0, DEVICE_UUID, uid);
+            item->setFlags(Qt::ItemIsEnabled);
+            QIcon itemIcon;
+            switch(i.value()->type) {
+            case Device::DeviceKeyboard:
+                itemIcon = QIcon::fromTheme(DEFAULT_KEYBOARD_ICON);
+                break;
+            case Device::DeviceMouse:
+                itemIcon = QIcon::fromTheme(DEFAULT_MOUSE_ICON);
+                break;
+            default:
+                itemIcon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
+            }
+            item->setIcon(0, itemIcon);
+            devicesProg[uid] = new QProgressBar(this);
+            devicesProg[uid]->setMinimum(0);
+            devicesProg[uid]->setMaximum(100);
+            devicesProg[uid]->setValue(i.value()->percentage);
+            deviceTree->setItemWidget(item, 1, devicesProg[uid]);
+        } else {
+            devicesProg[i.value()->path]->setValue(i.value()->percentage);
+        }
+    }
+}
+
+bool Dialog::deviceExists(QString uid)
+{
+    for (int i=0;i<deviceTree->topLevelItemCount();++i) {
+        QTreeWidgetItem *item = deviceTree->topLevelItem(i);
+        if (!item) { continue; }
+        if (item->data(0, DEVICE_UUID) == uid) { return true; }
+    }
+    return false;
+}
+
+void Dialog::deviceRemove(QString uid)
+{
+    for (int i=0;i<deviceTree->topLevelItemCount();++i) {
+        QTreeWidgetItem *item = deviceTree->topLevelItem(i);
+        if (!item) { continue; }
+        if (item->data(0, DEVICE_UUID) == uid) {
+            delete deviceTree->takeTopLevelItem(i);
+        }
+    }
+    if (devicesProg.contains(uid)) {
+        devicesProg[uid]->deleteLater();
+        devicesProg.remove(uid);
     }
 }

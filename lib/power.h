@@ -55,6 +55,8 @@ public slots:
     void hibernate();
     void lockScreen();
     void shutdown();
+    bool hasBattery();
+    qlonglong timeToEmpty();
 
 private slots:
     void setupDBus();

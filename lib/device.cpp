@@ -63,6 +63,7 @@ void Device::updateDeviceProperties()
 {
     if (!dbus->isValid()) { return; }
 
+    model = dbus->property("Model").toString();
     capacity =  dbus->property("Capacity").toDouble();
     isRechargable =  dbus->property("IsRechargeable").toBool();
     isPresent =  dbus->property("IsPresent").toBool();
@@ -73,12 +74,13 @@ void Device::updateDeviceProperties()
     energy = dbus->property("Energy").toDouble();
     online = dbus->property("Online").toBool();
     hasPowerSupply = dbus->property("PowerSupply").toBool();
+    timeToEmpty = dbus->property("TimeToEmpty").toLongLong();
 
-    uint type = dbus->property("Type").toUInt();
-    if (type == 2) { isBattery = true; }
+    type = (DeviceType)dbus->property("Type").toUInt();
+    if (type == DeviceBattery) { isBattery = true; }
     else {
         isBattery = false;
-        if (type == 1) { isAC = true; }
+        if (type == DeviceLinePower) { isAC = true; }
         else { isAC = false; }
     }
 

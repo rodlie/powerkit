@@ -17,6 +17,7 @@ SOURCES += \
     upower.cpp \
     powermanagement.cpp \
     screensaver.cpp \
+    service.cpp \
     login1.cpp \
     device.cpp \
     ckit.cpp \
