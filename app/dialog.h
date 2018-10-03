@@ -26,6 +26,7 @@
 #include <QProcess>
 #include <QDebug>
 #include <QSlider>
+#include <QFileSystemWatcher>
 
 #include "def.h"
 #include "common.h"
@@ -77,6 +78,7 @@ private:
     QString backlightDevice;
     bool hasBacklight;
     QSlider *backlightSlider;
+    QFileSystemWatcher *backlightWatcher;
 
 private slots:
     void populate();
@@ -104,6 +106,7 @@ private slots:
     void handlePoweroffButton();
     void checkPerms();
     void handleBacklightSlider(int value);
+    void updateBacklight(QString dir);
 };
 
 #endif // DIALOG_H

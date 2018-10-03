@@ -33,6 +33,7 @@ Dialog::Dialog(QWidget *parent)
     , lidXrandr(0)
     , hasBacklight(false)
     , backlightSlider(0)
+    , backlightWatcher(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -271,6 +272,7 @@ Dialog::Dialog(QWidget *parent)
     backlightSlider->hide();
     backlightSlider->setSingleStep(1);
     backlightSlider->setOrientation(Qt::Horizontal);
+    backlightWatcher = new QFileSystemWatcher(this);
 
     QLabel *backlightLabel = new QLabel(this);
     backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON).pixmap(24, 24));
@@ -339,6 +341,7 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleLidXrandr(bool)));
     connect(backlightSlider, SIGNAL(valueChanged(int)),
             this, SLOT(handleBacklightSlider(int)));
+    connect(backlightWatcher, SIGNAL(fileChanged(QString)), this, SLOT(updateBacklight(QString)));
 }
 
 Dialog::~Dialog()
@@ -511,6 +514,7 @@ void Dialog::loadSettings()
         backlightSlider->setValue(Common::backlightValue(backlightDevice));
         backlightSlider->show();
         backlightSlider->setEnabled(true);
+        backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
     } else {
         qDebug() << "disable backlight";
         backlightSlider->hide();
@@ -776,5 +780,16 @@ void Dialog::handleBacklightSlider(int value)
 {
     if (Common::backlightValue(backlightDevice) != value) {
         Common::adjustBacklight(backlightDevice, value);
+    }
+}
+
+void Dialog::updateBacklight(QString dir)
+{
+    qDebug() << "update backlight";
+    Q_UNUSED(dir);
+    if (!hasBacklight) { return; }
+    int value = Common::backlightValue(backlightDevice);
+    if (value != backlightSlider->value()) {
+        backlightSlider->setValue(value);
     }
 }
