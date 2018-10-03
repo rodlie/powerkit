@@ -149,38 +149,13 @@ powerdwarf requires the following dependencies to work:
 
 ### Icons
 
-powerdwarf does not bundle any icons, so you will need a compatible theme installed (in ``share/applications``). powerdwarf will use the existing icon theme from your running DE/WM or will else fallback to known themes:
+powerdwarf does not bundle any icons, so you will need a compatible theme installed (in ``share/applications``). powerdwarf will use the existing icon theme from your running DE/WM or fallback to a known theme:
 
  * Adwaita
  * gnome
  * oxygen
  * Tango
  
- The following icons are required:
- 
- * battery
- * battery-caution
- * battery-caution-charging
- * battery-low
- * battery-low-charging
- * battery-good
- * battery-good-charging
- * battery-full
- * battery-full-charging
- * battery-full-charged
- * battery-empty
- * battery-missing
- * video-display
- * system-suspend
- * preferences-other
- * user-available
- * system-lock-screen
- * system-hibernate
- * system-shutdown
- * emblem-unreadable
- * weather-clear
- * dialog-information
-
 ## Build
 
 First make sure you have the required dependencies installed, then review the build options:
