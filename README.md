@@ -5,15 +5,15 @@ powerdwarf is a lightweight full featured power manager created for Slackware fo
 ## Features
 
  * Enables applications to inhibit the screen saver
+   * Implements org.freedesktop.ScreenSaver
  * Enables applications to inhibit suspend actions
+   * Implements org.freedesktop.PowerManagement
  * Sleep/Hibernate/Lock screen on lid action
  * Inhibit lid action if external monitor(s) is connected
  * Automatically suspend (sleep/hibernate)
  * Hibernate/Shutdown on critical battery
- * Simple configuration GUI
- * Implements org.freedesktop.ScreenSaver
- * Implements org.freedesktop.PowerManagement
- * Supports XScreenSaver
+ * Simple and flexible configuration GUI
+ * XScreenSaver support
  * Backlight support
 
 ## Usage
@@ -66,7 +66,7 @@ You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
    * ``3`` = ``hibernate``
    * ``4`` = ``shutdown``
  * ``disable_lid_action_external_monitor`` = ``<bool>`` true/false (disable lid action if external monitor is connected)
-   * ``lid_xrandr_action`` = ``<bool>`` turn internal monitor on/off with xrandr when lid is triggered
+   * ``lid_xrandr_action`` = ``<bool>`` true/false (turn internal monitor on/off with xrandr when lid is triggered)
  * ``freedesktop_ss`` = ``<bool>`` true/false (enable org.freedesktop.ScreenSaver)
  * ``freedesktop_pm`` = ``<bool>`` true/false (enable org.freedesktop.PowerManagement)
  * ``tray_notify`` = ``<bool>`` true/false (show notifications)
@@ -75,9 +75,9 @@ You can also edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
 
 You will only need to restart powerdwarf if you edit ``freedesktop_ss``, ``freedesktop_pm`` or ``icon_theme``. Note that ``show_tray`` will not hide/show the system tray instantly, but the next time an event happens.
 
-### Screensaver
+### Screen saver
 
-powerdwarf depends on XScreenSaver to lock and paint the screen, the default settings may need to be adjusted. You can launch the configuration GUI with the ``xscreensaver-demo`` command or use the ``.desktop`` file.
+powerdwarf depends on XScreenSaver to handle the screen session, the default settings may need to be adjusted. You can launch the configuration GUI with the ``xscreensaver-demo`` command.
 
 Recommended settings are:
 
@@ -92,11 +92,17 @@ Recommended settings are:
   
 Note that powerdwarf will start XScreenSaver during startup (unless ``freedesktop_ss`` is disabled).
 
+### Backlight
+
+powerdwarf supports backlight only on Linux through ``sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the systram tray icon or through the configuration GUI (bottom left slider).
+
+**Note!** udev permissions are required to adjust the brightness, on Slackware an example rule file is included with the package (see ``/usr/doc/powerdwarf-VERSION/90-backlight.rules``). You can also let powerdwarf add the rule during build with the ``CONFIG+=install_udev_rules`` option.
+
 ## FAQ
 
 ### Slackware-only?
 
-No, powerdwarf should work on any Linux/FreeBSD system (check requirements). However, powerdwarf is developed on/for Slackware and sees minimal testing on other distros.
+No, powerdwarf should work on any Linux/FreeBSD system (check requirements). However, powerdwarf is developed on/for Slackware and sees minimal testing on other systems (user feedback/bugs for other systems are welcome).
 
 ### How does an application inhibit the screen saver?
 
@@ -133,9 +139,8 @@ powerdwarf requires the following dependencies to work:
  * ConsoleKit (or logind)
  * UPower 0.9.23 (or higher, note that 0.99.x requires logind)
  * XScreenSaver
+ * xrandr
  * adwaita-icon-theme (or similar)
-
-Tested on Slackware, Ubuntu and FreeBSD.
 
 ### Icons
 
