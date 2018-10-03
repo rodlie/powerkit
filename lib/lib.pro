@@ -42,7 +42,7 @@ CONFIG(install_lib) {
     INSTALLS += target
     !CONFIG(no_doc_install) {
         target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}$${VERSION_EXTRA}
-        target_docs.files = ../LICENSE ../README.md
+        target_docs.files = ../LICENSE ../README.md ../ChangeLog
         INSTALLS += target_docs
     }
     !CONFIG(no_include_install) {
