@@ -106,7 +106,7 @@ private slots:
     void handlePoweroffButton();
     void checkPerms();
     void handleBacklightSlider(int value);
-    void updateBacklight(QString dir);
+    void updateBacklight(QString file);
 };
 
 #endif // DIALOG_H

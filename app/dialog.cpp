@@ -155,7 +155,6 @@ Dialog::Dialog(QWidget *parent)
     lidActionAC = new QComboBox(this);
     QLabel *lidActionACLabel = new QLabel(this);
 
-
     QLabel *lidActionACIcon = new QLabel(this);
     lidActionACIcon->setMaximumSize(48, 48);
     lidActionACIcon->setMinimumSize(48, 48);
@@ -341,7 +340,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleLidXrandr(bool)));
     connect(backlightSlider, SIGNAL(valueChanged(int)),
             this, SLOT(handleBacklightSlider(int)));
-    connect(backlightWatcher, SIGNAL(fileChanged(QString)), this, SLOT(updateBacklight(QString)));
+    connect(backlightWatcher, SIGNAL(fileChanged(QString)),
+            this, SLOT(updateBacklight(QString)));
 }
 
 Dialog::~Dialog()
@@ -508,7 +508,6 @@ void Dialog::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
     if (hasBacklight) {
-        qDebug() << "enable backlight";
         backlightSlider->setMinimum(1);
         backlightSlider->setMaximum(Common::backlightMax(backlightDevice));
         backlightSlider->setValue(Common::backlightValue(backlightDevice));
@@ -516,7 +515,6 @@ void Dialog::loadSettings()
         backlightSlider->setEnabled(true);
         backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
     } else {
-        qDebug() << "disable backlight";
         backlightSlider->hide();
         backlightSlider->setDisabled(true);
     }
@@ -783,10 +781,9 @@ void Dialog::handleBacklightSlider(int value)
     }
 }
 
-void Dialog::updateBacklight(QString dir)
+void Dialog::updateBacklight(QString file)
 {
-    qDebug() << "update backlight";
-    Q_UNUSED(dir);
+    Q_UNUSED(file);
     if (!hasBacklight) { return; }
     int value = Common::backlightValue(backlightDevice);
     if (value != backlightSlider->value()) {

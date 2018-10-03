@@ -139,9 +139,7 @@ QString Common::backlightDevice()
 bool Common::canAdjustBacklight(QString device)
 {
     QFileInfo backlight(QString("%1/brightness").arg(device));
-    qDebug() << backlight.absoluteFilePath() << backlight.isWritable();
     if (backlight.isWritable()) { return true; }
-    qDebug() << "backlight not writable";
     return false;
 }
 
@@ -173,6 +171,7 @@ bool Common::adjustBacklight(QString device, int value)
     QFile backlight(QString("%1/brightness").arg(device));
     if (backlight.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         QTextStream out(&backlight);
+        if (value<1) { value = 1; }
         out << QString::number(value);
         backlight.close();
         if (value == backlightValue(device)) { return true;}

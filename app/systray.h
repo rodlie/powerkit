@@ -23,6 +23,8 @@
 #include <QProcess>
 #include <QMap>
 #include <QFileSystemWatcher>
+#include <QEvent>
+#include <QWheelEvent>
 
 #include "common.h"
 #include "power.h"
@@ -47,6 +49,25 @@
 
 #define XSCREENSAVER_RUN "xscreensaver -no-splash"
 
+class TrayIcon : public QSystemTrayIcon
+{
+    Q_OBJECT
+public:
+    enum WheelAction {
+        WheelUp,
+        WheelDown
+    };
+    TrayIcon(QObject *parent = 0)
+        : QSystemTrayIcon(parent), wheel_delta(0) {}
+    TrayIcon(const QIcon &icon, QObject *parent = 0)
+        : QSystemTrayIcon(icon, parent), wheel_delta(0) {}
+    bool event(QEvent *event);
+signals:
+    void wheel(TrayIcon::WheelAction action);
+private:
+    int wheel_delta;
+};
+
 class SysTray : public QObject
 {
     Q_OBJECT
@@ -56,7 +77,7 @@ public:
     ~SysTray();
 
 private:
-    QSystemTrayIcon *tray;
+    TrayIcon *tray;
     Power *man;
     PowerManagement *pm;
     ScreenSaver *ss;
@@ -88,6 +109,8 @@ private:
     QFileSystemWatcher *watcher;
     bool lidXrandr;
     bool lidWasClosed;
+    QString backlightDevice;
+    bool hasBacklight;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -125,6 +148,7 @@ private slots:
     void handleResume();
     void handleSuspend();
     void switchInternalMonitor(bool toggle);
+    void handleTrayWheel(TrayIcon::WheelAction action);
 };
 
 #endif // SYSTRAY_H

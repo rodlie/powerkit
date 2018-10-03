@@ -42,6 +42,7 @@ SysTray::SysTray(QObject *parent)
     , watcher(0)
     , lidXrandr(false)
     , lidWasClosed(false)
+    , hasBacklight(false)
 {
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -53,11 +54,15 @@ SysTray::SysTray(QObject *parent)
             this, SLOT(handleConfChanged(QString)));
 
     // setup tray
-    tray = new QSystemTrayIcon(this);
+    tray = new TrayIcon(this);
     connect(tray,
             SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
             this,
             SLOT(trayActivated(QSystemTrayIcon::ActivationReason)));
+    connect(tray,
+            SIGNAL(wheel(TrayIcon::WheelAction)),
+            this,
+            SLOT(handleTrayWheel(TrayIcon::WheelAction)));
 
     // setup manager
     man = new Power(this);
@@ -375,6 +380,10 @@ void SysTray::loadSettings()
         qDebug() << "suspend not supported";
         disableSuspend();
     }
+
+    // backlight
+    backlightDevice = Common::backlightDevice();
+    hasBacklight = Common::canAdjustBacklight(backlightDevice);
 
 /*
     qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
@@ -759,4 +768,36 @@ void SysTray::switchInternalMonitor(bool toggle)
     xrandr.start(QString(toggle?TURN_ON_MONITOR:TURN_OFF_MONITOR).arg(internalMonitor));
     xrandr.waitForFinished();
     xrandr.close();
+}
+
+void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
+{
+    if (!hasBacklight) { return; }
+    switch (action) {
+    case TrayIcon::WheelUp:
+        Common::adjustBacklight(backlightDevice,
+                                Common::backlightValue(backlightDevice)+10);
+        break;
+    case TrayIcon::WheelDown:
+        Common::adjustBacklight(backlightDevice,
+                                Common::backlightValue(backlightDevice)-10);
+        break;
+    default: ;
+    }
+}
+
+bool TrayIcon::event(QEvent *e)
+{
+    if (e->type() == QEvent::Wheel) {
+        QWheelEvent *w = (QWheelEvent*)e;
+        if (w->orientation() == Qt::Vertical) {
+            wheel_delta += w->delta();
+            if (abs(wheel_delta)>=120) {
+                emit wheel(wheel_delta>0?TrayIcon::WheelUp:TrayIcon::WheelDown);
+                wheel_delta = 0;
+            }
+        }
+        return true;
+    }
+    return QSystemTrayIcon::event(e);
 }
