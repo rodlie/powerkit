@@ -169,6 +169,7 @@ powerdwarf does not bundle any icons, so you will need a compatible theme instal
  * system-shutdown
  * emblem-unreadable
  * weather-clear
+ * dialog-information
 
 ## Build
 

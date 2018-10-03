@@ -38,7 +38,6 @@ Dialog::Dialog(QWidget *parent)
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
-    setWindowIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
     setMinimumSize(QSize(380, 320));
 
     // setup dbus
@@ -48,6 +47,7 @@ Dialog::Dialog(QWidget *parent)
 
     // setup theme
     Common::setIconTheme();
+    setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
 
     // setup widgets
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -231,10 +231,6 @@ Dialog::Dialog(QWidget *parent)
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
 
-    //QLabel *powerLabel = new QLabel(this);
-    //powerLabel->setText(QString("<a href=\"https://github.com/rodlie/powerdwarf\">"
-    //                       "powerdwarf</a> version %1<br>&copy; 2018 Ole-André Rodlie").arg(QApplication::applicationVersion()));
-
     lockscreenButton = new QPushButton(this);
     lockscreenButton->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
     lockscreenButton->setIconSize(QSize(24, 24));
@@ -276,7 +272,6 @@ Dialog::Dialog(QWidget *parent)
     QLabel *backlightLabel = new QLabel(this);
     backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON).pixmap(24, 24));
 
-    //extraContainerLayout->addWidget(powerLabel);
     extraContainerLayout->addWidget(backlightLabel);
     extraContainerLayout->addWidget(backlightSlider);
     extraContainerLayout->addStretch();
@@ -284,6 +279,28 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addWidget(sleepButton);
     extraContainerLayout->addWidget(hibernateButton);
     extraContainerLayout->addWidget(poweroffButton);
+
+    QWidget *aboutContainer = new QWidget(this);
+    QWidget *aboutContainer2 = new QWidget(this);
+    QVBoxLayout *aboutContainerLayout = new QVBoxLayout(aboutContainer);
+    QHBoxLayout *aboutContainerLayout2 = new QHBoxLayout(aboutContainer2);
+    QLabel *powerLabel = new QLabel(this);
+    powerLabel->setText(QString("<h1 style=\"text-align:center;\">powerdwarf</h1>"
+                                "<p style=\"text-align:center;\">"
+                                "<b>Lightweight Power Manager</b><br>"
+                                "<a href=\"https://github.com/rodlie/powerdwarf\">"
+                                "https://github.com/rodlie/powerdwarf</a>"
+                                "</p><p style=\"text-align:center;\">"
+                                "version %1<br>"
+                                "&copy; 2018 Ole-Andr&eacute; Rodlie<br>"
+                                "All rights reserved."
+                                "</p>").arg(QApplication::applicationVersion()));
+    aboutContainerLayout2->addStretch();
+    aboutContainerLayout2->addWidget(powerLabel);
+    aboutContainerLayout2->addStretch();
+    aboutContainerLayout->addStretch();
+    aboutContainerLayout->addWidget(aboutContainer2);
+    aboutContainerLayout->addStretch();
 
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
@@ -297,6 +314,9 @@ Dialog::Dialog(QWidget *parent)
     containerWidget->addTab(advContainer,
                             QIcon::fromTheme(DEFAULT_TRAY_ICON),
                             tr("Advanced"));
+    containerWidget->addTab(aboutContainer,
+                            QIcon::fromTheme(DEFAULT_INFO_ICON),
+                            tr("About"));
 
     populate(); // populate boxes
     loadSettings(); // load settings

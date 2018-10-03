@@ -123,7 +123,6 @@ QString Common::backlightDevice()
     QDirIterator it(path, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QString foundDir = it.next();
-        qDebug() << foundDir;
         if (foundDir.startsWith(QString("%1/radeon").arg(path))) {
             return foundDir;
         } else if (foundDir.startsWith(QString("%1/intel").arg(path))) {

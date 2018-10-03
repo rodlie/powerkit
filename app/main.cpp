@@ -19,7 +19,9 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QCoreApplication::setApplicationName("freedesktop");
     QCoreApplication::setOrganizationDomain("org");
-    QCoreApplication::setApplicationVersion(APP_VERSION);
+    QString version = APP_VERSION;
+    version.append(APP_VERSION_EXTRA);
+    QCoreApplication::setApplicationVersion(version);
 
     // get user input
     QString userArg;

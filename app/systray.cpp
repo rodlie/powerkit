@@ -530,6 +530,9 @@ void SysTray::drawBattery(double left)
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
+        if (left>=100 && !man->onBattery()) {
+            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+        }
     }
     tray->setIcon(icon);
 }

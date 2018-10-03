@@ -77,6 +77,7 @@ enum criticalAction
 #define DEFAULT_SHUTDOWN_ICON "system-shutdown"
 #define DEFAULT_NONE_ICON "emblem-unreadable"
 #define DEFAULT_BACKLIGHT_ICON "weather-clear"
+#define DEFAULT_INFO_ICON "dialog-information"
 
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
