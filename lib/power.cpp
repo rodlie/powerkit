@@ -162,6 +162,20 @@ qlonglong Power::timeToEmpty()
     return result;
 }
 
+qlonglong Power::timeToFull()
+{
+    qlonglong result = 0;
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery &&
+            device.value()->isPresent &&
+            !device.value()->nativePath.isEmpty())
+        { result += device.value()->timeToFull; }
+    }
+    return result;
+}
+
 // setup dbus connections
 void Power::setupDBus()
 {

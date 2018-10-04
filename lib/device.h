@@ -49,6 +49,7 @@ public:
     double energyFull;
     double energyEmpty;
     qlonglong timeToEmpty;
+    qlonglong timeToFull;
 
 private:
     QDBusInterface *dbus;

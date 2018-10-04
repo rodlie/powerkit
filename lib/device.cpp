@@ -75,8 +75,9 @@ void Device::updateDeviceProperties()
     online = dbus->property("Online").toBool();
     hasPowerSupply = dbus->property("PowerSupply").toBool();
     timeToEmpty = dbus->property("TimeToEmpty").toLongLong();
-
+    timeToFull = dbus->property("TimeToFull").toLongLong();
     type = (DeviceType)dbus->property("Type").toUInt();
+
     if (type == DeviceBattery) { isBattery = true; }
     else {
         isBattery = false;

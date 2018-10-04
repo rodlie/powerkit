@@ -57,6 +57,7 @@ public slots:
     void shutdown();
     bool hasBattery();
     qlonglong timeToEmpty();
+    qlonglong timeToFull();
 
 private slots:
     void setupDBus();

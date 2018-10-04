@@ -884,7 +884,8 @@ void Dialog::checkDevices()
 
     batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
     batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
-    batteryLeftLCD->display(QDateTime::fromTime_t(man->timeToEmpty()).toUTC().toString("hh:mm"));
+    batteryLeftLCD->display(QDateTime::fromTime_t(man->onBattery()?man->timeToEmpty():man->timeToFull())
+                            .toUTC().toString("hh:mm"));
 
     QMapIterator<QString, Device*> i(man->devices);
     while (i.hasNext()) {
