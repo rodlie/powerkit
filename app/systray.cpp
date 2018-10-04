@@ -756,7 +756,8 @@ void SysTray::handleResume()
 
 void SysTray::handleSuspend()
 {
-    //qDebug() << "handle suspend";
+    qDebug() << "reset timer on suspend";
+    resetTimer();
 }
 
 void SysTray::switchInternalMonitor(bool toggle)
