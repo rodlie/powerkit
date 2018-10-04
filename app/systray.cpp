@@ -751,7 +751,8 @@ void SysTray::disableSuspend()
 
 void SysTray::handleResume()
 {
-    //qDebug() << "handle resume";
+    qDebug() << "reset timer on resume";
+    resetTimer();
 }
 
 void SysTray::handleSuspend()
