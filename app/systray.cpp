@@ -385,7 +385,6 @@ void SysTray::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
 
-/*
     qDebug() << CONF_LID_XRANDR << lidXrandr;
     qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
     qDebug() << CONF_TRAY_SHOW << showTray;
@@ -400,7 +399,7 @@ void SysTray::loadSettings()
     qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
     qDebug() << CONF_LID_AC_ACTION << lidActionAC;
     qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
-*/
+
 }
 
 // register session services

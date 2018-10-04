@@ -78,6 +78,7 @@ double Power::batteryLeft()
 {
     double batteryLeft = 0;
     QMapIterator<QString, Device*> device(devices);
+    int batteries = 0;
     while (device.hasNext()) {
         device.next();
         if (device.value()->isBattery &&
@@ -85,9 +86,10 @@ double Power::batteryLeft()
             !device.value()->nativePath.isEmpty())
         {
             batteryLeft += device.value()->percentage;
+            batteries++;
         } else { continue; }
     }
-    return batteryLeft;
+    return batteryLeft/batteries;
 }
 
 // do suspend if available
@@ -152,7 +154,10 @@ qlonglong Power::timeToEmpty()
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
-        if (device.value()->isBattery) { result += device.value()->timeToEmpty; }
+        if (device.value()->isBattery &&
+            device.value()->isPresent &&
+            !device.value()->nativePath.isEmpty())
+        { result += device.value()->timeToEmpty; }
     }
     return result;
 }

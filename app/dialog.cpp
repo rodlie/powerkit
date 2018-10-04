@@ -366,6 +366,8 @@ Dialog::Dialog(QWidget *parent)
     populate(); // populate boxes
     loadSettings(); // load settings
 
+    backlightSlider->setFocus();
+
     // connect various widgets
     connect(lockscreenButton, SIGNAL(released()),
             this, SLOT(handleLockscreenButton()));
