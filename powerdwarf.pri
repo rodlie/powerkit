@@ -7,7 +7,7 @@
 #
 
 VERSION = 1.0.0
-VERSION_EXTRA = "beta3"
+VERSION_EXTRA = "beta4"
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
