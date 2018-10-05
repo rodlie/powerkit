@@ -73,7 +73,7 @@ bool Power::canSuspend()
     return false;
 }
 
-// get total battery left FIXME!
+// get total battery left
 double Power::batteryLeft()
 {
     double batteryLeft = 0;
@@ -326,7 +326,7 @@ void Power::checkUPower()
 // this does not work on newer upower/logind
 void Power::notifyResume()
 {
-    //qDebug() << "system is about to resume ...";
+    scanDevices();
     emit aboutToResume();
     lockScreen(); // in case lockScreen didn't trigger on sleep
 }
