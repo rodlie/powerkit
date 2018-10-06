@@ -879,6 +879,7 @@ void Dialog::checkDevices()
         icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
         if (left>=100 && !man->onBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+            batteryLeftLCD->display("00:00");
         }
     }
 
