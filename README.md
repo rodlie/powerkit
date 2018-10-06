@@ -127,6 +127,8 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=install_udev_rules``** : Install additional power related udev (backlight) rules
     * **``UDEVDIR=</etc/udev>``** : Path to the udev directory.
  * **``CONFIG+=install_lib``**: Build and install shared library.
+    * **``CONFIG+=no_include_install``**: Do not install include files.
+    * **``CONFIG+=no_pkgconfig_install``**: Do not install pkgconfig file.
 
 ### Build application
 
