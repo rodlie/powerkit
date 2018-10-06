@@ -25,55 +25,8 @@ powerdwarf is a user session daemon and should be started during the X11 startup
 
 ## Configuration
 
-powerdwarf can be configured through the included GUI or by manually editing the configuration file.
-
-### GUI
-
 Click on the powerdwarf system tray, or run the command (or use powerdwarf.desktop):
-``` powerdwarf --config```
-
-### Configuration file
-
-You can edit the settings through ``~/.config/powerdwarf/powerdwarf.conf``:
-
- * ``suspend_battery_timeout`` = ``<int>`` in min (suspend on battery after)
- * ``suspend_battery_action`` = ``<int>`` action taken when auto suspend on battery
-   * ``0`` = ``none``
-   * ``1`` = ``sleep``
-   * ``2`` = ``hibernate``
-   * ``3`` = ``shutdown``
- * ``suspend_ac_timeout`` = ``<int>`` in min (suspend on AC after)
- * ``suspend_ac_action`` = ``<int>`` action taken when auto suspend on AC
-   * ``0`` = ``none``
-   * ``1`` = ``sleep``
-   * ``2`` = ``hibernate``
-   * ``3`` = ``shutdown``
- * ``critical_battery_timeout`` = ``<int>`` in % (critical battery percent)
- * ``critical_battery_action`` = ``<int>`` action taken when battery is critical
-   * ``0`` = ``none``
-   * ``1`` = ``hibernate``
-   * ``2`` = ``shutdown``
- * ``lid_battery_action`` = ``<int>`` action taken when lid is closed on battery
-   * ``0`` = ``none``
-   * ``1`` = ``lock``
-   * ``2`` = ``sleep``
-   * ``3`` = ``hibernate``
-   * ``4`` = ``shutdown``
- * ``lid_ac_action`` = ``<int>`` action taken when lid is closed on AC
-   * ``0`` = ``none``
-   * ``1`` = ``lock``
-   * ``2`` = ``sleep``
-   * ``3`` = ``hibernate``
-   * ``4`` = ``shutdown``
- * ``disable_lid_action_external_monitor`` = ``<bool>`` disable lid action if external monitor is connected
-   * ``lid_xrandr_action`` = ``<bool>`` turn internal monitor on/off with xrandr when lid is triggered and external monitor connected
- * ``freedesktop_ss`` = ``<bool>`` enable org.freedesktop.ScreenSaver service
- * ``freedesktop_pm`` = ``<bool>`` enable org.freedesktop.PowerManagement service
- * ``tray_notify`` = ``<bool>`` show notifications
- * ``show_tray`` = ``<bool>`` show system tray
- * ``icon_theme`` = ``<string>`` valid icon theme name (fallback)
-
-You will only need to restart powerdwarf if you edit ``freedesktop_ss``, ``freedesktop_pm`` or ``icon_theme``. Note that ``show_tray`` will not hide/show the system tray instantly, but the next time an event happens.
+``` powerdwarf --config``` to configure powerdwarf.
 
 ### Screen saver
 
@@ -152,8 +105,8 @@ powerdwarf requires the following dependencies to work:
 powerdwarf does not bundle any icons, so you will need a compatible theme installed (in ``share/applications``). powerdwarf will use the existing icon theme from your running DE/WM or fallback to a known theme:
 
  * Adwaita
- * gnome
- * oxygen
+ * Gnome
+ * Oxygen
  * Tango
  
 ## Build
@@ -173,6 +126,7 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=no_autostart_install``** : Do not install the XDG autostart desktop file.
  * **``CONFIG+=install_udev_rules``** : Install additional power related udev (backlight) rules
     * **``UDEVDIR=</etc/udev>``** : Path to the udev directory.
+ * **``CONFIG+=install_lib``**: Build and install shared library.
 
 ### Build application
 
