@@ -129,6 +129,7 @@ private slots:
     void checkDevices();
     bool deviceExists(QString uid);
     void deviceRemove(QString uid);
+    void handleDeviceAdded(QString uid);
 };
 
 #endif // DIALOG_H

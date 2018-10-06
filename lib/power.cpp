@@ -285,6 +285,7 @@ void Power::deviceAdded(const QString &path)
     qDebug() << "deviceAdded" << path;
     if (!upower->isValid()) { return; }
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
+    emit deviceWasAdded(path);
     scanDevices();
 }
 
@@ -304,6 +305,7 @@ void Power::deviceRemoved(const QString &path)
         qDebug() << "remove device" << path;
         if (UPower::getDevices().contains(path)) { return; }
         delete devices.take(path);
+        emit deviceWasRemoved(path);
     }
     scanDevices();
 }

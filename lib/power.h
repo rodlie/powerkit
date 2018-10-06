@@ -42,6 +42,8 @@ signals:
     void notifyStatus(QString title, QString msg, bool critical = false);
     void aboutToSuspend();
     void aboutToResume();
+    void deviceWasRemoved(QString path);
+    void deviceWasAdded(QString path);
 
 public slots:
     bool isDocked();

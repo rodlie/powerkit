@@ -98,6 +98,14 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(aboutToSuspend()),
             this,
             SLOT(handleSuspend()));
+    connect(man,
+            SIGNAL(deviceWasAdded(QString)),
+            this,
+            SLOT(handleDeviceChanged(QString)));
+    connect(man,
+            SIGNAL(deviceWasRemoved(QString)),
+            this,
+            SLOT(handleDeviceChanged(QString)));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
@@ -785,6 +793,12 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
         break;
     default: ;
     }
+}
+
+void SysTray::handleDeviceChanged(QString path)
+{
+    qDebug() << "device changed, check" << path;
+    checkDevices();
 }
 
 bool TrayIcon::event(QEvent *e)

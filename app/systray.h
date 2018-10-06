@@ -149,6 +149,7 @@ private slots:
     void handleSuspend();
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
+    void handleDeviceChanged(QString path);
 };
 
 #endif // SYSTRAY_H

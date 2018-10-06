@@ -411,6 +411,10 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(updateBacklight(QString)));
     connect(man, SIGNAL(updatedDevices()),
             this, SLOT(checkDevices()));
+    connect(man, SIGNAL(deviceWasRemoved(QString)),
+            this, SLOT(deviceRemove(QString)));
+    connect(man, SIGNAL(deviceWasAdded(QString)),
+            this, SLOT(handleDeviceAdded(QString)));
 }
 
 Dialog::~Dialog()
@@ -865,6 +869,7 @@ void Dialog::updateBacklight(QString file)
 
 void Dialog::checkDevices()
 {
+    qDebug() << "check devices!";
     QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
     double left = man->batteryLeft();
     if (left<= 10) {
@@ -891,7 +896,7 @@ void Dialog::checkDevices()
     QMapIterator<QString, Device*> i(man->devices);
     while (i.hasNext()) {
         i.next();
-        //qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
+        qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
         QString uid = i.value()->path;
         if (!i.value()->isPresent) {
             if (deviceExists(uid)) { deviceRemove(uid); }
@@ -937,6 +942,7 @@ bool Dialog::deviceExists(QString uid)
 
 void Dialog::deviceRemove(QString uid)
 {
+    qDebug() << "remove device from status" << uid;
     for (int i=0;i<deviceTree->topLevelItemCount();++i) {
         QTreeWidgetItem *item = deviceTree->topLevelItem(i);
         if (!item) { continue; }
@@ -948,4 +954,11 @@ void Dialog::deviceRemove(QString uid)
         devicesProg[uid]->deleteLater();
         devicesProg.remove(uid);
     }
+}
+
+void Dialog::handleDeviceAdded(QString uid)
+{
+    qDebug() << "handle device added" << uid;
+    Q_UNUSED(uid)
+    checkDevices();
 }
