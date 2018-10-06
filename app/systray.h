@@ -111,6 +111,10 @@ private:
     bool lidWasClosed;
     QString backlightDevice;
     bool hasBacklight;
+    bool backlightOnBattery;
+    bool backlightOnAC;
+    int backlightBatteryValue;
+    int backlightACValue;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);

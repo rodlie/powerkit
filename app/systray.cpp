@@ -43,6 +43,10 @@ SysTray::SysTray(QObject *parent)
     , lidXrandr(false)
     , lidWasClosed(false)
     , hasBacklight(false)
+    , backlightOnBattery(false)
+    , backlightOnAC(false)
+    , backlightBatteryValue(0)
+    , backlightACValue(0)
 {
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -312,7 +316,10 @@ void SysTray::handleOnBattery()
 {
     showMessage(tr("On Battery"),
                 tr("Switched to battery power."));
-    // TODO: add brightness
+    // brightness
+    if (backlightOnBattery && backlightBatteryValue>0) {
+        Common::adjustBacklight(backlightDevice, backlightBatteryValue);
+    }
 }
 
 // do something when switched to ac power
@@ -323,7 +330,10 @@ void SysTray::handleOnAC()
 
     wasLowBattery = false;
     wasVeryLowBattery = false;
-    // TODO: add brightness
+    // brightness
+    if (backlightOnAC && backlightACValue>0) {
+        Common::adjustBacklight(backlightDevice, backlightACValue);
+    }
 }
 
 // load default settings
@@ -374,6 +384,18 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings(CONF_LID_XRANDR)) {
         lidXrandr = Common::loadPowerSettings(CONF_LID_XRANDR).toBool();
     }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_AC_ENABLE)) {
+        backlightOnAC = Common::loadPowerSettings(CONF_BACKLIGHT_AC_ENABLE).toBool();
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_AC)) {
+        backlightACValue = Common::loadPowerSettings(CONF_BACKLIGHT_AC).toInt();
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE)) {
+        backlightOnBattery = Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE).toBool();
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY)) {
+        backlightBatteryValue = Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY).toInt();
+    }
 
     // verify
     if (!Common::kernelCanResume()) {
@@ -407,6 +429,10 @@ void SysTray::loadSettings()
     qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
     qDebug() << CONF_LID_AC_ACTION << lidActionAC;
     qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
+    qDebug() << CONF_BACKLIGHT_AC << backlightACValue;
+    qDebug() << CONF_BACKLIGHT_AC_ENABLE << backlightOnAC;
+    qDebug() << CONF_BACKLIGHT_BATTERY << backlightBatteryValue;
+    qDebug() << CONF_BACKLIGHT_BATTERY_ENABLE << backlightOnBattery;
 
 }
 
