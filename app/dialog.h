@@ -98,6 +98,11 @@ private:
     QTreeWidget *deviceTree;
     QMap<QString,QProgressBar*> devicesProg;
     QLCDNumber *batteryLeftLCD;
+    QSlider *backlightSliderBattery;
+    QSlider *backlightSliderAC;
+    QCheckBox *backlightBatteryCheck;
+    QCheckBox *backlightACCheck;
+    QGroupBox *backlightContainer;
 
 private slots:
     void populate();
@@ -130,6 +135,10 @@ private slots:
     bool deviceExists(QString uid);
     void deviceRemove(QString uid);
     void handleDeviceAdded(QString uid);
+    void handleBacklightBatteryCheck(bool triggered);
+    void handleBacklightACCheck(bool triggered);
+    void handleBacklightBatterySlider(int value);
+    void handleBacklightACSlider(int value);
 };
 
 #endif // DIALOG_H

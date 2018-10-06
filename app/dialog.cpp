@@ -39,6 +39,11 @@ Dialog::Dialog(QWidget *parent)
     , batteryLabel(0)
     , deviceTree(0)
     , batteryLeftLCD(0)
+    , backlightSliderBattery(0)
+    , backlightSliderAC(0)
+    , backlightBatteryCheck(0)
+    , backlightACCheck(0)
+    , backlightContainer(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -150,11 +155,12 @@ Dialog::Dialog(QWidget *parent)
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
     sleepBatteryContainerLayout->addWidget(sleepActionBatteryContainer);
 
+    // add battery widgets to container
     batteryContainerLayout->addWidget(sleepBatteryContainer);
     batteryContainerLayout->addWidget(criticalBatteryContainer);
-
     batteryContainerLayout->addStretch();
 
+    // AC
     QGroupBox *acContainer = new QGroupBox(this);
     acContainer->setTitle(tr("On AC"));
     QVBoxLayout *acContainerLayout = new QVBoxLayout(acContainer);
@@ -210,6 +216,71 @@ Dialog::Dialog(QWidget *parent)
 
     acContainerLayout->addStretch();
 
+    // backlight
+    backlightContainer = new QGroupBox(this);
+    backlightContainer->setTitle(tr("Brightness"));
+    QVBoxLayout *backlightContainerLayout = new QVBoxLayout(backlightContainer);
+
+    backlightSliderBattery = new QSlider(this);
+    backlightSliderBattery->setOrientation(Qt::Horizontal);
+    backlightSliderBattery->setMinimum(1);
+    backlightSliderBattery->setMaximum(1);
+    backlightSliderBattery->setValue(0);
+
+    backlightSliderAC = new QSlider(this);
+    backlightSliderAC->setOrientation(Qt::Horizontal);
+    backlightSliderAC->setMinimum(1);
+    backlightSliderAC->setMaximum(1);
+    backlightSliderAC->setValue(0);
+
+    backlightBatteryCheck = new QCheckBox(this);
+    backlightBatteryCheck->setCheckable(true);
+    backlightBatteryCheck->setChecked(false);
+    backlightBatteryCheck->setText(tr("Enable"));
+
+    backlightACCheck = new QCheckBox(this);
+    backlightACCheck->setCheckable(true);
+    backlightACCheck->setChecked(false);
+    backlightACCheck->setText(tr("Enable"));
+
+    QWidget *batteryBacklightContainer = new QWidget(this);
+    QHBoxLayout *batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
+    QLabel *batteryBacklightLabel = new QLabel(this);
+    QLabel *batteryBacklightIcon = new QLabel(this);
+
+    batteryBacklightIcon->setMaximumSize(48, 48);
+    batteryBacklightIcon->setMinimumSize(48, 48);
+    batteryBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON)
+                                .pixmap(QSize(48, 48)));
+    batteryBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">On Battery</h3>"));
+    batteryBacklightContainerLayout->addWidget(batteryBacklightIcon);
+    batteryBacklightContainerLayout->addWidget(batteryBacklightLabel);
+    batteryBacklightContainerLayout->addStretch();
+    batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
+    batteryBacklightContainerLayout->addWidget(backlightSliderBattery);
+
+    QWidget *acBacklightContainer = new QWidget(this);
+    QHBoxLayout *acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
+    QLabel *acBacklightLabel = new QLabel(this);
+    QLabel *acBacklightIcon = new QLabel(this);
+
+    acBacklightIcon->setMaximumSize(48, 48);
+    acBacklightIcon->setMinimumSize(48, 48);
+    acBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_AC_ICON)
+                                .pixmap(QSize(48, 48)));
+    acBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">On AC</h3>"));
+    acBacklightContainerLayout->addWidget(acBacklightIcon);
+    acBacklightContainerLayout->addWidget(acBacklightLabel);
+    acBacklightContainerLayout->addStretch();
+    acBacklightContainerLayout->addWidget(backlightACCheck);
+    acBacklightContainerLayout->addWidget(backlightSliderAC);
+
+    // add widgets to brightness
+    backlightContainerLayout->addWidget(batteryBacklightContainer);
+    backlightContainerLayout->addWidget(acBacklightContainer);
+    backlightContainerLayout->addStretch();
+
+    // advanced
     QGroupBox *advContainer = new QGroupBox(this);
     advContainer->setTitle(tr("Advanced"));
     QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
@@ -240,6 +311,7 @@ Dialog::Dialog(QWidget *parent)
     disableLidAction->setText(tr("Disable lid action if external"
                                  "\nmonitor(s) is connected"));
 
+    // add widgets to advanced
     advContainerLayout->addWidget(showSystemTray);
     advContainerLayout->addWidget(showNotifications);
     advContainerLayout->addWidget(desktopSS);
@@ -248,6 +320,7 @@ Dialog::Dialog(QWidget *parent)
     advContainerLayout->addWidget(lidXrandr);
     advContainerLayout->addStretch();
 
+    // extra
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
 
@@ -352,9 +425,13 @@ Dialog::Dialog(QWidget *parent)
     settingsContainerArea->setStyleSheet("QScrollArea {border:0;}");
     settingsContainerArea->setWidgetResizable(true);
     settingsContainerArea->setWidget(settingsWidget);
+
+    // add widgets to settings
     settingsLayout->addWidget(batteryContainer);
     settingsLayout->addWidget(acContainer);
+    settingsLayout->addWidget(backlightContainer);
     settingsLayout->addWidget(advContainer);
+    settingsLayout->addStretch();
 
     containerWidget->addTab(statusContainer,
                             QIcon::fromTheme(DEFAULT_INFO_ICON),
@@ -368,7 +445,7 @@ Dialog::Dialog(QWidget *parent)
 
     backlightSlider->setFocus();
 
-    // connect various widgets
+    // connect widgets
     connect(lockscreenButton, SIGNAL(released()),
             this, SLOT(handleLockscreenButton()));
     connect(sleepButton, SIGNAL(released()),
@@ -415,6 +492,14 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(deviceRemove(QString)));
     connect(man, SIGNAL(deviceWasAdded(QString)),
             this, SLOT(handleDeviceAdded(QString)));
+    connect(backlightBatteryCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightBatteryCheck(bool)));
+    connect(backlightACCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightACCheck(bool)));
+    connect(backlightSliderBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightBatterySlider(int)));
+    connect(backlightSliderAC, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightACSlider(int)));
 }
 
 Dialog::~Dialog()
@@ -581,15 +666,35 @@ void Dialog::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
     if (hasBacklight) {
+        backlightContainer->setEnabled(true);
         backlightSlider->setMinimum(1);
         backlightSlider->setMaximum(Common::backlightMax(backlightDevice));
         backlightSlider->setValue(Common::backlightValue(backlightDevice));
         backlightSlider->show();
         backlightSlider->setEnabled(true);
         backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
+        backlightSliderBattery->setMinimum(backlightSlider->minimum());
+        backlightSliderBattery->setMaximum(backlightSlider->maximum());
+        backlightSliderBattery->setValue(backlightSliderBattery->maximum());
+        backlightSliderAC->setMinimum(backlightSlider->minimum());
+        backlightSliderAC->setMaximum(backlightSlider->maximum());
+        backlightSliderAC->setValue(backlightSliderAC->maximum());
     } else {
+        backlightContainer->setDisabled(true);
         backlightSlider->hide();
         backlightSlider->setDisabled(true);
+    }
+    backlightBatteryCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE)
+                                      .toBool());
+    backlightACCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_AC_ENABLE)
+                                 .toBool());
+    if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY)) {
+        backlightSliderBattery->setValue(Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY)
+                                         .toInt());
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_AC)) {
+        backlightSliderAC->setValue(Common::loadPowerSettings(CONF_BACKLIGHT_AC)
+                                    .toInt());
     }
 
     // check devices
@@ -961,4 +1066,26 @@ void Dialog::handleDeviceAdded(QString uid)
     qDebug() << "handle device added" << uid;
     Q_UNUSED(uid)
     checkDevices();
+}
+
+void Dialog::handleBacklightBatteryCheck(bool triggered)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE, triggered);
+    handleBacklightBatterySlider(backlightSliderBattery->value());
+}
+
+void Dialog::handleBacklightACCheck(bool triggered)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_AC_ENABLE, triggered);
+    handleBacklightACSlider(backlightSliderAC->value());
+}
+
+void Dialog::handleBacklightBatterySlider(int value)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_BATTERY, value);
+}
+
+void Dialog::handleBacklightACSlider(int value)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_AC, value);
 }
