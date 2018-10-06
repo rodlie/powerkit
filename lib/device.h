@@ -17,10 +17,23 @@ class Device : public QObject
     Q_OBJECT
 
 public:
+    enum DeviceType {
+        DeviceUnknown,
+        DeviceLinePower,
+        DeviceBattery,
+        DeviceUps,
+        DeviceMonitor,
+        DeviceMouse,
+        DeviceKeyboard,
+        DevicePda,
+        DevicePhone
+    };
     explicit Device(const QString block,
                     QObject *parent = NULL);
     QString name;
     QString path;
+    QString model;
+    DeviceType type;
     bool isRechargable;
     bool isPresent;
     double percentage;
@@ -35,6 +48,8 @@ public:
     double energyFullDesign;
     double energyFull;
     double energyEmpty;
+    qlonglong timeToEmpty;
+    qlonglong timeToFull;
 
 private:
     QDBusInterface *dbus;

@@ -111,6 +111,10 @@ private:
     bool lidWasClosed;
     QString backlightDevice;
     bool hasBacklight;
+    bool backlightOnBattery;
+    bool backlightOnAC;
+    int backlightBatteryValue;
+    int backlightACValue;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -149,6 +153,7 @@ private slots:
     void handleSuspend();
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
+    void handleDeviceChanged(QString path);
 };
 
 #endif // SYSTRAY_H

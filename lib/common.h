@@ -17,10 +17,6 @@ public:
     static void savePowerSettings(QString type, QVariant value);
     static QVariant loadPowerSettings(QString type);
     static bool validPowerSettings(QString type);
-    static QString vendor();
-    static bool isDarkTheme();
-    static void setDarkTheme();
-    static void setNormalTheme();
     static void setIconTheme();
     static QString confFile();
     static QString confDir();

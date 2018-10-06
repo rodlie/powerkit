@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=powerdwarf
 Comment=Power Manager
-Icon=battery
+Icon=ac-adapter
 Exec=powerdwarf --config
 Terminal=false
 Type=Application

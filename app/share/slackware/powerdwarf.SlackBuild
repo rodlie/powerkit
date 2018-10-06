@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=powerdwarf
-VERSION=${VERSION:-1.0.0beta1}
+VERSION=${VERSION:-1.0.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 QMAKE=${QMAKE:-qmake}
@@ -73,7 +73,9 @@ find -L . \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 # Configure application
+LD_LIBRARY_PATH="`pwd`/lib:$LD_LIBRARY_PATH" \
 $QMAKE \
+CONFIG+=install_lib \
 CONFIG+=release \
 PREFIX=/usr \
 XDGDIR=/etc/xdg \

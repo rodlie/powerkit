@@ -27,10 +27,19 @@
 #include <QDebug>
 #include <QSlider>
 #include <QFileSystemWatcher>
+#include <QGroupBox>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
+#include <QProgressBar>
+#include <QMap>
+#include <QLCDNumber>
+#include <QDateTime>
+#include <QScrollArea>
 
 #include "def.h"
 #include "common.h"
 #include "upower.h"
+#include "power.h"
 
 // fix X11 inc
 #undef CursorShape
@@ -43,6 +52,10 @@
 #undef FocusOut
 #undef FontChange
 #undef Expose
+
+
+#define DEVICE_UUID Qt::UserRole+1
+#define DEVICE_TYPE Qt::UserRole+2
 
 class Dialog : public QDialog
 {
@@ -79,6 +92,17 @@ private:
     bool hasBacklight;
     QSlider *backlightSlider;
     QFileSystemWatcher *backlightWatcher;
+    Power *man;
+    QLabel *batteryIcon;
+    QLabel *batteryLabel;
+    QTreeWidget *deviceTree;
+    QMap<QString,QProgressBar*> devicesProg;
+    QLCDNumber *batteryLeftLCD;
+    QSlider *backlightSliderBattery;
+    QSlider *backlightSliderAC;
+    QCheckBox *backlightBatteryCheck;
+    QCheckBox *backlightACCheck;
+    QGroupBox *backlightContainer;
 
 private slots:
     void populate();
@@ -107,6 +131,14 @@ private slots:
     void checkPerms();
     void handleBacklightSlider(int value);
     void updateBacklight(QString file);
+    void checkDevices();
+    bool deviceExists(QString uid);
+    void deviceRemove(QString uid);
+    void handleDeviceAdded(QString uid);
+    void handleBacklightBatteryCheck(bool triggered);
+    void handleBacklightACCheck(bool triggered);
+    void handleBacklightBatterySlider(int value);
+    void handleBacklightACSlider(int value);
 };
 
 #endif // DIALOG_H

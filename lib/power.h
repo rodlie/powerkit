@@ -42,6 +42,8 @@ signals:
     void notifyStatus(QString title, QString msg, bool critical = false);
     void aboutToSuspend();
     void aboutToResume();
+    void deviceWasRemoved(QString path);
+    void deviceWasAdded(QString path);
 
 public slots:
     bool isDocked();
@@ -55,12 +57,17 @@ public slots:
     void hibernate();
     void lockScreen();
     void shutdown();
+    bool hasBattery();
+    qlonglong timeToEmpty();
+    qlonglong timeToFull();
 
 private slots:
     void setupDBus();
     void scanDevices();
     void deviceAdded(const QDBusObjectPath &obj);
+    void deviceAdded(const QString &path);
     void deviceRemoved(const QDBusObjectPath &obj);
+    void deviceRemoved(const QString &path);
     void deviceChanged();
     void handleDeviceChanged(QString devicePath);
     void checkUPower();

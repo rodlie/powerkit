@@ -78,6 +78,8 @@ enum criticalAction
 #define DEFAULT_NONE_ICON "emblem-unreadable"
 #define DEFAULT_BACKLIGHT_ICON "weather-clear"
 #define DEFAULT_INFO_ICON "dialog-information"
+#define DEFAULT_KEYBOARD_ICON "input-keyboard"
+#define DEFAULT_MOUSE_ICON "input-mouse"
 
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
@@ -134,5 +136,10 @@ enum criticalAction
 #define CONF_TRAY_SHOW "show_tray"
 #define CONF_LID_XRANDR "lid_xrandr_action"
 
+#define CONF_BACKLIGHT_BATTERY "backlight_battery_value"
+#define CONF_BACKLIGHT_BATTERY_ENABLE "backlight_battery_enable"
+#define CONF_BACKLIGHT_AC "backlight_ac_value"
+#define CONF_BACKLIGHT_AC_ENABLE "backlight_ac_enable"
+#define CONF_BACKLIGHT_LAST "backlight_last"
 
 #endif // DEF_H

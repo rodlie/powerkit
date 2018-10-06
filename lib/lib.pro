@@ -17,6 +17,7 @@ SOURCES += \
     upower.cpp \
     powermanagement.cpp \
     screensaver.cpp \
+    service.cpp \
     login1.cpp \
     device.cpp \
     ckit.cpp \
@@ -47,7 +48,16 @@ CONFIG(install_lib) {
     }
     !CONFIG(no_include_install) {
         target_inc.path = $${PREFIX}/include/powerdwarf
-        target_inc.files = $${HEADERS}
+        target_inc.files = common.h \
+                           power.h \
+                           upower.h \
+                           powermanagement.h \
+                           screensaver.h \
+                           service.h \
+                           login1.h \
+                           device.h \
+                           ckit.h \
+                           screens.h
         INSTALLS += target_inc
     }
     !CONFIG(no_pkgconfig_install) {
