@@ -317,7 +317,9 @@ void SysTray::handleOnBattery()
     showMessage(tr("On Battery"),
                 tr("Switched to battery power."));
     // brightness
-    if (backlightOnBattery && backlightBatteryValue>0) {
+    if (hasBacklight &&
+        backlightOnBattery &&
+        backlightBatteryValue>0) {
         Common::adjustBacklight(backlightDevice, backlightBatteryValue);
     }
 }
@@ -331,7 +333,9 @@ void SysTray::handleOnAC()
     wasLowBattery = false;
     wasVeryLowBattery = false;
     // brightness
-    if (backlightOnAC && backlightACValue>0) {
+    if (hasBacklight &&
+        backlightOnAC &&
+        backlightACValue>0) {
         Common::adjustBacklight(backlightDevice, backlightACValue);
     }
 }
