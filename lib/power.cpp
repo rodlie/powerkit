@@ -10,6 +10,7 @@
 #include "upower.h"
 #include <QTimer>
 #include <QProcess>
+#include <QDebug>
 
 #include "def.h"
 #include "login1.h"
@@ -181,6 +182,7 @@ void Power::setupDBus()
 {
     QDBusConnection system = QDBusConnection::systemBus();
     if (system.isConnected()) {
+        qDebug() << "dbus is running";
         system.connect(UP_SERVICE,
                        UP_PATH,
                        UP_SERVICE,
@@ -190,9 +192,21 @@ void Power::setupDBus()
         system.connect(UP_SERVICE,
                        UP_PATH,
                        UP_SERVICE,
+                       DBUS_DEVICE_ADDED,
+                       this,
+                       SLOT(deviceAdded(const QString&)));
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
                        DBUS_DEVICE_REMOVED,
                        this,
                        SLOT(deviceRemoved(const QDBusObjectPath&)));
+        system.connect(UP_SERVICE,
+                       UP_PATH,
+                       UP_SERVICE,
+                       DBUS_DEVICE_REMOVED,
+                       this,
+                       SLOT(deviceRemoved(const QString&)));
         system.connect(UP_SERVICE,
                        UP_PATH,
                        UP_SERVICE,
@@ -211,7 +225,7 @@ void Power::setupDBus()
                        "NotifyResume",
                        this,
                        SLOT(notifyResume()));
-        // missing notify resume on logind
+        // missing notify resume on logind!!!
         system.connect(UP_SERVICE,
                        UP_PATH,
                        UP_SERVICE,
@@ -243,11 +257,13 @@ void Power::setupDBus()
 // scan for new devices
 void Power::scanDevices()
 {
+    qDebug() << "scan devices";
     QStringList foundDevices = UPower::getDevices();
     for (int i=0; i < foundDevices.size(); i++) {
         QString foundDevicePath = foundDevices.at(i);
         bool hasDevice = devices.contains(foundDevicePath);
         if (hasDevice) { continue; }
+        qDebug() << "found new device" << foundDevicePath;
         Device *newDevice = new Device(foundDevicePath, this);
         connect(newDevice,
                 SIGNAL(deviceChanged(QString)),
@@ -261,8 +277,13 @@ void Power::scanDevices()
 // add device if not exists
 void Power::deviceAdded(const QDBusObjectPath &obj)
 {
+    deviceAdded(obj.path());
+}
+
+void Power::deviceAdded(const QString &path)
+{
+    qDebug() << "deviceAdded" << path;
     if (!upower->isValid()) { return; }
-    QString path = obj.path();
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
     scanDevices();
 }
@@ -270,11 +291,17 @@ void Power::deviceAdded(const QDBusObjectPath &obj)
 // remove device if exists
 void Power::deviceRemoved(const QDBusObjectPath &obj)
 {
+    deviceRemoved(obj.path());
+}
+
+void Power::deviceRemoved(const QString &path)
+{
+    qDebug() << "deviceRemoved" << path;
     if (!upower->isValid()) { return; }
-    QString path = obj.path();
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
     if (deviceExists) {
+        qDebug() << "remove device" << path;
         if (UPower::getDevices().contains(path)) { return; }
         delete devices.take(path);
     }
@@ -284,6 +311,7 @@ void Power::deviceRemoved(const QDBusObjectPath &obj)
 // check device status when changed
 void Power::deviceChanged()
 {
+    qDebug() << "device changed, check lid and battery status";
     if (wasLidClosed != lidIsClosed()) {
         if (!wasLidClosed && lidIsClosed()) {
             emit closedLid();
@@ -308,6 +336,7 @@ void Power::deviceChanged()
 // handle device changes
 void Power::handleDeviceChanged(QString devicePath)
 {
+    qDebug() << "device changed?" << devicePath;
     if (devicePath.isEmpty()) { return; }
     deviceChanged();
 }
@@ -326,6 +355,7 @@ void Power::checkUPower()
 // this does not work on newer upower/logind
 void Power::notifyResume()
 {
+    qDebug() << "notifyResume";
     scanDevices();
     emit aboutToResume();
     lockScreen(); // in case lockScreen didn't trigger on sleep
@@ -334,6 +364,7 @@ void Power::notifyResume()
 // do stuff before sleep
 void Power::notifySleep()
 {
+    qDebug() << "notifySleep";
     emit aboutToSuspend();
     emit notifyStatus(tr("About to suspend"), tr("System is about to suspend ..."));
     lockScreen();

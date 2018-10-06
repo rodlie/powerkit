@@ -63,7 +63,9 @@ private slots:
     void setupDBus();
     void scanDevices();
     void deviceAdded(const QDBusObjectPath &obj);
+    void deviceAdded(const QString &path);
     void deviceRemoved(const QDBusObjectPath &obj);
+    void deviceRemoved(const QString &path);
     void deviceChanged();
     void handleDeviceChanged(QString devicePath);
     void checkUPower();
