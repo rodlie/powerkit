@@ -10,6 +10,7 @@
 
 #include <QDBusConnection>
 #include <QStringList>
+#include <QDebug>
 
 #include "def.h"
 
@@ -62,7 +63,7 @@ Device::Device(const QString block, QObject *parent)
 void Device::updateDeviceProperties()
 {
     if (!dbus->isValid()) { return; }
-
+    qDebug() << "device changed!" << path;
     model = dbus->property("Model").toString();
     capacity =  dbus->property("Capacity").toDouble();
     isRechargable =  dbus->property("IsRechargeable").toBool();
