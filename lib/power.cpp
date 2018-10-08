@@ -360,7 +360,7 @@ void Power::notifyResume()
     qDebug() << "notifyResume";
     scanDevices();
     emit aboutToResume();
-    lockScreen(); // in case lockScreen didn't trigger on sleep
+    //lockScreen();
 }
 
 // do stuff before sleep
