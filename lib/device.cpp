@@ -91,3 +91,15 @@ void Device::updateDeviceProperties()
 
     emit deviceChanged(path);
 }
+
+void Device::update()
+{
+    updateDeviceProperties();
+}
+
+void Device::updateBattery()
+{
+    percentage =  dbus->property("Percentage").toDouble();
+    timeToEmpty = dbus->property("TimeToEmpty").toLongLong();
+    timeToFull = dbus->property("TimeToFull").toLongLong();
+}

@@ -219,6 +219,8 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void SysTray::checkDevices()
 {
+    qDebug() << "systray check devices ...";
+
     // show/hide tray
     if (tray->isSystemTrayAvailable() &&
         !tray->isVisible() &&
@@ -237,6 +239,7 @@ void SysTray::checkDevices()
 
     // get battery left and add tooltip
     double batteryLeft = man->batteryLeft();
+    qDebug() << "battery at" << batteryLeft;
     if (batteryLeft > 0) {
         tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
         if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
@@ -255,9 +258,7 @@ void SysTray::checkDevices()
     handleVeryLow(batteryLeft);
 
     // critical battery?
-    if (batteryLeft > 0 &&
-        batteryLeft<=(double)critBatteryValue &&
-        man->onBattery()) { handleCritical(); }
+    handleCritical(batteryLeft);
 
     // Register service if not already registered
     if (!hasService) { registerService(); }
@@ -500,7 +501,7 @@ void SysTray::handleLow(double left)
     if (left<=batteryLow && man->onBattery()) {
         if (!wasLowBattery) {
             showMessage(tr("Low Battery! (%1%)").arg(left),
-                        tr("You battery is low,"
+                        tr("The battery is low,"
                            " please consider connecting"
                            " your computer to a power supply."),
                         true);
@@ -515,9 +516,9 @@ void SysTray::handleVeryLow(double left)
     if (left<=batteryVeryLow && man->onBattery()) {
         if (!wasVeryLowBattery) {
             showMessage(tr("Very Low Battery! (%1%)").arg(left),
-                        tr("You battery is almost empty,"
+                        tr("The battery is almost empty,"
                            " please connect"
-                           " your computer to a power supply."),
+                           " your computer to a power supply now."),
                         true);
             wasVeryLowBattery = true;
         }
@@ -525,9 +526,16 @@ void SysTray::handleVeryLow(double left)
 }
 
 // handle critical battery
-void SysTray::handleCritical()
+void SysTray::handleCritical(double left)
 {
-    qDebug() << "critical battery" << criticalAction;
+    if (left<=0 ||
+        left>(double)critBatteryValue ||
+        !man->onBattery()) { return; }
+    qDebug() << "critical battery!" << criticalAction << left;
+    showMessage(tr("Critical Battery! (%1%)").arg(left),
+                tr("The battery is critical,"
+                   " running critical action."),
+                true);
     switch(criticalAction) {
     case criticalHibernate:
         man->hibernate();
@@ -789,13 +797,18 @@ void SysTray::disableSuspend()
 
 void SysTray::handleResume()
 {
-    qDebug() << "reset timer on resume";
+    qDebug() << "resume";
+    tray->showMessage(QString(), QString());
+    man->update();
+    man->lockScreen();
     resetTimer();
+    ss->SimulateUserActivity();
 }
 
 void SysTray::handleSuspend()
 {
-    qDebug() << "reset timer on suspend";
+    qDebug() << "suspend";
+    man->lockScreen();
     resetTimer();
 }
 

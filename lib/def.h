@@ -142,4 +142,20 @@ enum criticalAction
 #define CONF_BACKLIGHT_AC_ENABLE "backlight_ac_enable"
 #define CONF_BACKLIGHT_LAST "backlight_last"
 
+#define CHECK_UPOWER_TIMEOUT 60000
+
+#define PROP_LOGIN1_DOCKED "Docked"
+#define PROP_UPOWER_DOCKED "IsDocked"
+#define PROP_UPOWER_LID_IS_PRESENT "LidIsPresent"
+#define PROP_UPOWER_LID_IS_CLOSED "LidIsClosed"
+#define PROP_UPOWER_ON_BATTERY "OnBattery"
+#define PROP_UPOWER_CAN_HIBERNATE "CanHibernate"
+#define PROP_UPOWER_CAN_SUSPEND "CanSuspend"
+
+#define UP_CONN_CHANGED "Changed"
+#define UP_CONN_DEV_CHANGED "DeviceChanged"
+#define UP_CONN_NOTIFY_RESUME "NotifyResume"
+#define UP_CONN_NOTIFY_SLEEP "NotifySleep"
+
+
 #endif // DEF_H
