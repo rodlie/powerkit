@@ -256,7 +256,7 @@ void Power::setupDBus()
         system.connect(LOGIN1_SERVICE,
                        LOGIN1_PATH,
                        LOGIN1_MANAGER,
-                       "PrepareForSleep",
+                       LOGIN1_PREP_FOR_SLEEP,
                        this,
                        SLOT(notifySleep()));
         if (upower == NULL) {
@@ -303,7 +303,7 @@ void Power::deviceAdded(const QDBusObjectPath &obj)
 void Power::deviceAdded(const QString &path)
 {
     if (!upower->isValid()) { return; }
-    if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
+    if (path.startsWith(QString(DBUS_JOBS).arg(UP_PATH))) { return; }
     emit deviceWasAdded(path);
     scanDevices();
 }
@@ -318,7 +318,7 @@ void Power::deviceRemoved(const QString &path)
 {
     if (!upower->isValid()) { return; }
     bool deviceExists = devices.contains(path);
-    if (path.startsWith(QString("%1/jobs").arg(UP_PATH))) { return; }
+    if (path.startsWith(QString(DBUS_JOBS).arg(UP_PATH))) { return; }
     if (deviceExists) {
         if (UPower::getDevices().contains(path)) { return; }
         delete devices.take(path);

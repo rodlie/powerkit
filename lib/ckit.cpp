@@ -27,7 +27,7 @@ bool CKit::canRestart()
     QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanRestart");
+    QDBusMessage reply = iface.call(CKIT_CAN_RESTART);
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
     return result;
@@ -38,7 +38,7 @@ QString CKit::restart()
     QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Restart");
+    QDBusMessage reply = iface.call(CKIT_RESTART);
     return reply.errorMessage();
 }
 
@@ -47,7 +47,7 @@ bool CKit::canPowerOff()
     QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanPowerOff");
+    QDBusMessage reply = iface.call(CKIT_CAN_POWEROFF);
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
     return result;
@@ -58,6 +58,6 @@ QString CKit::poweroff()
     QDBusInterface iface(CKIT_SERVICE, CKIT_PATH, CKIT_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("PowerOff");
+    QDBusMessage reply = iface.call(CKIT_POWEROFF);
     return reply.errorMessage();
 }

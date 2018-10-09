@@ -78,7 +78,7 @@ void ScreenSaver::pingPM()
     if (!iface.isValid()) {
         return;
     }
-    iface.call("SimulateUserActivity");
+    iface.call(SS_SIMULATE);
 }
 
 void ScreenSaver::SimulateUserActivity()
