@@ -128,7 +128,7 @@ private slots:
     void handleHasInhibitChanged(bool has_inhibit);
     void handleLow(double left);
     void handleVeryLow(double left);
-    void handleCritical();
+    void handleCritical(double left);
     void drawBattery(double left);
     void timeout();
     int xIdle();

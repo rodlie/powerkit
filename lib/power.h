@@ -60,6 +60,8 @@ public slots:
     bool hasBattery();
     qlonglong timeToEmpty();
     qlonglong timeToFull();
+    void update();
+    void updateBattery();
 
 private slots:
     void setupDBus();

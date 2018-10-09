@@ -10,7 +10,6 @@
 
 #include <QDBusConnection>
 #include <QStringList>
-#include <QDebug>
 
 #include "def.h"
 
@@ -35,13 +34,13 @@ Device::Device(const QString block, QObject *parent)
     QDBusConnection system = QDBusConnection::systemBus();
     dbus = new QDBusInterface(UP_SERVICE,
                               path,
-                              QString("%1.Device").arg(UP_SERVICE),
+                              QString("%1.%2").arg(UP_SERVICE).arg(DBUS_DEVICE),
                               system,
                               parent);
     system.connect(dbus->service(),
                    dbus->path(),
-                   QString("%1.Device").arg(UP_SERVICE),
-                   "Changed",
+                   QString("%1.%2").arg(UP_SERVICE).arg(DBUS_DEVICE),
+                   UP_CONN_CHANGED,
                    this,
                    SLOT(updateDeviceProperties()));
     dbusp = new QDBusInterface(UP_SERVICE,
@@ -52,7 +51,7 @@ Device::Device(const QString block, QObject *parent)
     system.connect(dbusp->service(),
                    dbusp->path(),
                    DBUS_PROPERTIES,
-                   "PropertiesChanged",
+                   PROP_CHANGED,
                    this,
                    SLOT(updateDeviceProperties()));
     if (name.isEmpty()) { name = path.split("/").takeLast(); }
@@ -63,21 +62,21 @@ Device::Device(const QString block, QObject *parent)
 void Device::updateDeviceProperties()
 {
     if (!dbus->isValid()) { return; }
-    qDebug() << "device changed!" << path;
-    model = dbus->property("Model").toString();
-    capacity =  dbus->property("Capacity").toDouble();
-    isRechargable =  dbus->property("IsRechargeable").toBool();
-    isPresent =  dbus->property("IsPresent").toBool();
-    percentage =  dbus->property("Percentage").toDouble();
-    energyFullDesign = dbus->property("EnergyFullDesign").toDouble();
-    energyFull = dbus->property("EnergyFull").toDouble();
-    energyEmpty = dbus->property("EnergyEmpty").toDouble();
-    energy = dbus->property("Energy").toDouble();
-    online = dbus->property("Online").toBool();
-    hasPowerSupply = dbus->property("PowerSupply").toBool();
-    timeToEmpty = dbus->property("TimeToEmpty").toLongLong();
-    timeToFull = dbus->property("TimeToFull").toLongLong();
-    type = (DeviceType)dbus->property("Type").toUInt();
+
+    model = dbus->property(PROP_DEV_MODEL).toString();
+    capacity =  dbus->property(PROP_DEV_CAPACITY).toDouble();
+    isRechargable =  dbus->property(PROP_DEV_IS_RECHARGE).toBool();
+    isPresent =  dbus->property(PROP_DEV_PRESENT).toBool();
+    percentage =  dbus->property(PROP_DEV_PERCENT).toDouble();
+    energyFullDesign = dbus->property(PROP_DEV_ENERGY_FULL_DESIGN).toDouble();
+    energyFull = dbus->property(PROP_DEV_ENERGY_FULL).toDouble();
+    energyEmpty = dbus->property(PROP_DEV_ENERGY_EMPTY).toDouble();
+    energy = dbus->property(PROP_DEV_ENERGY).toDouble();
+    online = dbus->property(PROP_DEV_ONLINE).toBool();
+    hasPowerSupply = dbus->property(PROP_DEV_POWER_SUPPLY).toBool();
+    timeToEmpty = dbus->property(PROP_DEV_TIME_TO_EMPTY).toLongLong();
+    timeToFull = dbus->property(PROP_DEV_TIME_TO_FULL).toLongLong();
+    type = (DeviceType)dbus->property(PROP_DEV_TYPE).toUInt();
 
     if (type == DeviceBattery) { isBattery = true; }
     else {
@@ -86,8 +85,20 @@ void Device::updateDeviceProperties()
         else { isAC = false; }
     }
 
-    vendor = dbus->property("Vendor").toString();
-    nativePath = dbus->property("NativePath").toString();
+    vendor = dbus->property(PROP_DEV_VENDOR).toString();
+    nativePath = dbus->property(PROP_DEV_NATIVEPATH).toString();
 
     emit deviceChanged(path);
+}
+
+void Device::update()
+{
+    updateDeviceProperties();
+}
+
+void Device::updateBattery()
+{
+    percentage =  dbus->property(PROP_DEV_PERCENT).toDouble();
+    timeToEmpty = dbus->property(PROP_DEV_TIME_TO_EMPTY).toLongLong();
+    timeToFull = dbus->property(PROP_DEV_TIME_TO_FULL).toLongLong();
 }

@@ -31,7 +31,7 @@ bool UPower::canSuspend()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("SuspendAllowed");
+    QDBusMessage reply = iface.call(UP_CAN_SUSPEND);
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
     return result;
@@ -41,7 +41,7 @@ QString UPower::suspend()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Suspend");
+    QDBusMessage reply = iface.call(UP_SUSPEND);
     return reply.errorMessage();
 }
 
@@ -49,7 +49,7 @@ bool UPower::canHibernate()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("HibernateAllowed");
+    QDBusMessage reply = iface.call(UP_CAN_HIBERNATE);
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
     return result;
@@ -59,7 +59,7 @@ QString UPower::hibernate()
 {
     QDBusInterface iface(UP_SERVICE, UP_PATH, UP_SERVICE, QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Hibernate");
+    QDBusMessage reply = iface.call(UP_HIBERNATE);
     return reply.errorMessage();
 }
 
@@ -74,7 +74,7 @@ QStringList UPower::getDevices()
         xml.readNext();
         if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "node" ) {
             QString name = xml.attributes().value("name").toString();
-            if(!name.isEmpty()) { devices << QDBusObjectPath("/org/freedesktop/UPower/devices/" + name); }
+            if(!name.isEmpty()) { devices << QDBusObjectPath(UP_DEVICES + name); }
         }
     }
     foreach (QDBusObjectPath device, devices) {

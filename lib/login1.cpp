@@ -32,7 +32,7 @@ bool Login1::canRestart()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanReboot");
+    QDBusMessage reply = iface.call(LOGIN1_CAN_REBOOT);
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -44,7 +44,7 @@ QString Login1::restart()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Reboot", true);
+    QDBusMessage reply = iface.call(LOGIN1_REBOOT, true);
     return reply.errorMessage();
 }
 
@@ -55,7 +55,7 @@ bool Login1::canPowerOff()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanPowerOff");
+    QDBusMessage reply = iface.call(LOGIN1_CAN_POWEROFF);
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -67,7 +67,7 @@ QString Login1::poweroff()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("PowerOff", true);
+    QDBusMessage reply = iface.call(LOGIN1_POWEROFF, true);
     return reply.errorMessage();
 }
 
@@ -78,7 +78,7 @@ bool Login1::canSuspend()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanSuspend");
+    QDBusMessage reply = iface.call(LOGIN1_CAN_SUSPEND);
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -90,7 +90,7 @@ QString Login1::suspend()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Suspend", true);
+    QDBusMessage reply = iface.call(LOGIN1_SUSPEND, true);
     return reply.errorMessage();
 }
 
@@ -101,7 +101,7 @@ bool Login1::canHibernate()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call("CanHibernate");
+    QDBusMessage reply = iface.call(LOGIN1_CAN_HIBERNATE);
     if (reply.arguments().first().toString() == "yes") { return true; }
     return false;
 }
@@ -113,6 +113,6 @@ QString Login1::hibernate()
                          LOGIN1_MANAGER,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return QObject::tr("Failed D-Bus connection."); }
-    QDBusMessage reply = iface.call("Hibernate", true);
+    QDBusMessage reply = iface.call(LOGIN1_HIBERNATE, true);
     return reply.errorMessage();
 }

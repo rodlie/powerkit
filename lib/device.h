@@ -60,6 +60,9 @@ signals:
 
 private slots:
     void updateDeviceProperties();
+public slots:
+    void update();
+    void updateBattery();
 };
 
 #endif // DEVICE_H
