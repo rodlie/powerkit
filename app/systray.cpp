@@ -645,8 +645,7 @@ int SysTray::xIdle()
         }
     }
     XCloseDisplay(display);
-    int hours = idle/(1000*60*60);
-    int minutes = (idle-(hours*1000*60*60))/(1000*60);
+    int minutes = (idle-(1000*60))/(1000*60);
     return minutes;
 }
 
