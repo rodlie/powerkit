@@ -5,7 +5,11 @@ powerdwarf -\ lightweight full featured power manager
 powerdwarf
 .I [--config]
 .SH DESCRIPTION
-powerdwarf is a lightweight full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina and others.
+powerdwarf is a lightweight full featured power manager created for
+.I Slackware
+for use with alternative desktop environments and window managers, like
+.I Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina
+and others.
 
 .PP
 .B USAGE
@@ -99,6 +103,13 @@ Proper udev permissions (rules file) are required to adjust the brightness. See
 powerdwarf supports hibernate, but not out-of-the-box (depends on your system). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader configuration and add the kernel option
 .I resume=<swap_partition/swap_file>,
 then save and restart. You should now have hibernate support.
+
+.PP
+.B REQUIREMENTS
+.PP
+powerdwarf requires
+.I ConsoleKit/logind, UPower, XScreenSaver, xrandr
+available during run-time.
 
 .SH OPTIONS
 .TP

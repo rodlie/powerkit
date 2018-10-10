@@ -73,9 +73,8 @@ find -L . \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 # Configure application
-LD_LIBRARY_PATH="`pwd`/lib:$LD_LIBRARY_PATH" \
+# add CONFIG+=install_lib to install shared library with includes
 $QMAKE \
-CONFIG+=install_lib \
 CONFIG+=release \
 PREFIX=/usr \
 XDGDIR=/etc/xdg \
