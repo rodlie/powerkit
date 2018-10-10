@@ -25,8 +25,7 @@ powerdwarf is a user session daemon and should be started during the X11 startup
 
 ## Configuration
 
-Click on the powerdwarf system tray, or run the command (or use powerdwarf.desktop):
-``` powerdwarf --config``` to configure powerdwarf.
+Click on the powerdwarf system tray, or run the command ``` powerdwarf --config``` (or use powerdwarf.desktop) to configure powerdwarf.
 
 ### Screen saver
 
@@ -42,7 +41,7 @@ Recommended settings are:
   * Suspend After: ``0 minutes``
   * Off After: ``0 minutes``
   * Quick Power-off in Blank Only Mode: ``enabled``
-  
+
 Note that powerdwarf will start XScreenSaver during startup (unless ``freedesktop_ss`` is disabled).
 
 ### Back light

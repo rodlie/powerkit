@@ -1,19 +1,123 @@
-.TH powerdwarf 1 "03 July 2018" "0.9" "powerdwarf documentation"
+.TH powerdwarf 1 "10 October 2018" "1.0" "powerdwarf documentation"
 .SH NAME
 powerdwarf -\ lightweight full featured power manager
 .SH SYNOPSIS
-powerdwarf [--config]
+powerdwarf
+.I [--config]
 .SH DESCRIPTION
 powerdwarf is a lightweight full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina and others.
+
+.PP
+.B USAGE
+.PP
+powerdwarf is a user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
+
+.IP
+In Fluxbox add
+.I powerdwarf &
+to the
+.I ~/.fluxbox/startup
+file.
+
+.IP
+In Openbox add
+.I powerdwarf &
+to the
+.I ~/.config/openbox/autostart
+file.
+
+.PP
+.B CONFIGURATION
+.PP
+Click on the powerdwarf system tray, or run the command
+.I powerdwarf --config
+( or use
+.I powerdwarf.desktop
+) to configure powerdwarf.
+
+.PP
+.B SCREEN SAVER
+.PP
+powerdwarf depends on
+.I XScreenSaver
+to handle the screen session, the default settings may need to be adjusted. You can launch the (
+.I XScreenSaver
+) configuration GUI with the
+.I xscreensaver-demo
+command.
+
+.PP
+Recommended settings are:
+
+.TP
+.B Mode:
+.I Blank Screen Only
+.TP
+.B Blank After
+.I 5 minutes
+.TP
+.B Lock Screen After:
+.I enabled + 0 minutes
+.PP
+.B Display Power Management
+(
+.I enabled
+):
+.TP
+.B Standby After:
+.I 0 minutes
+.TP
+.B Suspend After:
+.I 0 minutes
+.TP
+.B Off After:
+.I 0 minutes
+.TP
+.B Quick Power-off in Blank Only Mode:
+.I enabled
+.PP
+Note that powerdwarf will start
+.I XScreenSaver
+during startup (unless
+.I org.freedesktop.ScreenSaver
+is disabled).
+
+.PP
+.B BACK LIGHT
+.PP
+powerdwarf supports back light through
+.I /sys/class/backlight.
+The current brightness can be adjusted with the mouse wheel/touchpad scroll on the system tray icon or through the configuration GUI (bottom left slider). You can also configure brightness events in the configuration GUI.
+.PP
+.B NOTE!
+Proper udev permissions (rules file) are required to adjust the brightness. See
+.I https://github.com/rodlie/powerdwarf/blob/master/app/share/udev/90-backlight.rules.
+
+.PP
+.B HIBERNATE
+.PP
+powerdwarf supports hibernate, but not out-of-the-box (depends on your system). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader configuration and add the kernel option
+.I resume=<swap_partition/swap_file>,
+then save and restart. You should now have hibernate support.
+
 .SH OPTIONS
-.IP --config
-Launch configuration GUI
+.TP
+.I --config
+Launch configuration/status GUI.
+
 .SH FILES
 .I ~/.config/powerdwarf/powerdwarf.conf
 .RS
 Per user configuration file.
 .RE
+
+.SH SEE ALSO
+xscreensaver(1), xscreensaver-demo(1), UPower(7)
 .SH BUGS
 See https://github.com/rodlie/powerdwarf/issues
+
 .SH AUTHOR
 Ole-André Rodlie (ole.andre.rodlie@gmail.com)
+
+.SH COPYRIGHT
+Available under the 3-clause BSD license.
