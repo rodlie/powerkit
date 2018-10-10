@@ -747,7 +747,7 @@ void Dialog::handleLidActionBattery(int index)
 
 void Dialog::handleLidActionAC(int index)
 {
-    /*if (index == lidHibernate &&
+    if (index == lidHibernate &&
             (!Common::kernelCanResume() ||
              !hibernateButton->isEnabled())) {
         QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
@@ -756,21 +756,18 @@ void Dialog::handleLidActionAC(int index)
                !sleepButton->isEnabled()) {
         QMessageBox::warning(this, tr("Error"), tr("Suspend is not supported"));
         return;
-    }*/
-    checkPerms();
+    }
     Common::savePowerSettings(CONF_LID_AC_ACTION, index);
 }
 
 void Dialog::handleCriticalAction(int index)
 {
-    /*if (index == criticalHibernate &&
+    if (index == criticalHibernate &&
             (!Common::kernelCanResume() ||
              !hibernateButton->isEnabled())) {
         QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
-
         return;
-    }*/
-    checkPerms();
+    }
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
 }
 
@@ -830,7 +827,7 @@ void Dialog::handleDisableLidAction(bool triggered)
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
-    /*if (index == suspendHibernate &&
+    if (index == suspendHibernate &&
             (!Common::kernelCanResume() ||
              !hibernateButton->isEnabled())) {
         QMessageBox::warning(this, tr("Error"), tr("Hibernate is not supported"));
@@ -839,8 +836,7 @@ void Dialog::handleAutoSleepBatteryAction(int index)
                !sleepButton->isEnabled()) {
         QMessageBox::warning(this, tr("Error"), tr("Suspend is not supported"));
         return;
-    }*/
-    checkPerms();
+    }
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
 }
 
@@ -1005,7 +1001,7 @@ void Dialog::checkDevices()
     QMapIterator<QString, Device*> i(man->devices);
     while (i.hasNext()) {
         i.next();
-        //qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
+        qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
         QString uid = i.value()->path;
         if (!i.value()->isPresent) {
             if (deviceExists(uid)) { deviceRemove(uid); }
