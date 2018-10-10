@@ -144,6 +144,8 @@ private slots:
     void handleBacklightACSlider(int value);
     void hibernateWarn();
     void sleepWarn();
+    void handleBacklightBatteryCheckLower(bool triggered);
+    void handleBacklightACCheckHigher(bool triggered);
 };
 
 #endif // DIALOG_H

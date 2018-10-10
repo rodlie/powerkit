@@ -162,9 +162,11 @@ enum criticalAction
 #define CONF_LID_XRANDR "lid_xrandr_action"
 #define CONF_BACKLIGHT_BATTERY "backlight_battery_value"
 #define CONF_BACKLIGHT_BATTERY_ENABLE "backlight_battery_enable"
+#define CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER "backlight_battery_disable_if_lower"
 #define CONF_BACKLIGHT_AC "backlight_ac_value"
 #define CONF_BACKLIGHT_AC_ENABLE "backlight_ac_enable"
-#define CONF_BACKLIGHT_LAST "backlight_last"
+#define CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER "backlight_ac_disable_if_higher"
+//#define CONF_BACKLIGHT_LAST "backlight_last"
 
 #define CHECK_UPOWER_TIMEOUT 60000
 

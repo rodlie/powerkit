@@ -188,7 +188,7 @@ Dialog::Dialog(QWidget *parent)
     backlightBatteryLowerCheck = new QCheckBox(this);
     backlightBatteryLowerCheck->setCheckable(true);
     backlightBatteryLowerCheck->setChecked(false);
-    backlightBatteryLowerCheck->setText(tr("Don't adjust if\nbrightness is lower."));
+    backlightBatteryLowerCheck->setText(tr("Don't apply if lower."));
 
     QWidget *batteryBacklightOptContainer = new QWidget(this);
     //batteryBacklightOptContainer->setStyleSheet("border:1px solid red;");
@@ -317,7 +317,7 @@ Dialog::Dialog(QWidget *parent)
     backlightACHigherCheck = new QCheckBox(this);
     backlightACHigherCheck->setCheckable(true);
     backlightACHigherCheck->setChecked(false);
-    backlightACHigherCheck->setText(tr("Don't adjust if\nbrightness is higher."));
+    backlightACHigherCheck->setText(tr("Don't apply if higher."));
 
     QWidget *acBacklightOptContainer = new QWidget(this);
     QVBoxLayout *acBacklightOptContainerLayout = new QVBoxLayout(acBacklightOptContainer);
@@ -580,6 +580,10 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightBatterySlider(int)));
     connect(backlightSliderAC, SIGNAL(valueChanged(int)),
             this, SLOT(handleBacklightACSlider(int)));
+    connect(backlightBatteryLowerCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightBatteryCheckLower(bool)));
+    connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightACCheckHigher(bool)));
 }
 
 Dialog::~Dialog()
@@ -746,12 +750,14 @@ void Dialog::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
     if (hasBacklight) {
-        //backlightContainer->setEnabled(true);
         backlightSlider->setMinimum(1);
         backlightSlider->setMaximum(Common::backlightMax(backlightDevice));
         backlightSlider->setValue(Common::backlightValue(backlightDevice));
-        //backlightSlider->show();
+
         backlightSlider->setEnabled(true);
+        backlightSliderAC->setEnabled(true);
+        backlightSliderBattery->setEnabled(true);
+
         backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
         backlightSliderBattery->setMinimum(backlightSlider->minimum());
         backlightSliderBattery->setMaximum(backlightSlider->maximum());
@@ -760,9 +766,9 @@ void Dialog::loadSettings()
         backlightSliderAC->setMaximum(backlightSlider->maximum());
         backlightSliderAC->setValue(backlightSliderAC->maximum());
     } else {
-        //backlightContainer->setDisabled(true);
-        //backlightSlider->hide();
         backlightSlider->setDisabled(true);
+        backlightSliderAC->setDisabled(true);
+        backlightSliderBattery->setDisabled(true);
     }
     backlightBatteryCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE)
                                       .toBool());
@@ -775,6 +781,14 @@ void Dialog::loadSettings()
     if (Common::validPowerSettings(CONF_BACKLIGHT_AC)) {
         backlightSliderAC->setValue(Common::loadPowerSettings(CONF_BACKLIGHT_AC)
                                     .toInt());
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
+        backlightBatteryLowerCheck->setChecked(
+                    Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER).toBool());
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
+        backlightACHigherCheck->setChecked(
+                    Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER).toBool());
     }
 
     // check devices
@@ -1159,4 +1173,14 @@ void Dialog::sleepWarn()
 {
     QMessageBox::warning(this, tr("Sleep not supported"),
                          tr("Sleep not supported, consult your OS documentation."));
+}
+
+void Dialog::handleBacklightBatteryCheckLower(bool triggered)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER, triggered);
+}
+
+void Dialog::handleBacklightACCheckHigher(bool triggered)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
 }

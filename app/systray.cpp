@@ -47,6 +47,8 @@ SysTray::SysTray(QObject *parent)
     , backlightOnAC(false)
     , backlightBatteryValue(0)
     , backlightACValue(0)
+    , backlightBatteryDisableIfLower(false)
+    , backlightACDisableIfHigher(false)
 {
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -321,6 +323,12 @@ void SysTray::handleOnBattery()
     if (hasBacklight &&
         backlightOnBattery &&
         backlightBatteryValue>0) {
+        qDebug() << "set brightness on battery";
+        if (backlightBatteryDisableIfLower &&
+            backlightBatteryValue>Common::backlightValue(backlightDevice)) {
+            qDebug() << "brightness is lower than battery value, ignore";
+            return;
+        }
         Common::adjustBacklight(backlightDevice, backlightBatteryValue);
     }
 }
@@ -337,6 +345,12 @@ void SysTray::handleOnAC()
     if (hasBacklight &&
         backlightOnAC &&
         backlightACValue>0) {
+        qDebug() << "set brightness on ac";
+        if (backlightACDisableIfHigher &&
+            backlightACValue<Common::backlightValue(backlightDevice)) {
+            qDebug() << "brightness is higher than ac value, ignore";
+            return;
+        }
         Common::adjustBacklight(backlightDevice, backlightACValue);
     }
 }
@@ -401,6 +415,14 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY)) {
         backlightBatteryValue = Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY).toInt();
     }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
+        backlightBatteryDisableIfLower =  Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)
+                                                                    .toBool();
+    }
+    if (Common::validPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
+        backlightACDisableIfHigher = Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
+                                                               .toBool();
+    }
 
     // verify
     if (!Common::kernelCanResume()) {
@@ -438,7 +460,8 @@ void SysTray::loadSettings()
     qDebug() << CONF_BACKLIGHT_AC_ENABLE << backlightOnAC;
     qDebug() << CONF_BACKLIGHT_BATTERY << backlightBatteryValue;
     qDebug() << CONF_BACKLIGHT_BATTERY_ENABLE << backlightOnBattery;
-
+    qDebug() << CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER << backlightBatteryDisableIfLower;
+    qDebug() << CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER << backlightACDisableIfHigher;
 }
 
 // register session services

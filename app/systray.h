@@ -115,6 +115,8 @@ private:
     bool backlightOnAC;
     int backlightBatteryValue;
     int backlightACValue;
+    bool backlightBatteryDisableIfLower;
+    bool backlightACDisableIfHigher;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
