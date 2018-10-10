@@ -70,6 +70,8 @@ void Common::setIconTheme()
         if(theme.isNull()) {
             qDebug() << "checking for icon theme in static fallback";
             QStringList themes;
+            themes << QString("%1/../share/icons/Humanity").arg(qApp->applicationFilePath());
+            themes << "/usr/share/icons/Humanity" << "/usr/local/share/icons/Humanity";
             themes << QString("%1/../share/icons/Adwaita").arg(qApp->applicationFilePath());
             themes << "/usr/share/icons/Adwaita" << "/usr/local/share/icons/Adwaita";
             themes << QString("%1/../share/icons/gnome").arg(qApp->applicationFilePath());
