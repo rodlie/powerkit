@@ -252,13 +252,12 @@ void Power::setupDBus()
                        UP_CONN_NOTIFY_SLEEP,
                        this,
                        SLOT(notifySleep()));
-        // FIXME!: logind uses PrepareForSleep True/False for suspend/resume
         system.connect(LOGIN1_SERVICE,
                        LOGIN1_PATH,
                        LOGIN1_MANAGER,
                        LOGIN1_PREP_FOR_SLEEP,
                        this,
-                       SLOT(notifySleep()));
+                       SLOT(notifySuspend(bool)));
         if (upower == NULL) {
             upower = new QDBusInterface(UP_SERVICE,
                                         UP_PATH,
@@ -378,4 +377,10 @@ void Power::notifyResume()
 void Power::notifySleep()
 {
     emit aboutToSuspend();
+}
+
+void Power::notifySuspend(bool suspend)
+{
+    if (suspend) { emit aboutToSuspend(); }
+    else { emit aboutToResume();}
 }

@@ -797,9 +797,9 @@ void SysTray::disableSuspend()
 void SysTray::handleResume()
 {
     qDebug() << "resume";
+    man->lockScreen();
     tray->showMessage(QString(), QString());
     man->update();
-    man->lockScreen();
     resetTimer();
     ss->SimulateUserActivity();
 }

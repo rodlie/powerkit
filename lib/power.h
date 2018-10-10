@@ -75,6 +75,7 @@ private slots:
     void checkUPower();
     void notifyResume();
     void notifySleep();
+    void notifySuspend(bool suspend);
 };
 
 #endif // POWER_H
