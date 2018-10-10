@@ -44,6 +44,8 @@ Dialog::Dialog(QWidget *parent)
     , backlightBatteryCheck(0)
     , backlightACCheck(0)
     , backlightContainer(0)
+    , backlightBatteryLowerCheck(0)
+    , backlightACHigherCheck(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -77,6 +79,7 @@ Dialog::Dialog(QWidget *parent)
     wrapperLayout->setSpacing(0);
     wrapperLayout->addWidget(containerWidget);
 
+    // battery
     QGroupBox *batteryContainer = new QGroupBox(this);
     batteryContainer->setTitle(tr("On Battery"));
     batteryContainer->setSizePolicy(QSizePolicy::Expanding,
@@ -88,6 +91,8 @@ Dialog::Dialog(QWidget *parent)
     QWidget *lidActionBatteryContainer = new QWidget(this);
     QHBoxLayout *lidActionBatteryContainerLayout = new QHBoxLayout(lidActionBatteryContainer);
     lidActionBattery = new QComboBox(this);
+    lidActionBattery->setMaximumWidth(MAX_WIDTH);
+    lidActionBattery->setMinimumWidth(MAX_WIDTH);
     QLabel *lidActionBatteryLabel = new QLabel(this);
 
     QLabel *lidActionBatteryIcon = new QLabel(this);
@@ -98,12 +103,15 @@ Dialog::Dialog(QWidget *parent)
     lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
+    lidActionBatteryContainerLayout->addStretch();
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
     batteryContainerLayout->addWidget(lidActionBatteryContainer);
 
     QWidget *criticalBatteryContainer = new QWidget(this);
     QHBoxLayout *criticalBatteryContainerLayout = new QHBoxLayout(criticalBatteryContainer);
     criticalBattery = new QSpinBox(this);
+    criticalBattery->setMaximumWidth(MAX_WIDTH);
+    criticalBattery->setMinimumWidth(MAX_WIDTH);
     criticalBattery->setMinimum(0);
     criticalBattery->setMaximum(99);
     criticalBattery->setSuffix(tr(" %"));
@@ -115,6 +123,8 @@ Dialog::Dialog(QWidget *parent)
     criticalActionBatteryContainerLayout->setMargin(0);
     criticalActionBatteryContainerLayout->setSpacing(0);
     criticalActionBattery = new QComboBox(this);
+    criticalActionBattery->setMaximumWidth(MAX_WIDTH);
+    criticalActionBattery->setMinimumWidth(MAX_WIDTH);
     criticalActionBatteryContainerLayout->addWidget(criticalBattery);
     criticalActionBatteryContainerLayout->addWidget(criticalActionBattery);
 
@@ -126,11 +136,14 @@ Dialog::Dialog(QWidget *parent)
     criticalBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Critical battery</h3>"));
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
+    criticalBatteryContainerLayout->addStretch();
     criticalBatteryContainerLayout->addWidget(criticalActionBatteryContainer);
 
     QWidget *sleepBatteryContainer = new QWidget(this);
     QHBoxLayout *sleepBatteryContainerLayout = new QHBoxLayout(sleepBatteryContainer);
     autoSleepBattery = new QSpinBox(this);
+    autoSleepBattery->setMaximumWidth(MAX_WIDTH);
+    autoSleepBattery->setMinimumWidth(MAX_WIDTH);
     autoSleepBattery->setMinimum(0);
     autoSleepBattery->setMaximum(1000);
     autoSleepBattery->setSuffix(tr(" min"));
@@ -142,6 +155,8 @@ Dialog::Dialog(QWidget *parent)
     sleepActionBatteryContainerLayout->setMargin(0);
     sleepActionBatteryContainerLayout->setSpacing(0);
     autoSleepBatteryAction = new QComboBox(this);
+    autoSleepBatteryAction->setMaximumWidth(MAX_WIDTH);
+    autoSleepBatteryAction->setMinimumWidth(MAX_WIDTH);
     sleepActionBatteryContainerLayout->addWidget(autoSleepBattery);
     sleepActionBatteryContainerLayout->addWidget(autoSleepBatteryAction);
 
@@ -153,11 +168,58 @@ Dialog::Dialog(QWidget *parent)
     sleepBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
+    sleepBatteryContainerLayout->addStretch();
     sleepBatteryContainerLayout->addWidget(sleepActionBatteryContainer);
+
+    // backlight battery
+    backlightSliderBattery = new QSlider(this);
+    backlightSliderBattery->setOrientation(Qt::Horizontal);
+    backlightSliderBattery->setMinimum(1);
+    backlightSliderBattery->setMaximum(1);
+    backlightSliderBattery->setValue(0);
+    backlightSliderBattery->setMaximumWidth(MAX_WIDTH);
+    //backlightSliderBattery->setMinimumWidth(MAX_WIDTH);
+
+    backlightBatteryCheck = new QCheckBox(this);
+    backlightBatteryCheck->setCheckable(true);
+    backlightBatteryCheck->setChecked(false);
+    backlightBatteryCheck->setText(QString(" ")); // ui bug workaround
+
+    backlightBatteryLowerCheck = new QCheckBox(this);
+    backlightBatteryLowerCheck->setCheckable(true);
+    backlightBatteryLowerCheck->setChecked(false);
+    backlightBatteryLowerCheck->setText(tr("Don't adjust if\nbrightness is lower."));
+
+    QWidget *batteryBacklightOptContainer = new QWidget(this);
+    //batteryBacklightOptContainer->setStyleSheet("border:1px solid red;");
+    QVBoxLayout *batteryBacklightOptContainerLayout = new QVBoxLayout(batteryBacklightOptContainer);
+    batteryBacklightOptContainer->setContentsMargins(0,0,0,0);
+    batteryBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
+    batteryBacklightOptContainerLayout->setMargin(0);
+    batteryBacklightOptContainerLayout->setContentsMargins(0,0,0,0);
+    batteryBacklightOptContainerLayout->addWidget(backlightSliderBattery);
+    batteryBacklightOptContainerLayout->addWidget(backlightBatteryLowerCheck);
+
+    QWidget *batteryBacklightContainer = new QWidget(this);
+    QHBoxLayout *batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
+    QLabel *batteryBacklightLabel = new QLabel(this);
+    QLabel *batteryBacklightIcon = new QLabel(this);
+
+    batteryBacklightIcon->setMaximumSize(48, 48);
+    batteryBacklightIcon->setMinimumSize(48, 48);
+    batteryBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
+                                .pixmap(QSize(48, 48)));
+    batteryBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">Brightness</h3>"));
+    batteryBacklightContainerLayout->addWidget(batteryBacklightIcon);
+    batteryBacklightContainerLayout->addWidget(batteryBacklightLabel);
+    batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
+    batteryBacklightContainerLayout->addStretch();
+    batteryBacklightContainerLayout->addWidget(batteryBacklightOptContainer);
 
     // add battery widgets to container
     batteryContainerLayout->addWidget(sleepBatteryContainer);
     batteryContainerLayout->addWidget(criticalBatteryContainer);
+    batteryContainerLayout->addWidget(batteryBacklightContainer);
     batteryContainerLayout->addStretch();
 
     // AC
@@ -168,9 +230,25 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->setSpacing(0);
 
     QWidget *lidActionACContainer = new QWidget(this);
+    //lidActionACContainer->setContentsMargins(0,0,0,0);
     QHBoxLayout *lidActionACContainerLayout = new QHBoxLayout(lidActionACContainer);
+    //lidActionACContainerLayout->setMargin(0);
+    //lidActionACContainerLayout->setContentsMargins(0,0,0,0);
+
+
+
+
     lidActionAC = new QComboBox(this);
+    lidActionAC->setMaximumWidth(MAX_WIDTH);
+    lidActionAC->setMinimumWidth(MAX_WIDTH);
     QLabel *lidActionACLabel = new QLabel(this);
+
+    /*QWidget *lidComboACContainer = new QWidget(this);
+    lidComboACContainer->setContentsMargins(0, 0, 0, 0);
+    QVBoxLayout *lidComboACContainerLayout = new QVBoxLayout(lidComboACContainer);
+    lidComboACContainerLayout->setMargin(0);
+    lidComboACContainerLayout->setSpacing(0);
+    lidComboACContainerLayout->addWidget(lidActionAC);*/
 
     QLabel *lidActionACIcon = new QLabel(this);
     lidActionACIcon->setMaximumSize(48, 48);
@@ -180,12 +258,18 @@ Dialog::Dialog(QWidget *parent)
     lidActionACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
     lidActionACContainerLayout->addWidget(lidActionACIcon);
     lidActionACContainerLayout->addWidget(lidActionACLabel);
+    lidActionACContainerLayout->addStretch();
     lidActionACContainerLayout->addWidget(lidActionAC);
     acContainerLayout->addWidget(lidActionACContainer);
 
     QWidget *sleepACContainer = new QWidget(this);
+    //sleepACContainer->setContentsMargins(0,0,0,0);
     QHBoxLayout *sleepACContainerLayout = new QHBoxLayout(sleepACContainer);
+    //sleepACContainerLayout->setMargin(0);
+    //sleepACContainerLayout->setContentsMargins(0,0,0,0);
     autoSleepAC = new QSpinBox(this);
+    autoSleepAC->setMaximumWidth(MAX_WIDTH);
+    autoSleepAC->setMinimumWidth(MAX_WIDTH);
     autoSleepAC->setMinimum(0);
     autoSleepAC->setMaximum(1000);
     autoSleepAC->setSuffix(tr(" min"));
@@ -195,11 +279,14 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(sleepACContainer);
 
     QWidget *sleepActionACContainer = new QWidget(this);
+    //sleepActionACContainer->setStyleSheet("border:1px solid red;");
     sleepActionACContainer->setContentsMargins(0, 0, 0, 0);
     QVBoxLayout *sleepActionACContainerLayout = new QVBoxLayout(sleepActionACContainer);
     sleepActionACContainerLayout->setMargin(0);
     sleepActionACContainerLayout->setSpacing(0);
     autoSleepACAction = new QComboBox(this);
+    autoSleepACAction->setMaximumWidth(MAX_WIDTH);
+    autoSleepACAction->setMinimumWidth(MAX_WIDTH);
     sleepActionACContainerLayout->addWidget(autoSleepAC);
     sleepActionACContainerLayout->addWidget(autoSleepACAction);
 
@@ -211,53 +298,35 @@ Dialog::Dialog(QWidget *parent)
     sleepACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
     sleepACContainerLayout->addWidget(sleepACIcon);
     sleepACContainerLayout->addWidget(sleepACLabel);
+    sleepACContainerLayout->addStretch();
     sleepACContainerLayout->addWidget(sleepActionACContainer);
-    acContainerLayout->addWidget(sleepACContainer);
 
-    acContainerLayout->addStretch();
-
-    // backlight
-    backlightContainer = new QGroupBox(this);
-    backlightContainer->setTitle(tr("Brightness"));
-    QVBoxLayout *backlightContainerLayout = new QVBoxLayout(backlightContainer);
-
-    backlightSliderBattery = new QSlider(this);
-    backlightSliderBattery->setOrientation(Qt::Horizontal);
-    backlightSliderBattery->setMinimum(1);
-    backlightSliderBattery->setMaximum(1);
-    backlightSliderBattery->setValue(0);
-
+    // backlight ac
     backlightSliderAC = new QSlider(this);
     backlightSliderAC->setOrientation(Qt::Horizontal);
     backlightSliderAC->setMinimum(1);
     backlightSliderAC->setMaximum(1);
     backlightSliderAC->setValue(0);
-
-    backlightBatteryCheck = new QCheckBox(this);
-    backlightBatteryCheck->setCheckable(true);
-    backlightBatteryCheck->setChecked(false);
-    backlightBatteryCheck->setText(tr("Enable"));
+    backlightSliderAC->setMaximumWidth(MAX_WIDTH);
 
     backlightACCheck = new QCheckBox(this);
     backlightACCheck->setCheckable(true);
     backlightACCheck->setChecked(false);
-    backlightACCheck->setText(tr("Enable"));
+    backlightACCheck->setText(QString(" ")); // ui bug workaround
 
-    QWidget *batteryBacklightContainer = new QWidget(this);
-    QHBoxLayout *batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
-    QLabel *batteryBacklightLabel = new QLabel(this);
-    QLabel *batteryBacklightIcon = new QLabel(this);
+    backlightACHigherCheck = new QCheckBox(this);
+    backlightACHigherCheck->setCheckable(true);
+    backlightACHigherCheck->setChecked(false);
+    backlightACHigherCheck->setText(tr("Don't adjust if\nbrightness is higher."));
 
-    batteryBacklightIcon->setMaximumSize(48, 48);
-    batteryBacklightIcon->setMinimumSize(48, 48);
-    batteryBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON)
-                                .pixmap(QSize(48, 48)));
-    batteryBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">On Battery</h3>"));
-    batteryBacklightContainerLayout->addWidget(batteryBacklightIcon);
-    batteryBacklightContainerLayout->addWidget(batteryBacklightLabel);
-    batteryBacklightContainerLayout->addStretch();
-    batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
-    batteryBacklightContainerLayout->addWidget(backlightSliderBattery);
+    QWidget *acBacklightOptContainer = new QWidget(this);
+    QVBoxLayout *acBacklightOptContainerLayout = new QVBoxLayout(acBacklightOptContainer);
+    acBacklightOptContainer->setContentsMargins(0,0,0,0);
+    acBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
+    acBacklightOptContainerLayout->setMargin(0);
+    acBacklightOptContainerLayout->setContentsMargins(0,0,0,0);
+    acBacklightOptContainerLayout->addWidget(backlightSliderAC);
+    acBacklightOptContainerLayout->addWidget(backlightACHigherCheck);
 
     QWidget *acBacklightContainer = new QWidget(this);
     QHBoxLayout *acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
@@ -266,19 +335,29 @@ Dialog::Dialog(QWidget *parent)
 
     acBacklightIcon->setMaximumSize(48, 48);
     acBacklightIcon->setMinimumSize(48, 48);
-    acBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_AC_ICON)
+    acBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
                                 .pixmap(QSize(48, 48)));
-    acBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">On AC</h3>"));
+    acBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">Brightness</h3>"));
     acBacklightContainerLayout->addWidget(acBacklightIcon);
     acBacklightContainerLayout->addWidget(acBacklightLabel);
-    acBacklightContainerLayout->addStretch();
     acBacklightContainerLayout->addWidget(backlightACCheck);
-    acBacklightContainerLayout->addWidget(backlightSliderAC);
+    acBacklightContainerLayout->addStretch();
+    acBacklightContainerLayout->addWidget(acBacklightOptContainer);
+
+    // add widgets to ac
+    acContainerLayout->addWidget(sleepACContainer);
+    acContainerLayout->addWidget(acBacklightContainer);
+    acContainerLayout->addStretch();
+
+
+
+
+
 
     // add widgets to brightness
-    backlightContainerLayout->addWidget(batteryBacklightContainer);
-    backlightContainerLayout->addWidget(acBacklightContainer);
-    backlightContainerLayout->addStretch();
+    //backlightContainerLayout->addWidget(batteryBacklightContainer);
+    //backlightContainerLayout->addWidget(acBacklightContainer);
+    //backlightContainerLayout->addStretch();
 
     // advanced
     QGroupBox *advContainer = new QGroupBox(this);
@@ -357,7 +436,8 @@ Dialog::Dialog(QWidget *parent)
     }
 
     backlightSlider = new QSlider(this);
-    backlightSlider->hide();
+    backlightSlider->setMinimumWidth(MAX_WIDTH);
+    //backlightSlider->hide();
     backlightSlider->setSingleStep(1);
     backlightSlider->setOrientation(Qt::Horizontal);
     backlightWatcher = new QFileSystemWatcher(this);
@@ -399,7 +479,7 @@ Dialog::Dialog(QWidget *parent)
     deviceTree->setColumnWidth(0, 150);
 
     QLabel *aboutLabel = new QLabel(this);
-    aboutLabel->setText(QString("<p style=\"text-align:center;font-size:small;\">"
+    aboutLabel->setText(QString("<p style=\"font-size:small;\">"
                                 "<a href=\"https://github.com/rodlie/powerdwarf\">"
                                 "powerdwarf</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
                         .arg(qApp->applicationVersion()));
@@ -666,11 +746,11 @@ void Dialog::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
     if (hasBacklight) {
-        backlightContainer->setEnabled(true);
+        //backlightContainer->setEnabled(true);
         backlightSlider->setMinimum(1);
         backlightSlider->setMaximum(Common::backlightMax(backlightDevice));
         backlightSlider->setValue(Common::backlightValue(backlightDevice));
-        backlightSlider->show();
+        //backlightSlider->show();
         backlightSlider->setEnabled(true);
         backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
         backlightSliderBattery->setMinimum(backlightSlider->minimum());
@@ -680,8 +760,8 @@ void Dialog::loadSettings()
         backlightSliderAC->setMaximum(backlightSlider->maximum());
         backlightSliderAC->setValue(backlightSliderAC->maximum());
     } else {
-        backlightContainer->setDisabled(true);
-        backlightSlider->hide();
+        //backlightContainer->setDisabled(true);
+        //backlightSlider->hide();
         backlightSlider->setDisabled(true);
     }
     backlightBatteryCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE)

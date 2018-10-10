@@ -56,6 +56,7 @@
 
 #define DEVICE_UUID Qt::UserRole+1
 #define DEVICE_TYPE Qt::UserRole+2
+#define MAX_WIDTH 150
 
 class Dialog : public QDialog
 {
@@ -103,6 +104,8 @@ private:
     QCheckBox *backlightBatteryCheck;
     QCheckBox *backlightACCheck;
     QGroupBox *backlightContainer;
+    QCheckBox *backlightBatteryLowerCheck;
+    QCheckBox *backlightACHigherCheck;
 
 private slots:
     void populate();
