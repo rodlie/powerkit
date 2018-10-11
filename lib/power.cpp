@@ -379,8 +379,9 @@ void Power::notifySleep()
     emit aboutToSuspend();
 }
 
+// same as above but takes a bool
 void Power::notifySuspend(bool suspend)
 {
     if (suspend) { emit aboutToSuspend(); }
-    else { emit aboutToResume();}
+    else { emit aboutToResume(); }
 }

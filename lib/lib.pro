@@ -21,7 +21,8 @@ SOURCES += \
     login1.cpp \
     device.cpp \
     ckit.cpp \
-    screens.cpp
+    screens.cpp \
+    powerkit.cpp
 HEADERS += \
     common.h \
     power.h \
@@ -33,7 +34,8 @@ HEADERS += \
     login1.h \
     device.h \
     ckit.h \
-    screens.h
+    screens.h \
+    powerkit.h
 
 include(../powerdwarf.pri)
 

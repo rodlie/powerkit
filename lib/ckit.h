@@ -19,6 +19,12 @@ public:
     static QString restart();
     static bool canPowerOff();
     static QString poweroff();
+    static bool canSuspend();
+    static QString suspend();
+    static bool canHibernate();
+    static QString hibernate();
+    static bool canHybridSleep();
+    static QString hybridSleep();
 };
 
 #endif // CKIT_H
