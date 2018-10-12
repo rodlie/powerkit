@@ -1,6 +1,6 @@
 # PowerKit
 
-powerkit is an lightweight desktop independent full featured power manager originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
+powerkit is an lightweight desktop independent full featured power manager, originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
 
 **NOTE!** Under development, a stable version will be available October 2018.
 
@@ -44,7 +44,7 @@ Recommended settings are:
   * Off After: ``0 minutes``
   * Quick Power-off in Blank Only Mode: ``enabled``
 
-Note that powerkit will start [XScreenSaver](https://www.jwz.org/xscreensaver/) during startup (unless ``freedesktop_ss`` is disabled).
+Note that powerkit will start [XScreenSaver](https://www.jwz.org/xscreensaver/) during startup (unless [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) is disabled).
 
 ### Back light
 

@@ -1,11 +1,11 @@
 .TH powerkit 1 "10 October 2018" "1.0" "powerkit documentation"
 .SH NAME
-powerkit -\ lightweight full featured power manager
+powerkit -\ desktop independent full featured power manager
 .SH SYNOPSIS
 powerkit
 .I [--config]
 .SH DESCRIPTION
-powerkit is a lightweight full featured power manager created for
+powerkit is an lightweight desktop independent full featured power manager, originally created for
 .I Slackware
 for use with alternative desktop environments and window managers, like
 .I Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina
@@ -14,7 +14,7 @@ and others.
 .PP
 .B USAGE
 .PP
-powerkit is a user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerkit should automatically start, if not you will need to add powerkit to your startup file (check the documentation included with your desktop environment or window manager).
+powerkit is an user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerkit should automatically start, if not you will need to add powerkit to your startup file (check the documentation included with your desktop environment or window manager).
 
 .IP
 In Fluxbox add
@@ -44,7 +44,9 @@ Click on the powerkit system tray, or run the command
 .PP
 powerkit depends on
 .I XScreenSaver
-to handle the screen session, the default settings may need to be adjusted. You can launch the (
+to handle the screen session, the default (
+.I XScreenSaver
+) settings may need to be adjusted. You can launch the (
 .I XScreenSaver
 ) configuration GUI with the
 .I xscreensaver-demo
@@ -98,9 +100,9 @@ Proper udev permissions (rules file) are required to adjust the brightness. See
 .I https://github.com/rodlie/powerkit/blob/master/app/share/udev/90-backlight.rules.
 
 .PP
-.B HIBERNATE
+.B HIBERNATE/HYBRID SLEEP
 .PP
-A swap partition (or file) is needed by the kernel to support hibernate. Edit the boot loader configuration and add the kernel option
+A swap partition (or file) is needed by the kernel to support hibernate/hybrid sleep. Edit the boot loader configuration and add the kernel option
 .I resume=<swap_partition/swap_file>,
 then save and restart.
 
