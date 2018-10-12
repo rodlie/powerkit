@@ -7,9 +7,9 @@ powerkit is an lightweight desktop independent full featured power manager origi
 ## Features
 
  * Enables applications to inhibit the screen saver
-   * Implements org.freedesktop.ScreenSaver
+   * Implements [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html)
  * Enables applications to inhibit suspend actions
-   * Implements org.freedesktop.PowerManagement
+   * Implements [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/)
  * (Hybrid)Sleep/Hibernate/Lock screen on lid action
  * Inhibit lid action if external monitor(s) is connected
  * Automatically suspend ((hybrid)sleep/hibernate)
@@ -20,7 +20,7 @@ powerkit is an lightweight desktop independent full featured power manager origi
 
 ## Usage
 
-powerkit is a user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerkit should automatically start, if not you will need to add powerkit to your startup file (check the documentation included with your desktop environment or window manager).
+powerkit is an user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerkit should automatically start, if not you will need to add powerkit to your startup file (check the documentation included with your desktop environment or window manager).
 
  * In Fluxbox add ``powerkit &`` to the ``~/.fluxbox/startup`` file
  * In Openbox add ``powerkit &`` to the ``~/.config/openbox/autostart`` file.
@@ -31,7 +31,7 @@ Click on the powerkit system tray, or run the command ``` powerkit --config``` (
 
 ### Screen saver
 
-powerkit depends on [XScreenSaver](https://www.jwz.org/xscreensaver/) to handle the screen session, the default settings may need to be adjusted. You can launch the configuration GUI with the ``xscreensaver-demo`` command.
+powerkit depends on [XScreenSaver](https://www.jwz.org/xscreensaver/) to handle the screen session, the default ([XScreenSaver](https://www.jwz.org/xscreensaver/)) settings may need to be adjusted. You can launch the ([XScreenSaver](https://www.jwz.org/xscreensaver/)) configuration GUI with the ``xscreensaver-demo`` command.
 
 Recommended settings are:
 
@@ -44,17 +44,17 @@ Recommended settings are:
   * Off After: ``0 minutes``
   * Quick Power-off in Blank Only Mode: ``enabled``
 
-Note that powerkit will start XScreenSaver during startup (unless ``freedesktop_ss`` is disabled).
+Note that powerkit will start [XScreenSaver](https://www.jwz.org/xscreensaver/) during startup (unless ``freedesktop_ss`` is disabled).
 
 ### Back light
 
 powerkit supports back light only on Linux through ``/sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the system tray icon or through the configuration GUI (bottom left slider).
 
-**Note!** udev permissions are required to adjust the brightness, on Slackware an [example](https://github.com/rodlie/powerkit/blob/master/app/share/udev/90-backlight.rules) rule file is included with the package (see ``/usr/doc/powerkit-VERSION/90-backlight.rules``). You can also let powerkit add the rule during build with the ``CONFIG+=install_udev_rules`` option.
+**Note!** udev permissions are required to adjust the brightness, on [Slackware](http://www.slackware.com/) an [example](https://github.com/rodlie/powerkit/blob/master/app/share/udev/90-backlight.rules) rule file is included with the package (see ``/usr/doc/powerkit-VERSION/90-backlight.rules``). You can also let powerkit add the rule during build with the ``CONFIG+=install_udev_rules`` option.
 
 ### Hibernate (HybridSleep)
 
-A swap partition (or file) is needed by the kernel to support hibernate/HybridSleep. Edit the boot loader (e)lilo/grub configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart.
+A swap partition (or file) is needed by the kernel to support hibernate/hybrid sleep. Edit the boot loader configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart.
 
 **Note!** some distributions have hibernate disabled (for Ubuntu see [com.ubuntu.enable-hibernate.pkla](https://github.com/rodlie/powerkit/blob/master/app/share/polkit/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla)).
 
@@ -62,17 +62,17 @@ A swap partition (or file) is needed by the kernel to support hibernate/HybridSl
 
 ### Slackware-only?
 
-No, powerkit should work on any Linux/FreeBSD system (check requirements). However, powerkit is developed on/for Slackware and sees minimal testing on other systems (user feedback/bugs for other systems are welcome).
+No, powerkit should work on any Linux/FreeBSD system (check requirements). However, powerkit is developed on/for [Slackware](http://www.slackware.com/) and sees minimal testing on other systems (user feedback/bugs for other systems are welcome).
 
 ### How does an application inhibit the screen saver?
 
-The preferred way to inhibit the screen saver from an application is to use the [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) specification. Any application that uses ``org.freedesktop.ScreenSaver`` will work with powerkit. Note that powerkit also includes ``SimulateUserActivity`` for backwards compatibility.
+The preferred way to inhibit the screen saver from an application is to use the [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) specification. Any application that uses [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) will work with powerkit. Note that powerkit also includes ``SimulateUserActivity`` for backwards compatibility.
 
 Popular applications that uses this feature is Mozilla Firefox (for audio/video), VideoLAN VLC and many more.
 
 ### How does an application inhibit suspend actions?
 
-The prefered way to inhibit suspend actions from an application is to use the [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/) specification. Any application that uses ``org.freedesktop.PowerManagement`` will work with powerkit.
+The prefered way to inhibit suspend actions from an application is to use the [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/) specification. Any application that uses [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/) will work with powerkit.
 
 Common use cases are audio playback, downloading and more.
 
@@ -104,7 +104,7 @@ powerkit does not bundle any icons, so you will need a compatible theme installe
  * Adwaita
  * Gnome
  * Oxygen
- * Tango
+ * Tango (not recommended)
  
 ## Build
 
@@ -134,7 +134,7 @@ mkdir build && cd build
 qmake CONFIG+=release .. && make
 ```
 
-Then just run ``app/powerkit`` or install with:
+Then just run ``app/powerkit`` or ``app/powerkit --config``, or install with:
 
 ```
 sudo make install
@@ -150,7 +150,7 @@ make INSTALL_ROOT=pkg_path install
 
 ## Links
 
- * https://github.com/rodlie/powerkit
- * https://sourceforge.net/p/powerkit
- * https://powerkit.dracolinux.org
+ * [https://github.com/rodlie/powerkit](https://github.com/rodlie/powerkit)
+ * [https://sourceforge.net/p/powerkit](https://sourceforge.net/p/powerkit)
+ * [https://powerkit.dracolinux.org](https://powerkit.dracolinux.org)
  
