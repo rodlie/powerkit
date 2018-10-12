@@ -152,5 +152,6 @@ make INSTALL_ROOT=pkg_path install
 
  * [https://github.com/rodlie/powerkit](https://github.com/rodlie/powerkit)
  * [https://sourceforge.net/p/powerkit](https://sourceforge.net/p/powerkit)
+ * [http://powerkit.sf.net](http://powerkit.sf.net)
  * [https://powerkit.dracolinux.org](https://powerkit.dracolinux.org)
  
