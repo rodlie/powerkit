@@ -2,7 +2,7 @@
 
 powerkit is a lightweight full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina and others.
 
-**NOTE!** Under development, a stable version will be available October 2010.
+**NOTE!** Under development, a stable version will be available October 2018.
 
 ## Features
 
