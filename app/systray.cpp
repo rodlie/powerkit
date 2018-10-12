@@ -809,6 +809,7 @@ void SysTray::handleSuspend()
 
 void SysTray::handlePrepareForSuspend(bool suspend)
 {
+    qDebug() << "system prepare for suspend/resume" << suspend;
     man->LockScreen();
     resetTimer();
     if (!suspend) { // resume

@@ -42,6 +42,7 @@
 #define UPOWER_NOTIFY_SLEEP "NotifySleep"
 
 #define PK_PREPARE_FOR_SUSPEND "PrepareForSuspend"
+#define PK_PREPARE_FOR_SLEEP "PrepareForSleep"
 #define PK_CAN_RESTART "CanReboot"
 #define PK_RESTART "Reboot"
 #define PK_CAN_POWEROFF "CanPowerOff"

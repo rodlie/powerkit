@@ -250,7 +250,7 @@ void PowerKit::setup()
         system.connect(CONSOLEKIT_SERVICE,
                        CONSOLEKIT_PATH,
                        CONSOLEKIT_MANAGER,
-                       PK_PREPARE_FOR_SUSPEND,
+                       PK_PREPARE_FOR_SLEEP,
                        this,
                        SLOT(handlePrepareForSuspend(bool)));
         if (upower == NULL) {
@@ -361,16 +361,19 @@ void PowerKit::handleDeviceChanged(const QString &device)
 
 void PowerKit::handleResume()
 {
+    qDebug() << "handle resume";
     emit PrepareForSuspend(false);
 }
 
 void PowerKit::handleSuspend()
 {
+    qDebug() << "handle suspend";
     emit PrepareForSuspend(true);
 }
 
 void PowerKit::handlePrepareForSuspend(bool suspend)
 {
+    qDebug() << "handle prepare for suspend" << suspend;
     emit PrepareForSuspend(suspend);
 }
 
