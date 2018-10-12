@@ -1,6 +1,6 @@
 # PowerKit
 
-powerkit is a lightweight full featured power manager created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
+powerkit is an lightweight desktop independent full featured power manager originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
 
 **NOTE!** Under development, a stable version will be available October 2018.
 
@@ -10,9 +10,9 @@ powerkit is a lightweight full featured power manager created for [Slackware](ht
    * Implements org.freedesktop.ScreenSaver
  * Enables applications to inhibit suspend actions
    * Implements org.freedesktop.PowerManagement
- * Sleep/Hibernate/Lock screen on lid action
+ * (Hybrid)Sleep/Hibernate/Lock screen on lid action
  * Inhibit lid action if external monitor(s) is connected
- * Automatically suspend (sleep/hibernate)
+ * Automatically suspend ((hybrid)sleep/hibernate)
  * Hibernate/Shutdown on critical battery
  * Simple and flexible configuration GUI
  * [XScreenSaver](https://www.jwz.org/xscreensaver/) support

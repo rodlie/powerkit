@@ -6,11 +6,11 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
         |-----handy-ruler------------------------------------------------------|
-powerkit: powerkit (lightweight full featured power manager)
+powerkit: powerkit (desktop independent full featured power manager)
 powerkit:
-powerkit: powerkit is a lightweight full featured power manager
-powerkit: created for Slackware for use with alternative desktop
-powerkit: environments and window managers, like Fluxbox, Blackbox,
+powerkit: powerkit is an lightweight desktop independent full featured power
+powerkit: manager originally created for Slackware for use with alternative
+powerkit: desktop environments and window managers, like Fluxbox, Blackbox,
 powerkit: FVWM, WindowMaker, Openbox, Lumina and others.
 powerkit:
 powerkit: powerkit was written by Ole-André Rodlie
