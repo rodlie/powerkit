@@ -2,6 +2,8 @@
 
 powerkit is a lightweight full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina and others.
 
+**NOTE!** Under development, a stable version will be available October 2010.
+
 ## Features
 
  * Enables applications to inhibit the screen saver
@@ -50,9 +52,9 @@ powerkit supports back light only on Linux through ``/sys/class/backlight``. The
 
 **Note!** udev permissions are required to adjust the brightness, on Slackware an [example](https://github.com/rodlie/powerkit/blob/master/app/share/udev/90-backlight.rules) rule file is included with the package (see ``/usr/doc/powerkit-VERSION/90-backlight.rules``). You can also let powerkit add the rule during build with the ``CONFIG+=install_udev_rules`` option.
 
-### Hibernate
+### Hibernate (HybridSleep)
 
-A swap partition (or file) is needed by the kernel to support hibernate. Edit the boot loader (e)lilo/grub configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart.
+A swap partition (or file) is needed by the kernel to support hibernate/HybridSleep. Edit the boot loader (e)lilo/grub configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart.
 
 **Note!** some distributions have hibernate disabled (for Ubuntu see [com.ubuntu.enable-hibernate.pkla](https://github.com/rodlie/powerkit/blob/master/app/share/polkit/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla)).
 
