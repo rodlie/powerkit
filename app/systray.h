@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -83,7 +83,6 @@ private:
     PowerKit *man;
     PowerManagement *pm;
     ScreenSaver *ss;
-    //PowerDwarf *pd;
     bool wasLowBattery;
     bool wasVeryLowBattery;
     int lowBatteryValue;

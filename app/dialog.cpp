@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -478,8 +478,8 @@ Dialog::Dialog(QWidget *parent)
 
     QLabel *aboutLabel = new QLabel(this);
     aboutLabel->setText(QString("<p style=\"font-size:small;\">"
-                                "<a href=\"https://github.com/rodlie/powerdwarf\">"
-                                "powerdwarf</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
+                                "<a href=\"https://github.com/rodlie/powerkit\">"
+                                "PowerKit</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
                         .arg(qApp->applicationVersion()));
 
     batteryStatusLayout->addWidget(batteryIcon);

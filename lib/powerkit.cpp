@@ -271,7 +271,6 @@ void PowerKit::setup()
 
 void PowerKit::check()
 {
-    qDebug() << "check";
     if (!QDBusConnection::systemBus().isConnected()) {
         setup();
         return;
@@ -281,7 +280,6 @@ void PowerKit::check()
 
 void PowerKit::scan()
 {
-    qDebug() << "scan";
     QStringList foundDevices = find();
     for (int i=0; i < foundDevices.size(); i++) {
         QString foundDevicePath = foundDevices.at(i);
@@ -304,7 +302,7 @@ void PowerKit::deviceAdded(const QDBusObjectPath &obj)
 
 void PowerKit::deviceAdded(const QString &path)
 {
-    qDebug() << "device added" << path;
+    qDebug() << "added device" << path;
     if (!upower->isValid()) { return; }
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
     emit DeviceWasAdded(path);
@@ -318,6 +316,7 @@ void PowerKit::deviceRemoved(const QDBusObjectPath &obj)
 
 void PowerKit::deviceRemoved(const QString &path)
 {
+    qDebug() << "remove device" << path;
     if (!upower->isValid()) { return; }
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
@@ -354,7 +353,6 @@ void PowerKit::deviceChanged()
 
 void PowerKit::handleDeviceChanged(const QString &device)
 {
-    qDebug() << "handle device changed" << device;
     if (device.isEmpty()) { return; }
     deviceChanged();
 }
@@ -523,7 +521,6 @@ QString PowerKit::HybridSleep()
 
 bool PowerKit::IsDocked()
 {
-    qDebug() << "is docked?";
     if (logind->isValid()) { return logind->property(LOGIND_DOCKED).toBool(); }
     if (upower->isValid()) { return upower->property(UPOWER_DOCKED).toBool(); }
     return false;
@@ -531,28 +528,24 @@ bool PowerKit::IsDocked()
 
 bool PowerKit::LidIsPresent()
 {
-    qDebug() << "lid is present?";
     if (upower->isValid()) { return upower->property(UPOWER_LID_IS_PRESENT).toBool(); }
     return false;
 }
 
 bool PowerKit::LidIsClosed()
 {
-    qDebug() << "lid is closed?";
     if (upower->isValid()) { return upower->property(UPOWER_LID_IS_CLOSED).toBool(); }
     return false;
 }
 
 bool PowerKit::OnBattery()
 {
-    qDebug() << "on battery?";
     if (upower->isValid()) { return upower->property(UPOWER_ON_BATTERY).toBool(); }
     return false;
 }
 
 double PowerKit::BatteryLeft()
 {
-    qDebug() << "battery left?";
     if (OnBattery()) { UpdateBattery(); }
     double batteryLeft = 0;
     QMapIterator<QString, Device*> device(devices);
@@ -572,7 +565,6 @@ double PowerKit::BatteryLeft()
 
 void PowerKit::LockScreen()
 {
-    qDebug() << "lock screen";
     QProcess proc;
     proc.start(XSCREENSAVER_LOCK);
     proc.waitForFinished();
@@ -581,7 +573,6 @@ void PowerKit::LockScreen()
 
 bool PowerKit::HasBattery()
 {
-    qDebug() << "has battery?";
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
@@ -592,7 +583,6 @@ bool PowerKit::HasBattery()
 
 qlonglong PowerKit::TimeToEmpty()
 {
-    qDebug() << "time to empty?";
     if (OnBattery()) { UpdateBattery(); }
     qlonglong result = 0;
     QMapIterator<QString, Device*> device(devices);
@@ -608,7 +598,6 @@ qlonglong PowerKit::TimeToEmpty()
 
 qlonglong PowerKit::TimeToFull()
 {
-    qDebug() << "time to full?";
     if (OnBattery()) { UpdateBattery(); }
     qlonglong result = 0;
     QMapIterator<QString, Device*> device(devices);
@@ -624,7 +613,6 @@ qlonglong PowerKit::TimeToFull()
 
 void PowerKit::UpdateDevices()
 {
-    qDebug() << "update devices";
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
@@ -634,7 +622,6 @@ void PowerKit::UpdateDevices()
 
 void PowerKit::UpdateBattery()
 {
-    qDebug() << "update battery";
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();

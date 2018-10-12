@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -114,29 +114,6 @@ SysTray::SysTray(QObject *parent)
             this,
             SLOT(handleDelInhibitScreenSaver(quint32)));
 
-    // setup org.freedesktop.PowerDwarf
-    /*pd = new PowerDwarf();
-    connect(pd,
-            SIGNAL(update()),
-            this,
-            SLOT(loadSettings()));
-    connect(ss,
-            SIGNAL(newInhibit(QString,QString,quint32)),
-            pd,
-            SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
-    connect(ss,
-            SIGNAL(removedInhibit(quint32)),
-            pd,
-            SLOT(handleDelInhibitScreenSaver(quint32)));
-    connect(pm,
-            SIGNAL(newInhibit(QString,QString,quint32)),
-            pd,
-            SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
-    connect(pm,
-            SIGNAL(removedInhibit(quint32)),
-            pd,
-            SLOT(handleDelInhibitPowerManagement(quint32)));*/
-
     // setup xscreensaver
     xscreensaver = new QProcess(this);
     connect(xscreensaver,
@@ -209,7 +186,7 @@ void SysTray::checkDevices()
         QIcon::themeName() == "hicolor")) {
         showMessage(tr("No icon theme found!"),
                     tr("Unable to find any icon theme,"
-                       " please install a theme and restart powerdwarf."),
+                       " please install a theme and restart powerkit."),
                     true);
     }
 

@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -106,10 +106,6 @@ enum criticalAction
 #define UP_CONN_NOTIFY_RESUME "NotifyResume"
 #define UP_CONN_NOTIFY_SLEEP "NotifySleep"
 #define UP_DEVICES "/org/freedesktop/UPower/devices/"
-
-#define PD "powerdwarf"
-#define PD_SERVICE "org.freedesktop.PowerDwarf"
-#define PD_PATH "/PowerDwarf"
 
 #define DBUS_OBJMANAGER "org.freedesktop.DBus.ObjectManager"
 #define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"

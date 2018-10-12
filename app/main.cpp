@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
         return a.exec();
     }
 
-    // check if a powerdwarf session is already running
+    // check if a powerkit session is already running
     QDBusInterface session(POWERKIT_SERVICE,
                            POWERKIT_PATH,
                            POWERKIT_SERVICE,
