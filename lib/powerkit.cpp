@@ -12,16 +12,29 @@
 #include <QDBusMessage>
 #include <QDBusPendingReply>
 #include <QXmlStreamReader>
+#include <QProcess>
+#include <QMapIterator>
 #include <QDebug>
 
 PowerKit::PowerKit(QObject *parent) : QObject(parent)
+  , upower(0)
+  , logind(0)
+  , wasDocked(false)
+  , wasLidClosed(false)
+  , wasOnBattery(false)
 {
     qDebug() << "start powerkit";
+    setup();
+    timer.setInterval(TIMEOUT_CHECK);
+    connect(&timer, SIGNAL(timeout()),
+            this, SLOT(check()));
+    timer.start();
 }
 
 PowerKit::~PowerKit()
 {
     qDebug() << "end powerkit";
+    clearDevices();
 }
 
 bool PowerKit::availableService(const QString &service,
@@ -150,7 +163,7 @@ QString PowerKit::executeAction(const PowerKit::PKAction &action,
     return reply.errorMessage();
 }
 
-QStringList PowerKit::findDevices()
+QStringList PowerKit::find()
 {
     QStringList result;
     QDBusMessage call = QDBusMessage::createMethodCall(UPOWER_SERVICE,
@@ -158,147 +171,477 @@ QStringList PowerKit::findDevices()
                                                        DBUS_INTROSPECTABLE,
                                                        "Introspect");
     QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(call);
-    QList<QDBusObjectPath> devices;
+    QList<QDBusObjectPath> objects;
     QXmlStreamReader xml(reply.value());
     while (!xml.atEnd()) {
         xml.readNext();
-        if (xml.tokenType() == QXmlStreamReader::StartElement && xml.name().toString() == "node" ) {
+        if (xml.tokenType() == QXmlStreamReader::StartElement &&
+            xml.name().toString() == "node" ) {
             QString name = xml.attributes().value("name").toString();
-            if(!name.isEmpty()) { devices << QDBusObjectPath(UPOWER_DEVICES + name); }
+            if (!name.isEmpty()) { objects << QDBusObjectPath(UPOWER_DEVICES + name); }
         }
     }
-    foreach (QDBusObjectPath device, devices) {
+    foreach (QDBusObjectPath device, objects) {
         result << device.path();
     }
     qDebug() << "found devices" << result;
     return result;
 }
 
-bool PowerKit::hasConsoleKit()
+void PowerKit::setup()
+{
+    qDebug() << "setup";
+    QDBusConnection system = QDBusConnection::systemBus();
+    if (system.isConnected()) {
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       DBUS_DEVICE_ADDED,
+                       this,
+                       SLOT(deviceAdded(const QDBusObjectPath&)));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       DBUS_DEVICE_ADDED,
+                       this,
+                       SLOT(deviceAdded(const QString&)));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       DBUS_DEVICE_REMOVED,
+                       this,
+                       SLOT(deviceRemoved(const QDBusObjectPath&)));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       DBUS_DEVICE_REMOVED,
+                       this,
+                       SLOT(deviceRemoved(const QString&)));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       DBUS_CHANGED,
+                       this,
+                       SLOT(deviceChanged()));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       DBUS_DEVICE_CHANGED,
+                       this,
+                       SLOT(deviceChanged()));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       UPOWER_NOTIFY_RESUME,
+                       this,
+                       SLOT(handleResume()));
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       UPOWER_SERVICE,
+                       UPOWER_NOTIFY_SLEEP,
+                       this,
+                       SLOT(handleSuspend()));
+        system.connect(LOGIND_SERVICE,
+                       LOGIND_PATH,
+                       LOGIND_MANAGER,
+                       PK_PREPARE_FOR_SUSPEND,
+                       this,
+                       SLOT(handlePrepareForSuspend(bool)));
+        system.connect(CONSOLEKIT_SERVICE,
+                       CONSOLEKIT_PATH,
+                       CONSOLEKIT_MANAGER,
+                       PK_PREPARE_FOR_SUSPEND,
+                       this,
+                       SLOT(handlePrepareForSuspend(bool)));
+        if (upower == NULL) {
+            upower = new QDBusInterface(UPOWER_SERVICE,
+                                        UPOWER_PATH,
+                                        UPOWER_MANAGER,
+                                        system);
+        }
+        if (logind == NULL) {
+            logind = new QDBusInterface(LOGIND_SERVICE,
+                                        LOGIND_PATH,
+                                        LOGIND_MANAGER,
+                                        system);
+        }
+        scan();
+    }
+}
+
+void PowerKit::check()
+{
+    qDebug() << "check";
+    if (!QDBusConnection::systemBus().isConnected()) {
+        setup();
+        return;
+    }
+    if (!upower->isValid()) { scan(); }
+}
+
+void PowerKit::scan()
+{
+    qDebug() << "scan";
+    QStringList foundDevices = find();
+    for (int i=0; i < foundDevices.size(); i++) {
+        QString foundDevicePath = foundDevices.at(i);
+        if (devices.contains(foundDevicePath)) { continue; }
+        Device *newDevice = new Device(foundDevicePath, this);
+        connect(newDevice,
+                SIGNAL(deviceChanged(QString)),
+                this,
+                SLOT(handleDeviceChanged(QString)));
+        devices[foundDevicePath] = newDevice;
+    }
+    update();
+    emit UpdatedDevices();
+}
+
+void PowerKit::update()
+{
+    qDebug() << "update";
+}
+
+void PowerKit::deviceAdded(const QDBusObjectPath &obj)
+{
+    deviceAdded(obj.path());
+}
+
+void PowerKit::deviceAdded(const QString &path)
+{
+    qDebug() << "device added" << path;
+    if (!upower->isValid()) { return; }
+    if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
+    emit DeviceWasAdded(path);
+    scan();
+}
+
+void PowerKit::deviceRemoved(const QDBusObjectPath &obj)
+{
+    deviceRemoved(obj.path());
+}
+
+void PowerKit::deviceRemoved(const QString &path)
+{
+    if (!upower->isValid()) { return; }
+    bool deviceExists = devices.contains(path);
+    if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
+    if (deviceExists) {
+        if (find().contains(path)) { return; }
+        delete devices.take(path);
+        emit DeviceWasRemoved(path);
+    }
+    scan();
+}
+
+void PowerKit::deviceChanged()
+{
+    if (wasLidClosed != LidIsClosed()) {
+        if (!wasLidClosed && LidIsClosed()) {
+            emit LidClosed();
+        } else if (wasLidClosed && !LidIsClosed()) {
+            emit LidOpened();
+        }
+    }
+    wasLidClosed = LidIsClosed();
+
+    if (wasOnBattery != OnBattery()) {
+        if (!wasOnBattery && OnBattery()) {
+            emit SwitchedToBattery();
+        } else if (wasOnBattery && !OnBattery()) {
+            emit SwitchedToAC();
+        }
+    }
+    wasOnBattery = OnBattery();
+
+    emit UpdatedDevices();
+}
+
+void PowerKit::handleDeviceChanged(const QString &device)
+{
+    qDebug() << "handle device changed" << device;
+    if (device.isEmpty()) { return; }
+    deviceChanged();
+}
+
+void PowerKit::handleResume()
+{
+    emit PrepareForSuspend(false);
+}
+
+void PowerKit::handleSuspend()
+{
+    emit PrepareForSuspend(true);
+}
+
+void PowerKit::handlePrepareForSuspend(bool suspend)
+{
+    emit PrepareForSuspend(suspend);
+}
+
+void PowerKit::clearDevices()
+{
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        delete device.value();
+    }
+    devices.clear();
+}
+
+QMap<QString, Device *> PowerKit::GetDevices()
+{
+    return devices;
+}
+
+bool PowerKit::HasConsoleKit()
 {
     return availableService(CONSOLEKIT_SERVICE,
                       CONSOLEKIT_PATH,
                       CONSOLEKIT_MANAGER);
 }
 
-bool PowerKit::hasLogind()
+bool PowerKit::HasLogind()
 {
     return availableService(LOGIND_SERVICE,
                       LOGIND_PATH,
                       LOGIND_MANAGER);
 }
 
-bool PowerKit::hasUPower()
+bool PowerKit::HasUPower()
 {
     return availableService(UPOWER_SERVICE,
                       UPOWER_PATH,
                       UPOWER_MANAGER);
 }
 
-bool PowerKit::canRestart()
+bool PowerKit::CanRestart()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return availableAction(PKCanRestart, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return availableAction(PKCanRestart, PKConsoleKit);
     }
     return false;
 }
 
-bool PowerKit::canPowerOff()
+bool PowerKit::CanPowerOff()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return availableAction(PKCanPowerOff, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return availableAction(PKCanPowerOff, PKConsoleKit);
     }
     return false;
 }
 
-bool PowerKit::canSuspend()
+bool PowerKit::CanSuspend()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return availableAction(PKCanSuspend, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return availableAction(PKCanSuspend, PKConsoleKit);
-    } else if (hasUPower()) {
+    } else if (HasUPower()) {
         return availableAction(PKSuspendAllowed, PKUPower);
     }
     return false;
 }
 
-bool PowerKit::canHibernate()
+bool PowerKit::CanHibernate()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return availableAction(PKCanHibernate, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return availableAction(PKCanHibernate, PKConsoleKit);
-    } else if (hasUPower()) {
+    } else if (HasUPower()) {
         return availableAction(PKHibernateAllowed, PKUPower);
     }
     return false;
 }
 
-bool PowerKit::canHybridSleep()
+bool PowerKit::CanHybridSleep()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return availableAction(PKCanHybridSleep, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return availableAction(PKCanHybridSleep, PKConsoleKit);
     }
     return false;
 }
 
-QString PowerKit::restart()
+QString PowerKit::Restart()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return executeAction(PKRestartAction, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return executeAction(PKRestartAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString PowerKit::powerOff()
+QString PowerKit::PowerOff()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return executeAction(PKPowerOffAction, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return executeAction(PKPowerOffAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString PowerKit::suspend()
+QString PowerKit::Suspend()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return executeAction(PKSuspendAction, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return executeAction(PKSuspendAction, PKConsoleKit);
-    } else if (hasUPower()) {
+    } else if (HasUPower()) {
         return executeAction(PKSuspendAction, PKUPower);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString PowerKit::hibernate()
+QString PowerKit::Hibernate()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return executeAction(PKHibernateAction, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return executeAction(PKHibernateAction, PKConsoleKit);
-    } else if (hasUPower()) {
+    } else if (HasUPower()) {
         return executeAction(PKHibernateAction, PKUPower);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString PowerKit::hybridSleep()
+QString PowerKit::HybridSleep()
 {
-    if (hasLogind()) {
+    if (HasLogind()) {
         return executeAction(PKHybridSleepAction, PKLogind);
-    } else if (hasConsoleKit()) {
+    } else if (HasConsoleKit()) {
         return executeAction(PKHybridSleepAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
+}
+
+bool PowerKit::IsDocked()
+{
+    qDebug() << "is docked?";
+    if (logind->isValid()) { return logind->property(LOGIND_DOCKED).toBool(); }
+    if (upower->isValid()) { return upower->property(UPOWER_DOCKED).toBool(); }
+    return false;
+}
+
+bool PowerKit::LidIsPresent()
+{
+    qDebug() << "lid is present?";
+    if (upower->isValid()) { return upower->property(UPOWER_LID_IS_PRESENT).toBool(); }
+    return false;
+}
+
+bool PowerKit::LidIsClosed()
+{
+    qDebug() << "lid is closed?";
+    if (upower->isValid()) { return upower->property(UPOWER_LID_IS_CLOSED).toBool(); }
+    return false;
+}
+
+bool PowerKit::OnBattery()
+{
+    qDebug() << "on battery?";
+    if (upower->isValid()) { return upower->property(UPOWER_ON_BATTERY).toBool(); }
+    return false;
+}
+
+double PowerKit::BatteryLeft()
+{
+    qDebug() << "battery left?";
+    if (OnBattery()) { UpdateBattery(); }
+    double batteryLeft = 0;
+    QMapIterator<QString, Device*> device(devices);
+    int batteries = 0;
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery &&
+            device.value()->isPresent &&
+            !device.value()->nativePath.isEmpty())
+        {
+            batteryLeft += device.value()->percentage;
+            batteries++;
+        } else { continue; }
+    }
+    return batteryLeft/batteries;
+}
+
+void PowerKit::LockScreen()
+{
+    qDebug() << "lock screen";
+    QProcess proc;
+    proc.start(XSCREENSAVER_LOCK);
+    proc.waitForFinished();
+    proc.close();
+}
+
+bool PowerKit::HasBattery()
+{
+    qDebug() << "has battery?";
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery) { return true; }
+    }
+    return false;
+}
+
+qlonglong PowerKit::TimeToEmpty()
+{
+    qDebug() << "time to empty?";
+    if (OnBattery()) { UpdateBattery(); }
+    qlonglong result = 0;
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery &&
+            device.value()->isPresent &&
+            !device.value()->nativePath.isEmpty())
+        { result += device.value()->timeToEmpty; }
+    }
+    return result;
+}
+
+qlonglong PowerKit::TimeToFull()
+{
+    qDebug() << "time to full?";
+    if (OnBattery()) { UpdateBattery(); }
+    qlonglong result = 0;
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery &&
+            device.value()->isPresent &&
+            !device.value()->nativePath.isEmpty())
+        { result += device.value()->timeToFull; }
+    }
+    return result;
+}
+
+void PowerKit::UpdateDevices()
+{
+    qDebug() << "update devices";
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        device.value()->update();
+    }
+}
+
+void PowerKit::UpdateBattery()
+{
+    qDebug() << "update battery";
+    QMapIterator<QString, Device*> device(devices);
+    while (device.hasNext()) {
+        device.next();
+        if (device.value()->isBattery) {
+            device.value()->updateBattery();
+        }
+    }
 }

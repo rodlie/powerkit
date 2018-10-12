@@ -13,27 +13,17 @@ TARGET = PowerDwarf
 TEMPLATE = lib
 SOURCES += \
     common.cpp \
-    power.cpp \
-    upower.cpp \
     powermanagement.cpp \
     screensaver.cpp \
-    service.cpp \
-    login1.cpp \
     device.cpp \
-    ckit.cpp \
     screens.cpp \
     powerkit.cpp
 HEADERS += \
     common.h \
-    power.h \
-    upower.h \
     powermanagement.h \
     screensaver.h \
     def.h \
-    service.h \
-    login1.h \
     device.h \
-    ckit.h \
     screens.h \
     powerkit.h
 
@@ -49,23 +39,18 @@ CONFIG(install_lib) {
         INSTALLS += target_docs
     }
     !CONFIG(no_include_install) {
-        target_inc.path = $${PREFIX}/include/powerdwarf
+        target_inc.path = $${PREFIX}/include/powerkit
         target_inc.files = common.h \
-                           power.h \
-                           upower.h \
                            powermanagement.h \
                            screensaver.h \
-                           service.h \
-                           login1.h \
                            device.h \
-                           ckit.h \
                            screens.h
         INSTALLS += target_inc
     }
     !CONFIG(no_pkgconfig_install) {
         CONFIG += create_prl no_install_prl create_pc
         QMAKE_PKGCONFIG_NAME = $${TARGET}
-        QMAKE_PKGCONFIG_DESCRIPTION = PowerDwarf
+        QMAKE_PKGCONFIG_DESCRIPTION = PowerKit
         QMAKE_PKGCONFIG_LIBDIR = $$target.path
         QMAKE_PKGCONFIG_INCDIR = $$target_inc.path
         QMAKE_PKGCONFIG_DESTDIR = pkgconfig

@@ -10,9 +10,10 @@
 #include "systray.h"
 #include "dialog.h"
 
-#include "upower.h"
+/*#include "upower.h"
 #include "login1.h"
-#include "ckit.h"
+#include "ckit.h"*/
+#include "powerkit.h"
 
 int main(int argc, char *argv[])
 {
@@ -30,9 +31,9 @@ int main(int argc, char *argv[])
     if (a.arguments().size()>2) { userOpt = a.arguments().at(2); }
 
     // trigger system services early
-    UPower::hasService();
+    /*UPower::hasService();
     Login1::hasService();
-    CKit::hasService();
+    CKit::hasService();*/
 
     // console actions
     if (userArg == "--config") { // show config dialog
@@ -42,12 +43,12 @@ int main(int argc, char *argv[])
     }
 
     // check if a powerdwarf session is already running
-    QDBusInterface session(PD_SERVICE,
-                           PD_PATH,
-                           PD_SERVICE,
+    QDBusInterface session(POWERKIT_SERVICE,
+                           POWERKIT_PATH,
+                           POWERKIT_SERVICE,
                            QDBusConnection::sessionBus());
     if (session.isValid()) {
-        qWarning() << QObject::tr("A powerdwarf session is already running");
+        qWarning() << QObject::tr("A powerkit session is already running");
         return 1;
     }
 

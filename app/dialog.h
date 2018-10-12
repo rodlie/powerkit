@@ -38,8 +38,7 @@
 
 #include "def.h"
 #include "common.h"
-#include "upower.h"
-#include "power.h"
+#include "powerkit.h"
 
 // fix X11 inc
 #undef CursorShape
@@ -93,7 +92,7 @@ private:
     bool hasBacklight;
     QSlider *backlightSlider;
     QFileSystemWatcher *backlightWatcher;
-    Power *man;
+    PowerKit *man;
     QLabel *batteryIcon;
     QLabel *batteryLabel;
     QTreeWidget *deviceTree;
