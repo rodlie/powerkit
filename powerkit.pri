@@ -1,5 +1,5 @@
 #
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -7,7 +7,7 @@
 #
 
 VERSION = 1.0.0
-VERSION_EXTRA = "beta8"
+VERSION_EXTRA = "beta1"
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
@@ -36,10 +36,4 @@ CONFIG(release, debug|release) {
     CONFIG += staticlib
 }
 
-freebsd {
-    INCLUDEPATH += /usr/local/include
-    LIBS += -lX11 -lXss -lXrandr
-} else {
-    CONFIG += link_pkgconfig
-    PKGCONFIG += x11 xscrnsaver xrandr
-}
+LIBS += -lX11 -lXss -lXrandr

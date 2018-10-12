@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -7,8 +7,6 @@
 */
 
 #include "dialog.h"
-#include "login1.h"
-#include "ckit.h"
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
@@ -50,15 +48,15 @@ Dialog::Dialog(QWidget *parent)
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
     setWindowTitle(tr("Power Manager"));
-    setMinimumSize(QSize(387, 309));
+    setMinimumSize(QSize(390, 310));
 
     // setup dbus
-    QDBusConnection session = QDBusConnection::sessionBus();
+    /*QDBusConnection session = QDBusConnection::sessionBus();
     dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE,
-                              session, this);
+                              session, this);*/
 
     // setup man
-    man = new Power(this);
+    man = new PowerKit(this);
 
     // setup theme
     Common::setIconTheme();
@@ -480,8 +478,8 @@ Dialog::Dialog(QWidget *parent)
 
     QLabel *aboutLabel = new QLabel(this);
     aboutLabel->setText(QString("<p style=\"font-size:small;\">"
-                                "<a href=\"https://github.com/rodlie/powerdwarf\">"
-                                "powerdwarf</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
+                                "<a href=\"https://github.com/rodlie/powerkit\">"
+                                "PowerKit</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
                         .arg(qApp->applicationVersion()));
 
     batteryStatusLayout->addWidget(batteryIcon);
@@ -566,11 +564,11 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightSlider(int)));
     connect(backlightWatcher, SIGNAL(fileChanged(QString)),
             this, SLOT(updateBacklight(QString)));
-    connect(man, SIGNAL(updatedDevices()),
+    connect(man, SIGNAL(UpdatedDevices()),
             this, SLOT(checkDevices()));
-    connect(man, SIGNAL(deviceWasRemoved(QString)),
+    connect(man, SIGNAL(DeviceWasRemoved(QString)),
             this, SLOT(deviceRemove(QString)));
-    connect(man, SIGNAL(deviceWasAdded(QString)),
+    connect(man, SIGNAL(DeviceWasAdded(QString)),
             this, SLOT(handleDeviceAdded(QString)));
     connect(backlightBatteryCheck, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightBatteryCheck(bool)));
@@ -584,6 +582,18 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightBatteryCheckLower(bool)));
     connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightACCheckHigher(bool)));
+
+
+    // test PKIT
+    qDebug() << "has battery?" <<man->HasBattery();
+    qDebug() << "has ckit?" << man->HasConsoleKit();
+    qDebug() << "has logind?" << man->HasLogind();
+    qDebug() << "has upower?" << man->HasUPower();
+    qDebug() << "can hibernate?" << man->CanHibernate();
+    qDebug() << "can hybridsleep?" << man->CanHybridSleep();
+    qDebug() << "can poweroff?" << man->CanPowerOff();
+    qDebug() << "can restart?" << man->CanRestart();
+    qDebug() << "can suspend?" << man->CanSuspend();
 }
 
 Dialog::~Dialog()
@@ -734,15 +744,10 @@ void Dialog::loadSettings()
     }
     disableLidAction->setChecked(defaultDisableLidAction);
 
-    if (Login1::hasService()) {
-        sleepButton->setEnabled(Login1::canSuspend());
-        hibernateButton->setEnabled(Login1::canHibernate());
-        poweroffButton->setEnabled(Login1::canPowerOff());
-    } else {
-        sleepButton->setEnabled(UPower::canSuspend());
-        hibernateButton->setEnabled(UPower::canHibernate());
-        poweroffButton->setEnabled(CKit::canPowerOff());
-    }
+    // power actions
+    sleepButton->setEnabled(man->CanSuspend());
+    hibernateButton->setEnabled(man->CanHibernate());
+    poweroffButton->setEnabled(man->CanPowerOff());
 
     checkPerms();
 
@@ -920,17 +925,12 @@ void Dialog::handleAutoSleepACAction(int index)
 
 void Dialog::handleLockscreenButton()
 {
-    QProcess proc;
-    proc.start(XSCREENSAVER_LOCK);
-    proc.waitForFinished();
-    proc.close();
+    man->LockScreen();
 }
 
 void Dialog::handleSleepButton()
 {
-    if (Login1::hasService()) {
-        if (Login1::canSuspend()) { Login1::suspend(); }
-    } else if (UPower::canSuspend()) { UPower::suspend(); }
+    if (man->CanSuspend()) { man->Suspend(); }
     else {
         QMessageBox::information(this,
                                  tr("Power Action"),
@@ -942,9 +942,7 @@ void Dialog::handleSleepButton()
 
 void Dialog::handleHibernateButton()
 {
-    if (Login1::hasService()) {
-        if (Login1::canHibernate()) { Login1::hibernate(); }
-    } else if (UPower::canHibernate()) { UPower::hibernate(); }
+    if (man->CanHibernate()) { man->Hibernate(); }
     else {
         QMessageBox::information(this,
                                  tr("Power Action"),
@@ -956,11 +954,8 @@ void Dialog::handleHibernateButton()
 
 void Dialog::handlePoweroffButton()
 {
-    if (Login1::hasService()) {
-        if (Login1::canPowerOff()) { Login1::poweroff(); }
-    } else if (CKit::hasService()) {
-        if (CKit::canPowerOff()) { CKit::poweroff(); }
-    } else {
+    if (man->CanPowerOff()) { man->PowerOff(); }
+    else {
         QMessageBox::information(this,
                                  tr("Power Action"),
                                  tr("System denied power request."
@@ -1047,18 +1042,18 @@ void Dialog::checkDevices()
 {
     qDebug() << "check devices!";
     QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
-    double left = man->batteryLeft();
+    double left = man->BatteryLeft();
     if (left<= 10) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
     } else if (left<=25) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
     } else if (left<=75) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
     } else if (left<=90) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left>=100 && !man->onBattery()) {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
+        if (left>=100 && !man->OnBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
             batteryLeftLCD->display("00:00");
         }
@@ -1066,10 +1061,10 @@ void Dialog::checkDevices()
 
     batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
     batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
-    batteryLeftLCD->display(QDateTime::fromTime_t(man->onBattery()?man->timeToEmpty():man->timeToFull())
+    batteryLeftLCD->display(QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
                             .toUTC().toString("hh:mm"));
 
-    QMapIterator<QString, Device*> i(man->devices);
+    QMapIterator<QString, Device*> i(man->GetDevices());
     while (i.hasNext()) {
         i.next();
         qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;

@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -17,7 +17,6 @@ SysTray::SysTray(QObject *parent)
     , man(0)
     , pm(0)
     , ss(0)
-    , pd(0)
     , wasLowBattery(false)
     , wasVeryLowBattery(false)
     , lowBatteryValue(LOW_BATTERY)
@@ -71,47 +70,23 @@ SysTray::SysTray(QObject *parent)
             SLOT(handleTrayWheel(TrayIcon::WheelAction)));
 
     // setup manager
-    man = new Power(this);
-    connect(man,
-            SIGNAL(updatedDevices()),
-            this,
-            SLOT(checkDevices()));
-    connect(man,
-            SIGNAL(closedLid()),
-            this,
-            SLOT(handleClosedLid()));
-    connect(man,
-            SIGNAL(openedLid()),
-            this,
-            SLOT(handleOpenedLid()));
-    connect(man,
-            SIGNAL(switchedToBattery()),
-            this,
-            SLOT(handleOnBattery()));
-    connect(man,
-            SIGNAL(switchedToAC()),
-            this,
-            SLOT(handleOnAC()));
-    /*connect(man,
-            SIGNAL(notifyStatus(QString,QString,bool)),
-            this,
-            SLOT(showMessage(QString,QString,bool)));*/
-    connect(man,
-            SIGNAL(aboutToResume()),
-            this,
-            SLOT(handleResume()));
-    connect(man,
-            SIGNAL(aboutToSuspend()),
-            this,
-            SLOT(handleSuspend()));
-    connect(man,
-            SIGNAL(deviceWasAdded(QString)),
-            this,
-            SLOT(handleDeviceChanged(QString)));
-    connect(man,
-            SIGNAL(deviceWasRemoved(QString)),
-            this,
-            SLOT(handleDeviceChanged(QString)));
+    man = new PowerKit(this);
+    connect(man, SIGNAL(UpdatedDevices()),
+            this, SLOT(checkDevices()));
+    connect(man, SIGNAL(LidClosed()),
+            this, SLOT(handleClosedLid()));
+    connect(man, SIGNAL(LidOpened()),
+            this, SLOT(handleOpenedLid()));
+    connect(man, SIGNAL(SwitchedToBattery()),
+            this, SLOT(handleOnBattery()));
+    connect(man, SIGNAL(SwitchedToAC()),
+            this, SLOT(handleOnAC()));
+    connect(man, SIGNAL(PrepareForSuspend(bool)),
+            this, SLOT(handlePrepareForSuspend(bool)));
+    connect(man, SIGNAL(DeviceWasAdded(QString)),
+            this, SLOT(handleDeviceChanged(QString)));
+    connect(man, SIGNAL(DeviceWasRemoved(QString)),
+            this, SLOT(handleDeviceChanged(QString)));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
@@ -138,29 +113,6 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(removedInhibit(quint32)),
             this,
             SLOT(handleDelInhibitScreenSaver(quint32)));
-
-    // setup org.freedesktop.PowerDwarf
-    pd = new PowerDwarf();
-    connect(pd,
-            SIGNAL(update()),
-            this,
-            SLOT(loadSettings()));
-    connect(ss,
-            SIGNAL(newInhibit(QString,QString,quint32)),
-            pd,
-            SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
-    connect(ss,
-            SIGNAL(removedInhibit(quint32)),
-            pd,
-            SLOT(handleDelInhibitScreenSaver(quint32)));
-    connect(pm,
-            SIGNAL(newInhibit(QString,QString,quint32)),
-            pd,
-            SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
-    connect(pm,
-            SIGNAL(removedInhibit(quint32)),
-            pd,
-            SLOT(handleDelInhibitPowerManagement(quint32)));
 
     // setup xscreensaver
     xscreensaver = new QProcess(this);
@@ -208,7 +160,6 @@ SysTray::~SysTray()
     if (xscreensaver->isOpen()) { xscreensaver->close(); }
     pm->deleteLater();
     ss->deleteLater();
-    pd->deleteLater();
 }
 
 // what to do when user clicks systray
@@ -235,18 +186,18 @@ void SysTray::checkDevices()
         QIcon::themeName() == "hicolor")) {
         showMessage(tr("No icon theme found!"),
                     tr("Unable to find any icon theme,"
-                       " please install a theme and restart powerdwarf."),
+                       " please install a theme and restart powerkit."),
                     true);
     }
 
     // get battery left and add tooltip
-    double batteryLeft = man->batteryLeft();
+    double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
     if (batteryLeft > 0) {
         tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
         if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
-        if (!man->onBattery() &&
-            man->batteryLeft() <= 99)
+        if (!man->OnBattery() &&
+            man->BatteryLeft() <= 99)
         { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
     } else { tray->setToolTip(tr("On AC")); }
 
@@ -273,7 +224,7 @@ void SysTray::handleClosedLid()
     lidWasClosed = true;
 
     int type = lidNone;
-    if (man->onBattery()) {  // on battery
+    if (man->OnBattery()) {  // on battery
         type = lidActionBattery;
     } else { // on ac
         type = lidActionAC;
@@ -289,16 +240,16 @@ void SysTray::handleClosedLid()
     qDebug() << "lid action" << type;
     switch(type) {
     case lidLock:
-        man->lockScreen();
+        man->LockScreen();
         break;
     case lidSleep:
-        man->sleep();
+        man->Suspend();
         break;
     case lidHibernate:
-        man->hibernate();
+        man->Hibernate();
         break;
     case lidShutdown:
-        man->shutdown();
+        man->PowerOff();
         break;
     default: ;
     }
@@ -429,11 +380,11 @@ void SysTray::loadSettings()
         qDebug() << "hibernate is not activated in kernel (add resume=...)";
         disableHibernate();
     }
-    if (!man->canHibernate()) {
+    if (!man->CanHibernate()) {
         qDebug() << "hibernate is not supported";
         disableHibernate();
     }
-    if (!man->canSuspend()) {
+    if (!man->CanSuspend()) {
         qDebug() << "suspend not supported";
         disableSuspend();
     }
@@ -498,17 +449,16 @@ void SysTray::registerService()
         }
         qDebug() << "Enabled org.freedesktop.ScreenSaver";
     }
-    if (!QDBusConnection::sessionBus().registerService(PD_SERVICE)) {
+    if (!QDBusConnection::sessionBus().registerService(POWERKIT_SERVICE)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-    if (!QDBusConnection::sessionBus().registerObject(PD_PATH,
-                                                      pd,
+    if (!QDBusConnection::sessionBus().registerObject(POWERKIT_PATH, man,
                                                       QDBusConnection::ExportAllContents)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-    qDebug() << "Enabled org.freedesktop.PowerDwarf";
+    qDebug() << "Enabled org.freedesktop.PowerKit";
     hasService = true;
 }
 
@@ -521,7 +471,7 @@ void SysTray::handleHasInhibitChanged(bool has_inhibit)
 void SysTray::handleLow(double left)
 {
     double batteryLow = (double)(lowBatteryValue+critBatteryValue);
-    if (left<=batteryLow && man->onBattery()) {
+    if (left<=batteryLow && man->OnBattery()) {
         if (!wasLowBattery) {
             showMessage(tr("Low Battery! (%1%)").arg(left),
                         tr("The battery is low,"
@@ -536,7 +486,7 @@ void SysTray::handleLow(double left)
 void SysTray::handleVeryLow(double left)
 {
     double batteryVeryLow = (double)(critBatteryValue+1);
-    if (left<=batteryVeryLow && man->onBattery()) {
+    if (left<=batteryVeryLow && man->OnBattery()) {
         if (!wasVeryLowBattery) {
             showMessage(tr("Very Low Battery! (%1%)").arg(left),
                         tr("The battery is almost empty,"
@@ -553,7 +503,7 @@ void SysTray::handleCritical(double left)
 {
     if (left<=0 ||
         left>(double)critBatteryValue ||
-        !man->onBattery()) { return; }
+        !man->OnBattery()) { return; }
     qDebug() << "critical battery!" << criticalAction << left;
     showMessage(tr("Critical Battery! (%1%)").arg(left),
                 tr("The battery is critical,"
@@ -561,10 +511,10 @@ void SysTray::handleCritical(double left)
                 true);
     switch(criticalAction) {
     case criticalHibernate:
-        man->hibernate();
+        man->Hibernate();
         break;
     case criticalShutdown:
-        man->shutdown();
+        man->PowerOff();
         break;
     default: ;
     }
@@ -590,16 +540,16 @@ void SysTray::drawBattery(double left)
     }
 
     if (left<= 10) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
     } else if (left<=25) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
     } else if (left<=75) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
     } else if (left<=90) {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
-        icon = QIcon::fromTheme(man->onBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left>=100 && !man->onBattery()) {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
+        if (left>=100 && !man->OnBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
         }
     }
@@ -621,7 +571,7 @@ void SysTray::timeout()
 
     int autoSuspend = 0;
     int autoSuspendAction = suspendNone;
-    if (man->onBattery()) {
+    if (man->OnBattery()) {
         autoSuspend = autoSuspendBattery;
         autoSuspendAction = autoSuspendBatteryAction;
     }
@@ -641,13 +591,13 @@ void SysTray::timeout()
         qDebug() << "auto suspend activated" << autoSuspendAction;
         switch (autoSuspendAction) {
         case suspendSleep:
-            man->sleep();
+            man->Suspend();
             break;
         case suspendHibernate:
-            man->hibernate();
+            man->Hibernate();
             break;
         case suspendShutdown:
-            man->shutdown();
+            man->PowerOff();
             break;
         default: break;
         }
@@ -817,12 +767,12 @@ void SysTray::disableSuspend()
     }
 }
 
-void SysTray::handleResume()
+/*void SysTray::handleResume()
 {
     qDebug() << "resume";
-    man->lockScreen();
+    man->LockScreen();
     tray->showMessage(QString(), QString());
-    man->update();
+    man->Update();
     resetTimer();
     ss->SimulateUserActivity();
 }
@@ -830,8 +780,20 @@ void SysTray::handleResume()
 void SysTray::handleSuspend()
 {
     qDebug() << "suspend";
-    man->lockScreen();
+    man->LockScreen();
     resetTimer();
+}*/
+
+void SysTray::handlePrepareForSuspend(bool suspend)
+{
+    qDebug() << "system prepare for suspend/resume" << suspend;
+    man->LockScreen();
+    resetTimer();
+    if (!suspend) { // resume
+        tray->showMessage(QString(), QString());
+        man->UpdateDevices();
+        ss->SimulateUserActivity();
+    }
 }
 
 void SysTray::switchInternalMonitor(bool toggle)

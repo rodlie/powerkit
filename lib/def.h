@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -107,10 +107,6 @@ enum criticalAction
 #define UP_CONN_NOTIFY_SLEEP "NotifySleep"
 #define UP_DEVICES "/org/freedesktop/UPower/devices/"
 
-#define PD "powerdwarf"
-#define PD_SERVICE "org.freedesktop.PowerDwarf"
-#define PD_PATH "/PowerDwarf"
-
 #define DBUS_OBJMANAGER "org.freedesktop.DBus.ObjectManager"
 #define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
 #define DBUS_INTROSPECTABLE "org.freedesktop.DBus.Introspectable"
@@ -118,14 +114,22 @@ enum criticalAction
 #define DBUS_DEVICE_ADDED "DeviceAdded"
 #define DBUS_DEVICE_REMOVED "DeviceRemoved"
 #define DBUS_JOBS "%1/jobs"
+#define DBUS_FAILED_CONN "Failed D-Bus connection."
 
 #define CKIT_SERVICE "org.freedesktop.ConsoleKit"
 #define CKIT_PATH "/org/freedesktop/ConsoleKit/Manager"
 #define CKIT_MANAGER "org.freedesktop.ConsoleKit.Manager"
-#define CKIT_CAN_RESTART "CanRestart"
-#define CKIT_RESTART "Restart"
+
+#define CKIT_CAN_RESTART "CanReboot"
+#define CKIT_RESTART "Reboot"
 #define CKIT_CAN_POWEROFF "CanPowerOff"
 #define CKIT_POWEROFF "PowerOff"
+#define CKIT_CAN_SUSPEND "CanSuspend"
+#define CKIT_SUSPEND "Suspend"
+#define CKIT_CAN_HIBERNATE "CanHibernate"
+#define CKIT_HIBERNATE "Hibernate"
+#define CKIT_CAN_HYBRIDSLEEP "CanHybridSleep"
+#define CKIT_HYBRIDSLEEP "HybridSleep"
 
 #define LOGIN1_SERVICE "org.freedesktop.login1"
 #define LOGIN1_PATH "/org/freedesktop/login1"

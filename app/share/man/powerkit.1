@@ -1,11 +1,11 @@
-.TH powerdwarf 1 "10 October 2018" "1.0" "powerdwarf documentation"
+.TH powerkit 1 "10 October 2018" "1.0" "powerkit documentation"
 .SH NAME
-powerdwarf -\ lightweight full featured power manager
+powerkit -\ lightweight full featured power manager
 .SH SYNOPSIS
-powerdwarf
+powerkit
 .I [--config]
 .SH DESCRIPTION
-powerdwarf is a lightweight full featured power manager created for
+powerkit is a lightweight full featured power manager created for
 .I Slackware
 for use with alternative desktop environments and window managers, like
 .I Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina
@@ -14,18 +14,18 @@ and others.
 .PP
 .B USAGE
 .PP
-powerdwarf is a user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerdwarf should automatically start, if not you will need to add powerdwarf to your startup file (check the documentation included with your desktop environment or window manager).
+powerkit is a user session daemon and should be started during the X11 startup session. If your desktop environment or window manager supports XDG auto start then powerkit should automatically start, if not you will need to add powerkit to your startup file (check the documentation included with your desktop environment or window manager).
 
 .IP
 In Fluxbox add
-.I powerdwarf &
+.I powerkit &
 to the
 .I ~/.fluxbox/startup
 file.
 
 .IP
 In Openbox add
-.I powerdwarf &
+.I powerkit &
 to the
 .I ~/.config/openbox/autostart
 file.
@@ -33,16 +33,16 @@ file.
 .PP
 .B CONFIGURATION
 .PP
-Click on the powerdwarf system tray, or run the command
-.I powerdwarf --config
+Click on the powerkit system tray, or run the command
+.I powerkit --config
 ( or use
-.I powerdwarf.desktop
-) to configure powerdwarf.
+.I powerkit.desktop
+) to configure powerkit.
 
 .PP
 .B SCREEN SAVER
 .PP
-powerdwarf depends on
+powerkit depends on
 .I XScreenSaver
 to handle the screen session, the default settings may need to be adjusted. You can launch the (
 .I XScreenSaver
@@ -80,7 +80,7 @@ Recommended settings are:
 .B Quick Power-off in Blank Only Mode:
 .I enabled
 .PP
-Note that powerdwarf will start
+Note that powerkit will start
 .I XScreenSaver
 during startup (unless
 .I org.freedesktop.ScreenSaver
@@ -89,25 +89,25 @@ is disabled).
 .PP
 .B BACK LIGHT
 .PP
-powerdwarf supports back light through
+powerkit supports back light through
 .I /sys/class/backlight.
 The current brightness can be adjusted with the mouse wheel/touchpad scroll on the system tray icon or through the configuration GUI (bottom left slider). You can also configure brightness events in the configuration GUI.
 .PP
 .B NOTE!
 Proper udev permissions (rules file) are required to adjust the brightness. See
-.I https://github.com/rodlie/powerdwarf/blob/master/app/share/udev/90-backlight.rules.
+.I https://github.com/rodlie/powerkit/blob/master/app/share/udev/90-backlight.rules.
 
 .PP
 .B HIBERNATE
 .PP
-powerdwarf supports hibernate, but not out-of-the-box (depends on your system). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader configuration and add the kernel option
+A swap partition (or file) is needed by the kernel to support hibernate. Edit the boot loader configuration and add the kernel option
 .I resume=<swap_partition/swap_file>,
-then save and restart. You should now have hibernate support.
+then save and restart.
 
 .PP
 .B REQUIREMENTS
 .PP
-powerdwarf requires
+powerkit requires
 .I ConsoleKit/logind, UPower, XScreenSaver, xrandr
 available during run-time.
 
@@ -117,7 +117,7 @@ available during run-time.
 Launch configuration/status GUI.
 
 .SH FILES
-.I ~/.config/powerdwarf/powerdwarf.conf
+.I ~/.config/powerkit/powerkit.conf
 .RS
 Per user configuration file.
 .RE
@@ -125,7 +125,7 @@ Per user configuration file.
 .SH SEE ALSO
 xscreensaver(1), xscreensaver-demo(1), UPower(7)
 .SH BUGS
-See https://github.com/rodlie/powerdwarf/issues
+See https://github.com/rodlie/powerkit/issues
 
 .SH AUTHOR
 Ole-André Rodlie (ole.andre.rodlie@gmail.com)

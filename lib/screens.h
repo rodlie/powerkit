@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -12,7 +12,7 @@
 #include <QMap>
 #include <QString>
 
-#include "common.h"
+//#include "common.h"
 #include <X11/extensions/Xrandr.h>
 
 class Screens
