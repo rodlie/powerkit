@@ -30,7 +30,6 @@
 #define LOGIND_MANAGER "org.freedesktop.login1.Manager"
 #define LOGIND_DOCKED "Docked"
 
-#define UPOWER_SERVICE "org.freedesktop.UPower"
 #define UPOWER_PATH "/org/freedesktop/UPower"
 #define UPOWER_MANAGER "org.freedesktop.UPower"
 #define UPOWER_DEVICES "/org/freedesktop/UPower/devices/"
@@ -61,12 +60,11 @@
 #define DBUS_OK_REPLY "yes"
 #define DBUS_FAILED_CONN "Failed D-Bus connection."
 #define DBUS_OBJECT_MANAGER "org.freedesktop.DBus.ObjectManager"
-#define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
+
 #define DBUS_INTROSPECTABLE "org.freedesktop.DBus.Introspectable"
 #define DBUS_JOBS "%1/jobs"
 #define DBUS_DEVICE_ADDED "DeviceAdded"
 #define DBUS_DEVICE_REMOVED "DeviceRemoved"
-#define DBUS_CHANGED "Changed"
 #define DBUS_DEVICE_CHANGED "DeviceChanged"
 
 #define XSCREENSAVER "xscreensaver-command -deactivate"

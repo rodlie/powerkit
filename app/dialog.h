@@ -102,7 +102,6 @@ private:
     QSlider *backlightSliderAC;
     QCheckBox *backlightBatteryCheck;
     QCheckBox *backlightACCheck;
-    QGroupBox *backlightContainer;
     QCheckBox *backlightBatteryLowerCheck;
     QCheckBox *backlightACHigherCheck;
 

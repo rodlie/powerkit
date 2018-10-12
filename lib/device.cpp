@@ -11,7 +11,23 @@
 #include <QDBusConnection>
 #include <QStringList>
 
-#include "def.h"
+#define PROP_CHANGED "PropertiesChanged"
+#define PROP_DEV_MODEL "Model"
+#define PROP_DEV_CAPACITY "Capacity"
+#define PROP_DEV_IS_RECHARGE "IsRechargeable"
+#define PROP_DEV_PRESENT "IsPresent"
+#define PROP_DEV_PERCENT "Percentage"
+#define PROP_DEV_ENERGY_FULL_DESIGN "EnergyFullDesign"
+#define PROP_DEV_ENERGY_FULL "EnergyFull"
+#define PROP_DEV_ENERGY_EMPTY "EnergyEmpty"
+#define PROP_DEV_ENERGY "Energy"
+#define PROP_DEV_ONLINE "Online"
+#define PROP_DEV_POWER_SUPPLY "PowerSupply"
+#define PROP_DEV_TIME_TO_EMPTY "TimeToEmpty"
+#define PROP_DEV_TIME_TO_FULL "TimeToFull"
+#define PROP_DEV_TYPE "Type"
+#define PROP_DEV_VENDOR "Vendor"
+#define PROP_DEV_NATIVEPATH "NativePath"
 
 Device::Device(const QString block, QObject *parent)
     : QObject(parent)
@@ -32,18 +48,18 @@ Device::Device(const QString block, QObject *parent)
     , dbusp(0)
 {
     QDBusConnection system = QDBusConnection::systemBus();
-    dbus = new QDBusInterface(UP_SERVICE,
+    dbus = new QDBusInterface(UPOWER_SERVICE,
                               path,
-                              QString("%1.%2").arg(UP_SERVICE).arg(DBUS_DEVICE),
+                              QString("%1.%2").arg(UPOWER_SERVICE).arg(DBUS_DEVICE),
                               system,
                               parent);
     system.connect(dbus->service(),
                    dbus->path(),
-                   QString("%1.%2").arg(UP_SERVICE).arg(DBUS_DEVICE),
-                   UP_CONN_CHANGED,
+                   QString("%1.%2").arg(UPOWER_SERVICE).arg(DBUS_DEVICE),
+                   DBUS_CHANGED,
                    this,
                    SLOT(updateDeviceProperties()));
-    dbusp = new QDBusInterface(UP_SERVICE,
+    dbusp = new QDBusInterface(UPOWER_SERVICE,
                                path,
                                DBUS_PROPERTIES,
                                system,

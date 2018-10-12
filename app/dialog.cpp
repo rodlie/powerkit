@@ -41,7 +41,6 @@ Dialog::Dialog(QWidget *parent)
     , backlightSliderAC(0)
     , backlightBatteryCheck(0)
     , backlightACCheck(0)
-    , backlightContainer(0)
     , backlightBatteryLowerCheck(0)
     , backlightACHigherCheck(0)
 {
@@ -55,7 +54,7 @@ Dialog::Dialog(QWidget *parent)
     dbus = new QDBusInterface(POWERKIT_SERVICE, POWERKIT_PATH, POWERKIT_SERVICE,
                               session, this);
 
-    // setup man
+    // setup powerkit
     man = new PowerKit(this);
 
     // setup theme
@@ -176,7 +175,6 @@ Dialog::Dialog(QWidget *parent)
     backlightSliderBattery->setMaximum(1);
     backlightSliderBattery->setValue(0);
     backlightSliderBattery->setMaximumWidth(MAX_WIDTH);
-    //backlightSliderBattery->setMinimumWidth(MAX_WIDTH);
 
     backlightBatteryCheck = new QCheckBox(this);
     backlightBatteryCheck->setCheckable(true);
@@ -189,7 +187,6 @@ Dialog::Dialog(QWidget *parent)
     backlightBatteryLowerCheck->setText(tr("Don't apply if lower."));
 
     QWidget *batteryBacklightOptContainer = new QWidget(this);
-    //batteryBacklightOptContainer->setStyleSheet("border:1px solid red;");
     QVBoxLayout *batteryBacklightOptContainerLayout = new QVBoxLayout(batteryBacklightOptContainer);
     batteryBacklightOptContainer->setContentsMargins(0,0,0,0);
     batteryBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
@@ -228,25 +225,12 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->setSpacing(0);
 
     QWidget *lidActionACContainer = new QWidget(this);
-    //lidActionACContainer->setContentsMargins(0,0,0,0);
     QHBoxLayout *lidActionACContainerLayout = new QHBoxLayout(lidActionACContainer);
-    //lidActionACContainerLayout->setMargin(0);
-    //lidActionACContainerLayout->setContentsMargins(0,0,0,0);
-
-
-
 
     lidActionAC = new QComboBox(this);
     lidActionAC->setMaximumWidth(MAX_WIDTH);
     lidActionAC->setMinimumWidth(MAX_WIDTH);
     QLabel *lidActionACLabel = new QLabel(this);
-
-    /*QWidget *lidComboACContainer = new QWidget(this);
-    lidComboACContainer->setContentsMargins(0, 0, 0, 0);
-    QVBoxLayout *lidComboACContainerLayout = new QVBoxLayout(lidComboACContainer);
-    lidComboACContainerLayout->setMargin(0);
-    lidComboACContainerLayout->setSpacing(0);
-    lidComboACContainerLayout->addWidget(lidActionAC);*/
 
     QLabel *lidActionACIcon = new QLabel(this);
     lidActionACIcon->setMaximumSize(48, 48);
@@ -261,10 +245,7 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(lidActionACContainer);
 
     QWidget *sleepACContainer = new QWidget(this);
-    //sleepACContainer->setContentsMargins(0,0,0,0);
     QHBoxLayout *sleepACContainerLayout = new QHBoxLayout(sleepACContainer);
-    //sleepACContainerLayout->setMargin(0);
-    //sleepACContainerLayout->setContentsMargins(0,0,0,0);
     autoSleepAC = new QSpinBox(this);
     autoSleepAC->setMaximumWidth(MAX_WIDTH);
     autoSleepAC->setMinimumWidth(MAX_WIDTH);
@@ -277,7 +258,6 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(sleepACContainer);
 
     QWidget *sleepActionACContainer = new QWidget(this);
-    //sleepActionACContainer->setStyleSheet("border:1px solid red;");
     sleepActionACContainer->setContentsMargins(0, 0, 0, 0);
     QVBoxLayout *sleepActionACContainerLayout = new QVBoxLayout(sleepActionACContainer);
     sleepActionACContainerLayout->setMargin(0);
@@ -346,16 +326,6 @@ Dialog::Dialog(QWidget *parent)
     acContainerLayout->addWidget(sleepACContainer);
     acContainerLayout->addWidget(acBacklightContainer);
     acContainerLayout->addStretch();
-
-
-
-
-
-
-    // add widgets to brightness
-    //backlightContainerLayout->addWidget(batteryBacklightContainer);
-    //backlightContainerLayout->addWidget(acBacklightContainer);
-    //backlightContainerLayout->addStretch();
 
     // advanced
     QGroupBox *advContainer = new QGroupBox(this);
@@ -434,8 +404,7 @@ Dialog::Dialog(QWidget *parent)
     }
 
     backlightSlider = new QSlider(this);
-    backlightSlider->setMinimumWidth(MAX_WIDTH);
-    //backlightSlider->hide();
+    backlightSlider->setMinimumWidth(100);
     backlightSlider->setSingleStep(1);
     backlightSlider->setOrientation(Qt::Horizontal);
     backlightWatcher = new QFileSystemWatcher(this);
@@ -507,7 +476,7 @@ Dialog::Dialog(QWidget *parent)
     // add widgets to settings
     settingsLayout->addWidget(batteryContainer);
     settingsLayout->addWidget(acContainer);
-    settingsLayout->addWidget(backlightContainer);
+    //settingsLayout->addWidget(backlightContainer);
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
 
@@ -520,8 +489,6 @@ Dialog::Dialog(QWidget *parent)
 
     populate(); // populate boxes
     loadSettings(); // load settings
-
-    backlightSlider->setFocus();
 
     // connect widgets
     connect(lockscreenButton, SIGNAL(released()),
@@ -583,17 +550,6 @@ Dialog::Dialog(QWidget *parent)
     connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightACCheckHigher(bool)));
 
-
-    // test PKIT
-    /*qDebug() << "has battery?" <<man->HasBattery();
-    qDebug() << "has ckit?" << man->HasConsoleKit();
-    qDebug() << "has logind?" << man->HasLogind();
-    qDebug() << "has upower?" << man->HasUPower();
-    qDebug() << "can hibernate?" << man->CanHibernate();
-    qDebug() << "can hybridsleep?" << man->CanHybridSleep();
-    qDebug() << "can poweroff?" << man->CanPowerOff();
-    qDebug() << "can restart?" << man->CanRestart();
-    qDebug() << "can suspend?" << man->CanSuspend();*/
 }
 
 Dialog::~Dialog()
@@ -1058,7 +1014,6 @@ void Dialog::updateBacklight(QString file)
 
 void Dialog::checkDevices()
 {
-    qDebug() << "check devices!";
     QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
     double left = man->BatteryLeft();
     if (left<= 10) {
@@ -1131,7 +1086,6 @@ bool Dialog::deviceExists(QString uid)
 
 void Dialog::deviceRemove(QString uid)
 {
-    qDebug() << "remove device from status" << uid;
     for (int i=0;i<deviceTree->topLevelItemCount();++i) {
         QTreeWidgetItem *item = deviceTree->topLevelItem(i);
         if (!item) { continue; }
@@ -1147,7 +1101,6 @@ void Dialog::deviceRemove(QString uid)
 
 void Dialog::handleDeviceAdded(QString uid)
 {
-    qDebug() << "handle device added" << uid;
     Q_UNUSED(uid)
     checkDevices();
 }

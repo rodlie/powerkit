@@ -12,6 +12,11 @@
 #include <QObject>
 #include <QDBusInterface>
 
+#define UPOWER_SERVICE "org.freedesktop.UPower"
+#define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
+#define DBUS_DEVICE "Device"
+#define DBUS_CHANGED "Changed"
+
 class Device : public QObject
 {
     Q_OBJECT
