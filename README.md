@@ -52,9 +52,10 @@ powerkit supports back light only on Linux through ``/sys/class/backlight``. The
 
 ### Hibernate
 
-powerkit supports hibernate, but not out-of-the-box (for the most part). A swap partition (or file) is needed by the kernel to have something to resume to. Edit the boot loader (e)lilo/grub configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart. You should now have hibernate support.
+A swap partition (or file) is needed by the kernel to support hibernate. Edit the boot loader (e)lilo/grub configuration and add the kernel option ``resume=<swap_partition/swap_file>``, then save and restart.
 
 **Note!** some distributions have hibernate disabled (for Ubuntu see [com.ubuntu.enable-hibernate.pkla](https://github.com/rodlie/powerkit/blob/master/app/share/polkit/localauthority/50-local.d/com.ubuntu.enable-hibernate.pkla)).
+
 ## FAQ
 
 ### Slackware-only?

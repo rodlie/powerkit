@@ -51,9 +51,9 @@ Dialog::Dialog(QWidget *parent)
     setMinimumSize(QSize(390, 310));
 
     // setup dbus
-    QDBusConnection session = QDBusConnection::sessionBus();
+    /*QDBusConnection session = QDBusConnection::sessionBus();
     dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE,
-                              session, this);
+                              session, this);*/
 
     // setup man
     man = new PowerKit(this);

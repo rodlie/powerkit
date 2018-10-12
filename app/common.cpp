@@ -19,22 +19,24 @@
 
 #include "def.h"
 
+#define PK "powerkit"
+
 void Common::savePowerSettings(QString type, QVariant value)
 {
-    QSettings settings(PD, PD);
+    QSettings settings(PK, PK);
     settings.setValue(type, value);
     settings.sync();
 }
 
 QVariant Common::loadPowerSettings(QString type)
 {
-    QSettings settings(PD, PD);
+    QSettings settings(PK, PK);
     return settings.value(type);
 }
 
 bool Common::validPowerSettings(QString type)
 {
-    QSettings settings(PD, PD);
+    QSettings settings(PK, PK);
     return settings.value(type).isValid();
 }
 
