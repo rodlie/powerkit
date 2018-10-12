@@ -1,25 +1,23 @@
 #
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
 #
 
-QT += dbus gui
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += dbus xml
+QT -= gui
 
-TARGET = PowerDwarf
+TARGET = PowerKit
 TEMPLATE = lib
 SOURCES += \
-    common.cpp \
     powermanagement.cpp \
     screensaver.cpp \
     device.cpp \
     screens.cpp \
     powerkit.cpp
 HEADERS += \
-    common.h \
     powermanagement.h \
     screensaver.h \
     def.h \
@@ -27,14 +25,13 @@ HEADERS += \
     screens.h \
     powerkit.h
 
-include(../powerdwarf.pri)
-
+include(../powerkit.pri)
 CONFIG(install_lib) {
     CONFIG -= staticlib
     target.path = $${PREFIX}/lib$${LIBSUFFIX}
     INSTALLS += target
     !CONFIG(no_doc_install) {
-        target_docs.path = $${DOCDIR}/powerdwarf-$${VERSION}$${VERSION_EXTRA}
+        target_docs.path = $${DOCDIR}/powerkit-$${VERSION}$${VERSION_EXTRA}
         target_docs.files = ../LICENSE ../README.md ../ChangeLog
         INSTALLS += target_docs
     }

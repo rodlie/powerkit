@@ -1,24 +1,23 @@
 #
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
 #
 
-QT += core gui dbus
+QT += core gui dbus xml
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = powerdwarf
+TARGET = powerkit
 TEMPLATE = app
 
-SOURCES += main.cpp systray.cpp dialog.cpp
-HEADERS += systray.h dialog.h
-OTHER_FILES += share/man/powerdwarf.1
-LIBS += -L../lib -lPowerDwarf
+SOURCES += main.cpp systray.cpp dialog.cpp common.cpp
+HEADERS += systray.h dialog.h common.h
+LIBS += -L../lib -lPowerKit
 INCLUDEPATH += ../lib
 
-include(../powerdwarf.pri)
+include(../powerkit.pri)
 DEFINES += APP_VERSION=\"\\\"$${VERSION}\\\"\"
 DEFINES += APP_VERSION_EXTRA=\"\\\"$${VERSION_EXTRA}\\\"\"
 
@@ -32,7 +31,7 @@ DEFINES += APP_VERSION_EXTRA=\"\\\"$${VERSION_EXTRA}\\\"\"
     }
     !CONFIG(no_man_install) {
         target_man.path = $${MANDIR}/man1
-        target_man.files = share/man/powerdwarf.1
+        target_man.files = share/man/$${TARGET}.1
         INSTALLS += target_man
     }
     !CONFIG(no_desktop_install) {

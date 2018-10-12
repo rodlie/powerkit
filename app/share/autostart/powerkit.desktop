@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=powerdwarf
+Name=PowerKit
 Comment=Power Manager
 Icon=ac-adapter
-Exec=powerdwarf
+Exec=powerkit
 Terminal=false
 Type=Application
 NotShowIn=GNOME;KDE;MATE;TDE;Unity;XFCE;Cinnamon;

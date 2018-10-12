@@ -814,7 +814,6 @@ void SysTray::handlePrepareForSuspend(bool suspend)
     if (!suspend) { // resume
         tray->showMessage(QString(), QString());
         man->UpdateDevices();
-        resetTimer();
         ss->SimulateUserActivity();
     }
 }
