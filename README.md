@@ -1,6 +1,6 @@
 # PowerKit
 
-powerkit is a lightweight full featured power manager created for Slackware for use with alternative desktop environments and window managers, like Fluxbox, Blackbox, FVWM, WindowMaker, Openbox, Lumina and others.
+powerkit is a lightweight full featured power manager created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
 
 **NOTE!** Under development, a stable version will be available October 2018.
 
@@ -15,7 +15,7 @@ powerkit is a lightweight full featured power manager created for Slackware for 
  * Automatically suspend (sleep/hibernate)
  * Hibernate/Shutdown on critical battery
  * Simple and flexible configuration GUI
- * XScreenSaver support
+ * [XScreenSaver](https://www.jwz.org/xscreensaver/) support
  * Back light support
 
 ## Usage
@@ -31,7 +31,7 @@ Click on the powerkit system tray, or run the command ``` powerkit --config``` (
 
 ### Screen saver
 
-powerkit depends on XScreenSaver to handle the screen session, the default settings may need to be adjusted. You can launch the configuration GUI with the ``xscreensaver-demo`` command.
+powerkit depends on [XScreenSaver](https://www.jwz.org/xscreensaver/) to handle the screen session, the default settings may need to be adjusted. You can launch the configuration GUI with the ``xscreensaver-demo`` command.
 
 Recommended settings are:
 
@@ -66,13 +66,13 @@ No, powerkit should work on any Linux/FreeBSD system (check requirements). Howev
 
 ### How does an application inhibit the screen saver?
 
-The preferred way to inhibit the screen saver from an application is to use the ``org.freedesktop.ScreenSaver`` specification. Any application that uses ``org.freedesktop.ScreenSaver`` will work with powerkit. Note that powerkit also includes ``SimulateUserActivity`` for backwards compatibility.
+The preferred way to inhibit the screen saver from an application is to use the [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) specification. Any application that uses ``org.freedesktop.ScreenSaver`` will work with powerkit. Note that powerkit also includes ``SimulateUserActivity`` for backwards compatibility.
 
 Popular applications that uses this feature is Mozilla Firefox (for audio/video), VideoLAN VLC and many more.
 
 ### How does an application inhibit suspend actions?
 
-The prefered way to inhibit suspend actions from an application is to use the ``org.freedesktop.PowerManagement`` specification. Any application that uses ``org.freedesktop.PowerManagement`` will work with powerkit.
+The prefered way to inhibit suspend actions from an application is to use the [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/) specification. Any application that uses ``org.freedesktop.PowerManagement`` will work with powerkit.
 
 Common use cases are audio playback, downloading and more.
 
@@ -82,24 +82,24 @@ powerkit requires the following dependencies to work:
 
 ### Build dependencies
 
- * X11
- * Xss
- * Xrandr
- * QtDBus
- * QtGui
- * QtCore
+ * [X11](https://www.x.org)
+ * [Xss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)
+ * [Xrandr](https://www.x.org/wiki/libraries/libxrandr/)
+ * [QtDBus](https://qt.io)
+ * [QtGui](https://qt.io)
+ * [QtCore](https://qt.io)
 
 ### Run-time dependencies
 
- * ConsoleKit (or logind)
- * UPower 0.9.23(+)
- * XScreenSaver
- * xrandr
- * adwaita-icon-theme (or similar)
+ * [ConsoleKit](https://www.freedesktop.org/wiki/Software/ConsoleKit/) (or logind)
+ * [UPower](https://upower.freedesktop.org/) 0.9.23(+)
+ * [XScreenSaver](https://www.jwz.org/xscreensaver/)
+ * [xrandr](https://www.x.org/archive/current/doc/man/man1/xrandr.1.xhtml)
+ * [adwaita-icon-theme](https://github.com/GNOME/adwaita-icon-theme) (or similar)
 
 ### Icons
 
-powerkit does not bundle any icons, so you will need a compatible theme installed (in ``share/applications``). powerkit will use the existing icon theme from your running DE/WM or fallback to a known theme:
+powerkit does not bundle any icons, so you will need a compatible theme installed. powerkit will use the existing icon theme from your running DE/WM or fallback to a known theme:
 
  * Adwaita
  * Gnome
