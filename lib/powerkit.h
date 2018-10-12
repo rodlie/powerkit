@@ -142,7 +142,6 @@ private slots:
     void setup();
     void check();
     void scan();
-    void update();
 
     void deviceAdded(const QDBusObjectPath &obj);
     void deviceAdded(const QString &path);

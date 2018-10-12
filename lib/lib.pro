@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 #
 
-QT += dbus xml
+QT += dbus
 QT -= gui
 
 TARGET = PowerKit

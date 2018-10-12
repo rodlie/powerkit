@@ -293,13 +293,8 @@ void PowerKit::scan()
                 SLOT(handleDeviceChanged(QString)));
         devices[foundDevicePath] = newDevice;
     }
-    update();
+    UpdateDevices();
     emit UpdatedDevices();
-}
-
-void PowerKit::update()
-{
-    qDebug() << "update";
 }
 
 void PowerKit::deviceAdded(const QDBusObjectPath &obj)

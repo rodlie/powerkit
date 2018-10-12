@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 #
 
-QT += core gui dbus xml
+QT += core gui dbus
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = powerkit
