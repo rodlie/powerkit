@@ -5,15 +5,15 @@
 # You must make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':' except on otherwise blank lines.
 
-          |-----handy-ruler------------------------------------------------------|
-powerdwarf: powerdwarf (lightweight full featured power manager)
-powerdwarf:
-powerdwarf: powerdwarf is a lightweight full featured power manager
-powerdwarf: created for Slackware for use with alternative desktop
-powerdwarf: environments and window managers, like Fluxbox, Blackbox,
-powerdwarf: FVWM, WindowMaker, Openbox, Lumina and others.
-powerdwarf:
-powerdwarf: powerdwarf was written by Ole-André Rodlie
-powerdwarf:
-powerdwarf: Homepage: https://github.com/rodlie/powerdwarf
-powerdwarf:
+        |-----handy-ruler------------------------------------------------------|
+powerkit: powerkit (lightweight full featured power manager)
+powerkit:
+powerkit: powerkit is a lightweight full featured power manager
+powerkit: created for Slackware for use with alternative desktop
+powerkit: environments and window managers, like Fluxbox, Blackbox,
+powerkit: FVWM, WindowMaker, Openbox, Lumina and others.
+powerkit:
+powerkit: powerkit was written by Ole-André Rodlie
+powerkit:
+powerkit: Homepage: https://github.com/rodlie/powerkit
+powerkit:
