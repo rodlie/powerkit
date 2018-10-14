@@ -429,16 +429,22 @@ void SysTray::registerService()
         return;
     }
     if (desktopPM) {
-    if (!QDBusConnection::sessionBus().registerService(PM_SERVICE)) {
-        qWarning() << QDBusConnection::sessionBus().lastError().message();
-        return;
-    }
+        if (!QDBusConnection::sessionBus().registerService(PM_SERVICE)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            return;
+        }
         if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
-                                                          pm,
-                                                          QDBusConnection::ExportAllSlots)) {
-        qWarning() << QDBusConnection::sessionBus().lastError().message();
-        return;
-    }
+                                                              pm,
+                                                              QDBusConnection::ExportAllSlots)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            return;
+        }
+        if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH,
+                                                              pm,
+                                                              QDBusConnection::ExportAllSlots)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            return;
+        }
         qDebug() << "Enabled org.freedesktop.PowerManagement";
     }
     if (desktopSS) {
@@ -447,6 +453,12 @@ void SysTray::registerService()
             return;
         }
         if (!QDBusConnection::sessionBus().registerObject(SS_PATH,
+                                                          ss,
+                                                          QDBusConnection::ExportAllSlots)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            return;
+        }
+        if (!QDBusConnection::sessionBus().registerObject(SS_FULL_PATH,
                                                           ss,
                                                           QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();

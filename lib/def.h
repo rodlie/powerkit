@@ -88,11 +88,13 @@ enum criticalAction
 
 #define PM_SERVICE "org.freedesktop.PowerManagement"
 #define PM_PATH "/PowerManagement"
+#define PM_FULL_PATH "/org/freedesktop/PowerManagement"
 #define PM_TIMEOUT 60000
 #define PM_MAX_INHIBIT 18000
 
 #define SS_SERVICE "org.freedesktop.ScreenSaver"
 #define SS_PATH "/ScreenSaver"
+#define SS_FULL_PATH "/org/freedesktop/ScreenSaver"
 #define SS_TIMEOUT 30000
 #define SS_MAX_INHIBIT 18000
 #define SS_SIMULATE "SimulateUserActivity"
