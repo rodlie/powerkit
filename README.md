@@ -68,13 +68,22 @@ No, powerkit should work on any Linux/FreeBSD system (check requirements). Howev
 
 The preferred way to inhibit the screen saver from an application is to use the [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) specification. Any application that uses [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) will work with powerkit. Note that powerkit also includes ``SimulateUserActivity`` for backwards compatibility.
 
-Popular applications that uses this feature is Mozilla Firefox (for audio/video), VideoLAN VLC and many more.
+Popular applications that uses this feature is Mozilla Firefox/Google Chrome (for audio/video), VideoLAN VLC and many more.
 
 ### How does an application inhibit suspend actions?
 
 The prefered way to inhibit suspend actions from an application is to use the [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/) specification. Any application that uses [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/) will work with powerkit.
 
 Common use cases are audio playback, downloading and more.
+
+### Google Chrome/Chromium does not inhibit the screen saver
+
+[Chrome](https://chrome.google.com) does not use [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) until it detects KDE/Xfce. Add the following to ``~/.bashrc`` or the ``google-chrome`` launcher:
+
+```
+export DESKTOP_SESSION=xfce
+export XDG_CURRENT_DESKTOP=xfce
+```
 
 ## Requirements
 
