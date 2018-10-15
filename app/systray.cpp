@@ -87,6 +87,8 @@ SysTray::SysTray(QObject *parent)
             this, SLOT(handleDeviceChanged(QString)));
     connect(man, SIGNAL(DeviceWasRemoved(QString)),
             this, SLOT(handleDeviceChanged(QString)));
+    connect(man, SIGNAL(Update()),
+            this, SLOT(loadSettings()));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement();
@@ -251,6 +253,9 @@ void SysTray::handleClosedLid()
     case lidShutdown:
         man->PowerOff();
         break;
+    case lidHybridSleep:
+        man->HybridSleep();
+        break;
     default: ;
     }
 }
@@ -393,26 +398,26 @@ void SysTray::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
 
-    qDebug() << CONF_LID_XRANDR << lidXrandr;
-    qDebug() << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
-    qDebug() << CONF_TRAY_SHOW << showTray;
-    qDebug() << CONF_TRAY_NOTIFY << showNotifications;
-    qDebug() << CONF_FREEDESKTOP_SS << desktopSS;
-    qDebug() << CONF_FREEDESKTOP_PM << desktopPM;
-    qDebug() << CONF_SUSPEND_BATTERY_TIMEOUT << autoSuspendBattery;
-    qDebug() << CONF_SUSPEND_AC_TIMEOUT << autoSuspendAC;
-    qDebug() << CONF_SUSPEND_BATTERY_ACTION << autoSuspendBatteryAction;
-    qDebug() << CONF_SUSPEND_AC_ACTION << autoSuspendACAction;
-    qDebug() << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
-    qDebug() << CONF_LID_BATTERY_ACTION << lidActionBattery;
-    qDebug() << CONF_LID_AC_ACTION << lidActionAC;
-    qDebug() << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
-    qDebug() << CONF_BACKLIGHT_AC << backlightACValue;
-    qDebug() << CONF_BACKLIGHT_AC_ENABLE << backlightOnAC;
-    qDebug() << CONF_BACKLIGHT_BATTERY << backlightBatteryValue;
-    qDebug() << CONF_BACKLIGHT_BATTERY_ENABLE << backlightOnBattery;
-    qDebug() << CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER << backlightBatteryDisableIfLower;
-    qDebug() << CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER << backlightACDisableIfHigher;
+    qDebug() << "==>" << CONF_LID_XRANDR << lidXrandr;
+    qDebug() << "==>" << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
+    qDebug() << "==>" << CONF_TRAY_SHOW << showTray;
+    qDebug() << "==>" << CONF_TRAY_NOTIFY << showNotifications;
+    qDebug() << "==>" << CONF_FREEDESKTOP_SS << desktopSS;
+    qDebug() << "==>" << CONF_FREEDESKTOP_PM << desktopPM;
+    qDebug() << "==>" << CONF_SUSPEND_BATTERY_TIMEOUT << autoSuspendBattery;
+    qDebug() << "==>" << CONF_SUSPEND_AC_TIMEOUT << autoSuspendAC;
+    qDebug() << "==>" << CONF_SUSPEND_BATTERY_ACTION << autoSuspendBatteryAction;
+    qDebug() << "==>" << CONF_SUSPEND_AC_ACTION << autoSuspendACAction;
+    qDebug() << "==>" << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
+    qDebug() << "==>" << CONF_LID_BATTERY_ACTION << lidActionBattery;
+    qDebug() << "==>" << CONF_LID_AC_ACTION << lidActionAC;
+    qDebug() << "==>" << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
+    qDebug() << "==>" << CONF_BACKLIGHT_AC << backlightACValue;
+    qDebug() << "==>" << CONF_BACKLIGHT_AC_ENABLE << backlightOnAC;
+    qDebug() << "==>" << CONF_BACKLIGHT_BATTERY << backlightBatteryValue;
+    qDebug() << "==>" << CONF_BACKLIGHT_BATTERY_ENABLE << backlightOnBattery;
+    qDebug() << "==>" << CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER << backlightBatteryDisableIfLower;
+    qDebug() << "==>" << CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER << backlightACDisableIfHigher;
 }
 
 // register session services
@@ -598,6 +603,9 @@ void SysTray::timeout()
             break;
         case suspendShutdown:
             man->PowerOff();
+            break;
+        case suspendHybrid:
+            man->HybridSleep();
             break;
         default: break;
         }

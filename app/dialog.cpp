@@ -47,13 +47,13 @@ Dialog::Dialog(QWidget *parent)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
-    setWindowTitle(tr("Power Manager"));
+    setWindowTitle(tr("PowerKit"));
     setMinimumSize(QSize(390, 310));
 
     // setup dbus
-    /*QDBusConnection session = QDBusConnection::sessionBus();
-    dbus = new QDBusInterface(PD_SERVICE, PD_PATH, PD_SERVICE,
-                              session, this);*/
+    QDBusConnection session = QDBusConnection::sessionBus();
+    dbus = new QDBusInterface(POWERKIT_SERVICE, POWERKIT_PATH, POWERKIT_SERVICE,
+                              session, this);
 
     // setup man
     man = new PowerKit(this);
@@ -585,7 +585,7 @@ Dialog::Dialog(QWidget *parent)
 
 
     // test PKIT
-    qDebug() << "has battery?" <<man->HasBattery();
+    /*qDebug() << "has battery?" <<man->HasBattery();
     qDebug() << "has ckit?" << man->HasConsoleKit();
     qDebug() << "has logind?" << man->HasLogind();
     qDebug() << "has upower?" << man->HasUPower();
@@ -593,7 +593,7 @@ Dialog::Dialog(QWidget *parent)
     qDebug() << "can hybridsleep?" << man->CanHybridSleep();
     qDebug() << "can poweroff?" << man->CanPowerOff();
     qDebug() << "can restart?" << man->CanRestart();
-    qDebug() << "can suspend?" << man->CanSuspend();
+    qDebug() << "can suspend?" << man->CanSuspend();*/
 }
 
 Dialog::~Dialog()
@@ -613,6 +613,10 @@ void Dialog::populate()
                               tr("Sleep"), lidSleep);
     lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
                               tr("Hibernate"), lidHibernate);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
+                              tr("Shutdown"), lidShutdown);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                              tr("Hybrid Sleep"), lidHybridSleep);
 
     lidActionAC->clear();
     lidActionAC->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -623,6 +627,10 @@ void Dialog::populate()
                          tr("Sleep"), lidSleep);
     lidActionAC->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
                          tr("Hibernate"), lidHibernate);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
+                         tr("Shutdown"), lidShutdown);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                         tr("Hybrid Sleep"), lidHybridSleep);
 
     criticalActionBattery->clear();
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -641,6 +649,8 @@ void Dialog::populate()
                                     tr("Hibernate"), suspendHibernate);
     autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
                                     tr("Shutdown"), suspendShutdown);
+    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                                    tr("Hybrid Sleep"), suspendHybrid);
 
     autoSleepACAction->clear();
     autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -651,6 +661,8 @@ void Dialog::populate()
                                tr("Hibernate"), suspendHibernate);
     autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
                                tr("Shutdown"), suspendShutdown);
+    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                               tr("Hybrid Sleep"), suspendHybrid);
 }
 
 // load settings and set defaults
@@ -831,41 +843,41 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
 // save current value and update power manager
 void Dialog::handleLidActionBattery(int index)
 {
-    if (index == lidHibernate || index == lidSleep) {
-        checkPerms();
-    }
+    checkPerms();
     Common::savePowerSettings(CONF_LID_BATTERY_ACTION, index);
+    updatePM();
 }
 
 void Dialog::handleLidActionAC(int index)
 {
-    if (index == lidHibernate || index == lidSleep) {
-        checkPerms();
-    }
+    checkPerms();
     Common::savePowerSettings(CONF_LID_AC_ACTION, index);
+    updatePM();
 }
 
 void Dialog::handleCriticalAction(int index)
 {
-    if (index == criticalHibernate) {
-        checkPerms();
-    }
+    checkPerms();
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
+    updatePM();
 }
 
 void Dialog::handleCriticalBattery(int value)
 {
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT, value);
+    updatePM();
 }
 
 void Dialog::handleAutoSleepBattery(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT, value);
+    updatePM();
  }
 
 void Dialog::handleAutoSleepAC(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_AC_TIMEOUT, value);
+    updatePM();
 }
 
 void Dialog::handleDesktopSS(bool triggered)
@@ -887,16 +899,19 @@ void Dialog::handleDesktopPM(bool triggered)
 void Dialog::handleLidXrandr(bool triggered)
 {
     Common::savePowerSettings(CONF_LID_XRANDR, triggered);
+    updatePM();
 }
 
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
+    updatePM();
 }
 
 void Dialog::handleShowSystemTray(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_SHOW, triggered);
+    updatePM();
 }
 
 void Dialog::handleDisableLidAction(bool triggered)
@@ -905,22 +920,21 @@ void Dialog::handleDisableLidAction(bool triggered)
         lidXrandr->setEnabled(true);
     } else { lidXrandr->setDisabled(true); }
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
+    updatePM();
 }
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
-    if (index == suspendHibernate || index == suspendSleep) {
-        checkPerms();
-    }
+    checkPerms();
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
+    updatePM();
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
-    if (index == suspendHibernate || index == suspendSleep) {
-        checkPerms();
-    }
+    checkPerms();
     Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
+    updatePM();
 }
 
 void Dialog::handleLockscreenButton()
@@ -973,25 +987,29 @@ void Dialog::checkPerms()
             criticalActionBattery->setCurrentIndex(criticalShutdown);
             handleCriticalAction(criticalShutdown);
         }
-        if (lidActionAC->currentIndex() == lidHibernate) {
+        if (lidActionAC->currentIndex() == lidHibernate ||
+            lidActionAC->currentIndex() == lidHybridSleep) {
             warnCantHibernate = true;
-            lidActionAC->setCurrentIndex(lidLock);
-            handleLidActionAC(lidLock);
+            lidActionAC->setCurrentIndex(lidSleep);
+            handleLidActionAC(lidSleep);
         }
-        if (lidActionBattery->currentIndex() == lidHibernate) {
+        if (lidActionBattery->currentIndex() == lidHibernate ||
+            lidActionBattery->currentIndex() == lidHybridSleep) {
             warnCantHibernate = true;
-            lidActionBattery->setCurrentIndex(lidLock);
-            handleLidActionBattery(lidLock);
+            lidActionBattery->setCurrentIndex(lidSleep);
+            handleLidActionBattery(lidSleep);
         }
-        if (autoSleepACAction->currentIndex() == suspendHibernate) {
+        if (autoSleepACAction->currentIndex() == suspendHibernate ||
+            autoSleepACAction->currentIndex() == suspendHybrid) {
             warnCantHibernate = true;
-            autoSleepACAction->setCurrentIndex(suspendNone);
-            handleAutoSleepACAction(suspendNone);
+            autoSleepACAction->setCurrentIndex(suspendSleep);
+            handleAutoSleepACAction(suspendSleep);
         }
-        if (autoSleepBatteryAction->currentIndex() == suspendHibernate) {
+        if (autoSleepBatteryAction->currentIndex() == suspendHibernate ||
+            autoSleepBatteryAction->currentIndex() == suspendHybrid) {
             warnCantHibernate = true;
-            autoSleepBatteryAction->setCurrentIndex(suspendNone);
-            handleAutoSleepBatteryAction(suspendNone);
+            autoSleepBatteryAction->setCurrentIndex(suspendSleep);
+            handleAutoSleepBatteryAction(suspendSleep);
         }
         if (warnCantHibernate) { hibernateWarn(); }
     }
@@ -1064,7 +1082,7 @@ void Dialog::checkDevices()
     batteryLeftLCD->display(QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
                             .toUTC().toString("hh:mm"));
 
-    QMapIterator<QString, Device*> i(man->GetDevices());
+    QMapIterator<QString, Device*> i(man->getDevices());
     while (i.hasNext()) {
         i.next();
         qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
@@ -1138,22 +1156,26 @@ void Dialog::handleBacklightBatteryCheck(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE, triggered);
     handleBacklightBatterySlider(backlightSliderBattery->value());
+    updatePM();
 }
 
 void Dialog::handleBacklightACCheck(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC_ENABLE, triggered);
     handleBacklightACSlider(backlightSliderAC->value());
+    updatePM();
 }
 
 void Dialog::handleBacklightBatterySlider(int value)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY, value);
+    updatePM();
 }
 
 void Dialog::handleBacklightACSlider(int value)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC, value);
+    updatePM();
 }
 
 void Dialog::hibernateWarn()
@@ -1173,9 +1195,17 @@ void Dialog::sleepWarn()
 void Dialog::handleBacklightBatteryCheckLower(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER, triggered);
+    updatePM();
 }
 
 void Dialog::handleBacklightACCheckHigher(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
+    updatePM();
+}
+
+void Dialog::updatePM()
+{
+    if (!dbus->isValid()) { return; }
+    dbus->call("UpdateConfig");
 }

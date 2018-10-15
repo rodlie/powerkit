@@ -24,7 +24,8 @@ enum suspendAction
     suspendNone,
     suspendSleep,
     suspendHibernate,
-    suspendShutdown
+    suspendShutdown,
+    suspendHybrid
 };
 
 enum lidAction
@@ -33,7 +34,8 @@ enum lidAction
     lidLock,
     lidSleep,
     lidHibernate,
-    lidShutdown
+    lidShutdown,
+    lidHybridSleep
 };
 
 enum criticalAction

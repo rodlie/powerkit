@@ -108,6 +108,7 @@ public:
 
     explicit PowerKit(QObject *parent = 0);
     ~PowerKit();
+    QMap<QString, Device*> getDevices();
 
 private:
     QMap<QString, Device*> devices;
@@ -121,6 +122,7 @@ private:
     bool wasOnBattery;
 
 signals:
+    void Update();
     void UpdatedDevices();
     void LidClosed();
     void LidOpened();
@@ -156,8 +158,6 @@ private slots:
     void clearDevices();
 
 public slots:
-    QMap<QString, Device*> GetDevices();
-
     bool HasConsoleKit();
     bool HasLogind();
     bool HasUPower();
@@ -185,6 +185,7 @@ public slots:
     qlonglong TimeToFull();
     void UpdateDevices();
     void UpdateBattery();
+    void UpdateConfig();
 };
 
 #endif // POWERKIT_H
