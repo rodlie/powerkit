@@ -145,6 +145,7 @@ private slots:
     void sleepWarn();
     void handleBacklightBatteryCheckLower(bool triggered);
     void handleBacklightACCheckHigher(bool triggered);
+    void updatePM();
 };
 
 #endif // DIALOG_H

@@ -37,6 +37,11 @@ PowerKit::~PowerKit()
     clearDevices();
 }
 
+QMap<QString, Device *> PowerKit::getDevices()
+{
+    return devices;
+}
+
 bool PowerKit::availableService(const QString &service,
                           const QString &path,
                           const QString &interface)
@@ -385,11 +390,6 @@ void PowerKit::clearDevices()
     devices.clear();
 }
 
-QMap<QString, Device *> PowerKit::GetDevices()
-{
-    return devices;
-}
-
 bool PowerKit::HasConsoleKit()
 {
     return availableService(CONSOLEKIT_SERVICE,
@@ -629,4 +629,9 @@ void PowerKit::UpdateBattery()
             device.value()->updateBattery();
         }
     }
+}
+
+void PowerKit::UpdateConfig()
+{
+    emit Update();
 }
