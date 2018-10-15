@@ -484,6 +484,11 @@ void SysTray::registerService()
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
+    if (!QDBusConnection::sessionBus().registerObject(POWERKIT_FULL_PATH, man,
+                                                      QDBusConnection::ExportAllContents)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        return;
+    }
     qDebug() << "Enabled org.freedesktop.PowerKit";
     hasService = true;
 }

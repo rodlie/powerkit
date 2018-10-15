@@ -20,6 +20,7 @@
 
 #define POWERKIT_SERVICE "org.freedesktop.PowerKit"
 #define POWERKIT_PATH "/PowerKit"
+#define POWERKIT_FULL_PATH "/org/freedesktop/PowerKit"
 
 #define CONSOLEKIT_SERVICE "org.freedesktop.ConsoleKit"
 #define CONSOLEKIT_PATH "/org/freedesktop/ConsoleKit/Manager"

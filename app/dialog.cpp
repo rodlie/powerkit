@@ -847,39 +847,33 @@ void Dialog::handleLidActionBattery(int index)
 {
     checkPerms();
     Common::savePowerSettings(CONF_LID_BATTERY_ACTION, index);
-    updatePM();
 }
 
 void Dialog::handleLidActionAC(int index)
 {
     checkPerms();
     Common::savePowerSettings(CONF_LID_AC_ACTION, index);
-    updatePM();
 }
 
 void Dialog::handleCriticalAction(int index)
 {
     checkPerms();
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, index);
-    updatePM();
 }
 
 void Dialog::handleCriticalBattery(int value)
 {
     Common::savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT, value);
-    updatePM();
 }
 
 void Dialog::handleAutoSleepBattery(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT, value);
-    updatePM();
  }
 
 void Dialog::handleAutoSleepAC(int value)
 {
     Common::savePowerSettings(CONF_SUSPEND_AC_TIMEOUT, value);
-    updatePM();
 }
 
 void Dialog::handleDesktopSS(bool triggered)
@@ -901,19 +895,16 @@ void Dialog::handleDesktopPM(bool triggered)
 void Dialog::handleLidXrandr(bool triggered)
 {
     Common::savePowerSettings(CONF_LID_XRANDR, triggered);
-    updatePM();
 }
 
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
-    updatePM();
 }
 
 void Dialog::handleShowSystemTray(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_SHOW, triggered);
-    updatePM();
 }
 
 void Dialog::handleDisableLidAction(bool triggered)
@@ -922,21 +913,18 @@ void Dialog::handleDisableLidAction(bool triggered)
         lidXrandr->setEnabled(true);
     } else { lidXrandr->setDisabled(true); }
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
-    updatePM();
 }
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
     checkPerms();
     Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, index);
-    updatePM();
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
     checkPerms();
     Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
-    updatePM();
 }
 
 void Dialog::handleLockscreenButton()
@@ -1155,26 +1143,22 @@ void Dialog::handleBacklightBatteryCheck(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE, triggered);
     handleBacklightBatterySlider(backlightSliderBattery->value());
-    updatePM();
 }
 
 void Dialog::handleBacklightACCheck(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC_ENABLE, triggered);
     handleBacklightACSlider(backlightSliderAC->value());
-    updatePM();
 }
 
 void Dialog::handleBacklightBatterySlider(int value)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY, value);
-    updatePM();
 }
 
 void Dialog::handleBacklightACSlider(int value)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC, value);
-    updatePM();
 }
 
 void Dialog::hibernateWarn()
@@ -1194,17 +1178,9 @@ void Dialog::sleepWarn()
 void Dialog::handleBacklightBatteryCheckLower(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER, triggered);
-    updatePM();
 }
 
 void Dialog::handleBacklightACCheckHigher(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
-    updatePM();
-}
-
-void Dialog::updatePM()
-{
-    /*if (!dbus->isValid()) { return; }
-    dbus->call("UpdateConfig");*/
 }
