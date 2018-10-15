@@ -14,7 +14,7 @@
 
 #include "def.h"
 
-PowerManagement::PowerManagement()
+PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
 {
     timer.setInterval(PM_TIMEOUT);
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeOut()));

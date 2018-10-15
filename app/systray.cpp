@@ -48,6 +48,7 @@ SysTray::SysTray(QObject *parent)
     , backlightACValue(0)
     , backlightBatteryDisableIfLower(false)
     , backlightACDisableIfHigher(false)
+    , configDialog(0)
 {
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -91,7 +92,7 @@ SysTray::SysTray(QObject *parent)
             this, SLOT(loadSettings()));
 
     // setup org.freedesktop.PowerManagement
-    pm = new PowerManagement();
+    pm = new PowerManagement(this);
     connect(pm,
             SIGNAL(HasInhibitChanged(bool)),
             this,
@@ -106,7 +107,7 @@ SysTray::SysTray(QObject *parent)
             SLOT(handleDelInhibitPowerManagement(quint32)));
 
     // setup org.freedesktop.ScreenSaver
-    ss = new ScreenSaver();
+    ss = new ScreenSaver(this);
     connect(ss,
             SIGNAL(newInhibit(QString,QString,quint32)),
             this,
@@ -155,21 +156,27 @@ SysTray::SysTray(QObject *parent)
     QTimer::singleShot(1000,
                        this,
                        SLOT(setInternalMonitor()));
+
+    // config dialog
+    configDialog = new QProcess(this);
+    connect(configDialog,
+            SIGNAL(finished(int)),
+            this,
+            SLOT(handleConfigDialogFinished(int)));
 }
 
 SysTray::~SysTray()
 {
     if (xscreensaver->isOpen()) { xscreensaver->close(); }
-    pm->deleteLater();
-    ss->deleteLater();
 }
 
 // what to do when user clicks systray
 void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
-    QString config = QString("%1 --config").arg(qApp->applicationFilePath());
-    QProcess::startDetached(config);
+    if (configDialog->isOpen()) { return; }
+    configDialog->start(QString("%1 --config")
+                        .arg(qApp->applicationFilePath()));
 }
 
 void SysTray::checkDevices()
@@ -846,6 +853,12 @@ void SysTray::handleDeviceChanged(QString path)
 {
     qDebug() << "device changed, check" << path;
     checkDevices();
+}
+
+void SysTray::handleConfigDialogFinished(int result)
+{
+    Q_UNUSED(result)
+    if (configDialog->isOpen()) { configDialog->close(); }
 }
 
 bool TrayIcon::event(QEvent *e)

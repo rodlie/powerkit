@@ -19,7 +19,7 @@ class PowerManagement : public QObject
     Q_OBJECT
 
 public:
-    explicit PowerManagement();
+    explicit PowerManagement(QObject *parent = NULL);
 
 private:
     QTimer timer;

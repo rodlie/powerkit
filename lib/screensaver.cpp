@@ -15,7 +15,7 @@
 
 #include "def.h"
 
-ScreenSaver::ScreenSaver()
+ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 {
     timer.setInterval(SS_TIMEOUT);
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeOut()));

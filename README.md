@@ -76,7 +76,7 @@ The prefered way to inhibit suspend actions from an application is to use the [o
 
 Common use cases are audio playback, downloading and more.
 
-### Google Chrome/Chromium does not inhibit the screen saver
+### Google Chrome/Chromium does not inhibit the screen saver!?
 
 [Chrome](https://chrome.google.com) does not use [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html) until it detects KDE/Xfce. Add the following to ``~/.bashrc`` or the ``google-chrome`` launcher:
 

@@ -103,19 +103,19 @@ void Common::setIconTheme()
 
 QString Common::confFile()
 {
-    return QString("%1/.config/powerdwarf/powerdwarf.conf").arg(QDir::homePath());
+    return QString("%1/.config/powerkit/powerkit.conf").arg(QDir::homePath());
 }
 
 QString Common::confDir()
 {
-    return QString("%1/.config/powerdwarf").arg(QDir::homePath());
+    return QString("%1/.config/powerkit").arg(QDir::homePath());
 }
 
 bool Common::kernelCanResume()
 {
 #ifdef __FreeBSD__
     // ???
-    return true;
+    return false;
 #endif
     QFile cmdline("/proc/cmdline");
     if (cmdline.open(QIODevice::ReadOnly)) {

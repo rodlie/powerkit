@@ -19,7 +19,7 @@ class ScreenSaver : public QObject
     Q_OBJECT
 
 public:
-    explicit ScreenSaver();
+    explicit ScreenSaver(QObject *parent = NULL);
 
 private:
     QTimer timer;

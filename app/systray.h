@@ -118,6 +118,7 @@ private:
     int backlightACValue;
     bool backlightBatteryDisableIfLower;
     bool backlightACDisableIfHigher;
+    QProcess *configDialog;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -158,6 +159,7 @@ private slots:
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
     void handleDeviceChanged(QString path);
+    void handleConfigDialogFinished(int result);
 };
 
 #endif // SYSTRAY_H

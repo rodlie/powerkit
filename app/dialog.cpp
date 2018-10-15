@@ -1159,6 +1159,6 @@ void Dialog::handleBacklightACCheckHigher(bool triggered)
 
 void Dialog::updatePM()
 {
-    if (!dbus->isValid()) { return; }
-    dbus->call("UpdateConfig");
+    /*if (!dbus->isValid()) { return; }
+    dbus->call("UpdateConfig");*/
 }
