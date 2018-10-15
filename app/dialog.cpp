@@ -554,7 +554,7 @@ Dialog::Dialog(QWidget *parent)
 
 Dialog::~Dialog()
 {
-    Common::savePowerSettings("dialog_geometry", saveGeometry());
+    saveSettings();
 }
 
 // populate widgets with default values
@@ -766,6 +766,52 @@ void Dialog::loadSettings()
 
     // check devices
     checkDevices();
+}
+
+void Dialog::saveSettings()
+{
+    Common::savePowerSettings(CONF_LID_BATTERY_ACTION,
+                              lidActionBattery->currentIndex());
+    Common::savePowerSettings(CONF_LID_AC_ACTION,
+                              lidActionAC->currentIndex());
+    Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION,
+                              criticalActionBattery->currentIndex());
+    Common::savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT,
+                              criticalBattery->value());
+    Common::savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT,
+                              autoSleepBattery->value());
+    Common::savePowerSettings(CONF_SUSPEND_AC_TIMEOUT,
+                              autoSleepAC->value());
+    Common::savePowerSettings(CONF_FREEDESKTOP_SS,
+                              desktopSS->isChecked());
+    Common::savePowerSettings(CONF_FREEDESKTOP_PM,
+                              desktopPM->isChecked());
+    Common::savePowerSettings(CONF_LID_XRANDR,
+                              lidXrandr->isChecked());
+    Common::savePowerSettings(CONF_TRAY_NOTIFY,
+                              showNotifications->isChecked());
+    Common::savePowerSettings(CONF_TRAY_SHOW,
+                              showSystemTray->isChecked());
+    Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL,
+                              disableLidAction->isChecked());
+    Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION,
+                              autoSleepBatteryAction->currentIndex());
+    Common::savePowerSettings(CONF_SUSPEND_AC_ACTION,
+                              autoSleepACAction->currentIndex());
+    Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE,
+                              backlightBatteryCheck->isChecked());
+    Common::savePowerSettings(CONF_BACKLIGHT_AC_ENABLE,
+                              backlightACCheck->isChecked());
+    Common::savePowerSettings(CONF_BACKLIGHT_BATTERY,
+                              backlightSliderBattery->value());
+    Common::savePowerSettings(CONF_BACKLIGHT_AC,
+                              backlightSliderAC->value());
+    Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER,
+                              backlightBatteryLowerCheck->isChecked());
+    Common::savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER,
+                              backlightACHigherCheck->isChecked());
+    Common::savePowerSettings(CONF_DIALOG,
+                              saveGeometry());
 }
 
 // set default action in combobox

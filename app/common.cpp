@@ -103,12 +103,23 @@ void Common::setIconTheme()
 
 QString Common::confFile()
 {
-    return QString("%1/.config/powerkit/powerkit.conf").arg(QDir::homePath());
+    QString config = QString("%1/.config/powerkit/powerkit.conf")
+                     .arg(QDir::homePath());
+    if (!QFile::exists(config)) {
+        QFile conf(config);
+        if (conf.open(QIODevice::WriteOnly)) { conf.close(); }
+    }
+    return config;
 }
 
 QString Common::confDir()
 {
-    return QString("%1/.config/powerkit").arg(QDir::homePath());
+    QString config = QString("%1/.config/powerkit").arg(QDir::homePath());
+    if (!QFile::exists(config)) {
+        QDir dir(config);
+        dir.mkpath(config);
+    }
+    return config;
 }
 
 bool Common::kernelCanResume()

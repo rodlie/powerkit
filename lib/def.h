@@ -123,5 +123,6 @@ enum criticalAction
 #define CONF_BACKLIGHT_AC "backlight_ac_value"
 #define CONF_BACKLIGHT_AC_ENABLE "backlight_ac_enable"
 #define CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER "backlight_ac_disable_if_higher"
+#define CONF_DIALOG "dialog_geometry"
 
 #endif // DEF_H

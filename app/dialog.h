@@ -65,9 +65,6 @@ public:
    explicit Dialog(QWidget *parent = NULL);
    ~Dialog();
 
-signals:
-    void refresh();
-
 private:
     QDBusInterface *dbus;
     QComboBox *lidActionBattery;
@@ -108,6 +105,7 @@ private:
 private slots:
     void populate();
     void loadSettings();
+    void saveSettings();
     void setDefaultAction(QComboBox *box, int action);
     void setDefaultAction(QSpinBox *box, int action);
     void setDefaultAction(QComboBox *box, QString value);
@@ -144,7 +142,6 @@ private slots:
     void sleepWarn();
     void handleBacklightBatteryCheckLower(bool triggered);
     void handleBacklightACCheckHigher(bool triggered);
-    void updatePM();
 };
 
 #endif // DIALOG_H

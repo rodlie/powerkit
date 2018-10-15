@@ -160,6 +160,7 @@ private slots:
     void handleTrayWheel(TrayIcon::WheelAction action);
     void handleDeviceChanged(QString path);
     void handleConfigDialogFinished(int result);
+    void showConfigDialog();
 };
 
 #endif // SYSTRAY_H

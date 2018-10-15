@@ -50,15 +50,6 @@ SysTray::SysTray(QObject *parent)
     , backlightACDisableIfHigher(false)
     , configDialog(0)
 {
-    // setup watcher
-    watcher = new QFileSystemWatcher(this);
-    watcher->addPath(Common::confFile());
-    watcher->addPath(Common::confDir());
-    connect(watcher, SIGNAL(fileChanged(QString)),
-            this, SLOT(handleConfChanged(QString)));
-    connect(watcher, SIGNAL(directoryChanged(QString)),
-            this, SLOT(handleConfChanged(QString)));
-
     // setup tray
     tray = new TrayIcon(this);
     connect(tray,
@@ -163,6 +154,19 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(finished(int)),
             this,
             SLOT(handleConfigDialogFinished(int)));
+
+    // setup watcher
+    watcher = new QFileSystemWatcher(this);
+    watcher->addPath(Common::confDir());
+    watcher->addPath(Common::confFile());
+    connect(watcher,
+            SIGNAL(fileChanged(QString)),
+            this,
+            SLOT(handleConfChanged(QString)));
+    connect(watcher,
+            SIGNAL(directoryChanged(QString)),
+            this,
+            SLOT(handleConfChanged(QString)));
 }
 
 SysTray::~SysTray()
@@ -174,9 +178,7 @@ SysTray::~SysTray()
 void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
-    if (configDialog->isOpen()) { return; }
-    configDialog->start(QString("%1 --config")
-                        .arg(qApp->applicationFilePath()));
+    showConfigDialog();
 }
 
 void SysTray::checkDevices()
@@ -859,6 +861,13 @@ void SysTray::handleConfigDialogFinished(int result)
 {
     Q_UNUSED(result)
     if (configDialog->isOpen()) { configDialog->close(); }
+}
+
+void SysTray::showConfigDialog()
+{
+    if (configDialog->isOpen()) { return; }
+    configDialog->start(QString("%1 --config")
+                        .arg(qApp->applicationFilePath()));
 }
 
 bool TrayIcon::event(QEvent *e)
