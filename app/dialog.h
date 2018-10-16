@@ -52,7 +52,6 @@
 #undef FontChange
 #undef Expose
 
-
 #define DEVICE_UUID Qt::UserRole+1
 #define DEVICE_TYPE Qt::UserRole+2
 #define MAX_WIDTH 150

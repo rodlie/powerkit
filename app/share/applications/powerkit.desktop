@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=PowerKit
-Comment=Power Manager
+Name=PowerKit Configuration
+Comment=Power Manager Configuration
 Icon=ac-adapter
 Exec=powerkit --config
 Terminal=false

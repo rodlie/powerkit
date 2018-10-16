@@ -27,12 +27,9 @@
 #include <QWheelEvent>
 
 #include "common.h"
-//#include "power.h"
-//#include "service.h"
 #include "powermanagement.h"
 #include "screensaver.h"
 #include "screens.h"
-
 #include "powerkit.h"
 
 #include <X11/extensions/scrnsaver.h>
@@ -153,8 +150,6 @@ private slots:
     void handleConfChanged(QString file);
     void disableHibernate();
     void disableSuspend();
-    //void handleResume();
-    //void handleSuspend();
     void handlePrepareForSuspend(bool suspend);
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);

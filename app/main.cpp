@@ -10,9 +10,6 @@
 #include "systray.h"
 #include "dialog.h"
 
-/*#include "upower.h"
-#include "login1.h"
-#include "ckit.h"*/
 #include "powerkit.h"
 
 int main(int argc, char *argv[])
@@ -29,11 +26,6 @@ int main(int argc, char *argv[])
     QString userOpt;
     if (a.arguments().size()>1) { userArg = a.arguments().at(1); }
     if (a.arguments().size()>2) { userOpt = a.arguments().at(2); }
-
-    // trigger system services early
-    /*UPower::hasService();
-    Login1::hasService();
-    CKit::hasService();*/
 
     // console actions
     if (userArg == "--config") { // show config dialog

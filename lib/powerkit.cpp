@@ -23,7 +23,6 @@ PowerKit::PowerKit(QObject *parent) : QObject(parent)
   , wasLidClosed(false)
   , wasOnBattery(false)
 {
-    qDebug() << "start powerkit";
     setup();
     timer.setInterval(TIMEOUT_CHECK);
     connect(&timer, SIGNAL(timeout()),
@@ -33,7 +32,6 @@ PowerKit::PowerKit(QObject *parent) : QObject(parent)
 
 PowerKit::~PowerKit()
 {
-    qDebug() << "end powerkit";
     clearDevices();
 }
 
@@ -50,7 +48,7 @@ bool PowerKit::availableService(const QString &service,
                          path,
                          interface,
                          QDBusConnection::systemBus());
-    qDebug() << "has service?" << iface.isValid() << service << path << interface;
+    //qDebug() << "has service?" << iface.isValid() << service << path << interface;
     if (iface.isValid()) { return true; }
     return false;
 }
@@ -107,7 +105,7 @@ bool PowerKit::availableAction(const PowerKit::PKMethod &method,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call(cmd);
-    qDebug() << "available action?" << cmd << reply << service << path << interface;
+    //qDebug() << "available action?" << cmd << reply << service << path << interface;
     if (reply.arguments().first().toString() == DBUS_OK_REPLY) { return true; }
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
@@ -164,7 +162,7 @@ QString PowerKit::executeAction(const PowerKit::PKAction &action,
     if (backend == PKUPower) { reply = iface.call(cmd); }
     else { reply = iface.call(cmd, true); }
 
-    qDebug() << "execute action?" << cmd << reply << service << path << interface;
+    //qDebug() << "execute action?" << cmd << reply << service << path << interface;
     return reply.errorMessage();
 }
 
@@ -189,13 +187,12 @@ QStringList PowerKit::find()
     foreach (QDBusObjectPath device, objects) {
         result << device.path();
     }
-    qDebug() << "found devices" << result;
+    //qDebug() << "found devices" << result;
     return result;
 }
 
 void PowerKit::setup()
 {
-    qDebug() << "setup";
     QDBusConnection system = QDBusConnection::systemBus();
     if (system.isConnected()) {
         system.connect(UPOWER_SERVICE,
@@ -307,7 +304,7 @@ void PowerKit::deviceAdded(const QDBusObjectPath &obj)
 
 void PowerKit::deviceAdded(const QString &path)
 {
-    qDebug() << "added device" << path;
+    //qDebug() << "added device" << path;
     if (!upower->isValid()) { return; }
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
     emit DeviceWasAdded(path);
@@ -321,7 +318,7 @@ void PowerKit::deviceRemoved(const QDBusObjectPath &obj)
 
 void PowerKit::deviceRemoved(const QString &path)
 {
-    qDebug() << "remove device" << path;
+    //qDebug() << "remove device" << path;
     if (!upower->isValid()) { return; }
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
@@ -364,19 +361,16 @@ void PowerKit::handleDeviceChanged(const QString &device)
 
 void PowerKit::handleResume()
 {
-    qDebug() << "handle resume";
     emit PrepareForSuspend(false);
 }
 
 void PowerKit::handleSuspend()
 {
-    qDebug() << "handle suspend";
     emit PrepareForSuspend(true);
 }
 
 void PowerKit::handlePrepareForSuspend(bool suspend)
 {
-    qDebug() << "handle prepare for suspend" << suspend;
     emit PrepareForSuspend(suspend);
 }
 
@@ -393,22 +387,22 @@ void PowerKit::clearDevices()
 bool PowerKit::HasConsoleKit()
 {
     return availableService(CONSOLEKIT_SERVICE,
-                      CONSOLEKIT_PATH,
-                      CONSOLEKIT_MANAGER);
+                            CONSOLEKIT_PATH,
+                            CONSOLEKIT_MANAGER);
 }
 
 bool PowerKit::HasLogind()
 {
     return availableService(LOGIND_SERVICE,
-                      LOGIND_PATH,
-                      LOGIND_MANAGER);
+                            LOGIND_PATH,
+                            LOGIND_MANAGER);
 }
 
 bool PowerKit::HasUPower()
 {
     return availableService(UPOWER_SERVICE,
-                      UPOWER_PATH,
-                      UPOWER_MANAGER);
+                            UPOWER_PATH,
+                            UPOWER_MANAGER);
 }
 
 bool PowerKit::CanRestart()

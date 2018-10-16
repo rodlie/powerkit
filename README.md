@@ -10,7 +10,7 @@ powerkit is an lightweight desktop independent full featured power manager, orig
    * Implements [org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html)
  * Enables applications to inhibit suspend actions
    * Implements [org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/)
- * (Hybrid)Sleep/Hibernate/Lock screen on lid action
+ * (Hybrid)Sleep/Hibernate/Shutdown/Lock screen on lid action
  * Inhibit lid action if external monitor(s) is connected
  * Automatically suspend ((hybrid)sleep/hibernate)
  * Hibernate/Shutdown on critical battery

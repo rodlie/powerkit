@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QTime>
 #include <QMap>
+#include <QString>
 
 class ScreenSaver : public QObject
 {

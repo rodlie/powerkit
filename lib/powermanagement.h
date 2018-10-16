@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QMap>
 #include <QTime>
+#include <QString>
 
 class PowerManagement : public QObject
 {

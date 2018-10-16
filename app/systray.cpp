@@ -63,24 +63,42 @@ SysTray::SysTray(QObject *parent)
 
     // setup manager
     man = new PowerKit(this);
-    connect(man, SIGNAL(UpdatedDevices()),
-            this, SLOT(checkDevices()));
-    connect(man, SIGNAL(LidClosed()),
-            this, SLOT(handleClosedLid()));
-    connect(man, SIGNAL(LidOpened()),
-            this, SLOT(handleOpenedLid()));
-    connect(man, SIGNAL(SwitchedToBattery()),
-            this, SLOT(handleOnBattery()));
-    connect(man, SIGNAL(SwitchedToAC()),
-            this, SLOT(handleOnAC()));
-    connect(man, SIGNAL(PrepareForSuspend(bool)),
-            this, SLOT(handlePrepareForSuspend(bool)));
-    connect(man, SIGNAL(DeviceWasAdded(QString)),
-            this, SLOT(handleDeviceChanged(QString)));
-    connect(man, SIGNAL(DeviceWasRemoved(QString)),
-            this, SLOT(handleDeviceChanged(QString)));
-    connect(man, SIGNAL(Update()),
-            this, SLOT(loadSettings()));
+    connect(man,
+            SIGNAL(UpdatedDevices()),
+            this,
+            SLOT(checkDevices()));
+    connect(man,
+            SIGNAL(LidClosed()),
+            this,
+            SLOT(handleClosedLid()));
+    connect(man,
+            SIGNAL(LidOpened()),
+            this,
+            SLOT(handleOpenedLid()));
+    connect(man,
+            SIGNAL(SwitchedToBattery()),
+            this,
+            SLOT(handleOnBattery()));
+    connect(man,
+            SIGNAL(SwitchedToAC()),
+            this,
+            SLOT(handleOnAC()));
+    connect(man,
+            SIGNAL(PrepareForSuspend(bool)),
+            this,
+            SLOT(handlePrepareForSuspend(bool)));
+    connect(man,
+            SIGNAL(DeviceWasAdded(QString)),
+            this,
+            SLOT(handleDeviceChanged(QString)));
+    connect(man,
+            SIGNAL(DeviceWasRemoved(QString)),
+            this,
+            SLOT(handleDeviceChanged(QString)));
+    connect(man,
+            SIGNAL(Update()),
+            this,
+            SLOT(loadSettings()));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement(this);
@@ -183,8 +201,6 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void SysTray::checkDevices()
 {
-    qDebug() << "systray check devices ...";
-
     // show/hide tray
     if (tray->isSystemTrayAvailable() &&
         !tray->isVisible() &&
@@ -598,6 +614,7 @@ void SysTray::timeout()
         showTray) { tray->show(); }
 
     int uIdle = xIdle();
+
     qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit() << pmInhibitors << ssInhibitors;
 
     int autoSuspend = 0;
@@ -801,23 +818,6 @@ void SysTray::disableSuspend()
     }
 }
 
-/*void SysTray::handleResume()
-{
-    qDebug() << "resume";
-    man->LockScreen();
-    tray->showMessage(QString(), QString());
-    man->Update();
-    resetTimer();
-    ss->SimulateUserActivity();
-}
-
-void SysTray::handleSuspend()
-{
-    qDebug() << "suspend";
-    man->LockScreen();
-    resetTimer();
-}*/
-
 void SysTray::handlePrepareForSuspend(bool suspend)
 {
     qDebug() << "system prepare for suspend/resume" << suspend;
@@ -858,7 +858,7 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 
 void SysTray::handleDeviceChanged(QString path)
 {
-    qDebug() << "device changed, check" << path;
+    Q_UNUSED(path)
     checkDevices();
 }
 

@@ -12,7 +12,6 @@
 #include <QMap>
 #include <QString>
 
-//#include "common.h"
 #include <X11/extensions/Xrandr.h>
 
 class Screens

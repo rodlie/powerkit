@@ -10,6 +10,7 @@
 #define COMMON_H
 
 #include <QVariant>
+#include <QString>
 
 class Common
 {
