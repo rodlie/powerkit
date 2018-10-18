@@ -114,6 +114,14 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(removedInhibit(quint32)),
             this,
             SLOT(handleDelInhibitPowerManagement(quint32)));
+    connect(pm,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            man,
+            SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
+    connect(pm,
+            SIGNAL(removedInhibit(quint32)),
+            man,
+            SLOT(handleDelInhibitPowerManagement(quint32)));
 
     // setup org.freedesktop.ScreenSaver
     ss = new ScreenSaver(this);
@@ -124,6 +132,14 @@ SysTray::SysTray(QObject *parent)
     connect(ss,
             SIGNAL(removedInhibit(quint32)),
             this,
+            SLOT(handleDelInhibitScreenSaver(quint32)));
+    connect(ss,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            man,
+            SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
+    connect(ss,
+            SIGNAL(removedInhibit(quint32)),
+            man,
             SLOT(handleDelInhibitScreenSaver(quint32)));
 
     // setup xscreensaver
@@ -208,24 +224,59 @@ void SysTray::checkDevices()
         tray->isVisible()) { tray->hide(); }
 
     // warn if systray has no icons
-    if (tray->isVisible() && (QIcon::themeName().isEmpty() ||
+    /*if (tray->isVisible() && (QIcon::themeName().isEmpty() ||
         QIcon::themeName() == "hicolor")) {
         showMessage(tr("No icon theme found!"),
                     tr("Unable to find any icon theme,"
                        " please install a theme and restart powerkit."),
                     true);
-    }
+    }*/
 
     // get battery left and add tooltip
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
     if (batteryLeft > 0) {
         tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
+        if (man->TimeToEmpty()>0 && man->OnBattery()) {
+            tray->setToolTip(tray->toolTip()
+                             .append(tr(", %1 left")
+                             .arg(QDateTime::fromTime_t(man->TimeToEmpty())
+                                                        .toUTC().toString("hh:mm"))));
+        }
         if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
         if (!man->OnBattery() &&
-            man->BatteryLeft() <= 99)
-        { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
+            man->BatteryLeft() <= 99) {
+            if (man->TimeToFull()>0) {
+                tray->setToolTip(tray->toolTip()
+                                 .append(tr(", %1 left")
+                                 .arg(QDateTime::fromTime_t(man->TimeToFull())
+                                                            .toUTC().toString("hh:mm"))));
+            }
+            tray->setToolTip(tray->toolTip().append(tr(" (Charging)")));
+        }
     } else { tray->setToolTip(tr("On AC")); }
+
+    // inhibitors tooltip
+    if (ssInhibitors.size()>0) {
+        QString tooltip = "\n\n";
+        tooltip.append(tr("Screen Saver Inhibitors:\n\n"));
+        QMapIterator<quint32, QString> i(ssInhibitors);
+        while (i.hasNext()) {
+            i.next();
+            tooltip.append(QString(" * %1\n").arg(i.value()));
+        }
+        tray->setToolTip(tray->toolTip().append(tooltip));
+    }
+    if (pmInhibitors.size()>0) {
+        QString tooltip = "\n\n";
+        tooltip.append(tr("Power Manager Inhibitors:\n\n"));
+        QMapIterator<quint32, QString> i(pmInhibitors);
+        while (i.hasNext()) {
+            i.next();
+            tooltip.append(QString(" * %1\n").arg(i.value()));
+        }
+        tray->setToolTip(tray->toolTip().append(tooltip));
+    }
 
     // draw battery systray
     drawBattery(batteryLeft);
@@ -716,6 +767,7 @@ void SysTray::handleNewInhibitScreenSaver(QString application, QString reason, q
     qDebug() << "new screensaver inhibit" << application << reason << cookie;
     Q_UNUSED(reason)
     ssInhibitors[cookie] = application;
+    checkDevices();
 }
 
 void SysTray::handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie)
@@ -723,6 +775,7 @@ void SysTray::handleNewInhibitPowerManagement(QString application, QString reaso
     qDebug() << "new powermanagement inhibit" << application << reason << cookie;
     Q_UNUSED(reason)
     pmInhibitors[cookie] = application;
+    checkDevices();
 }
 
 void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
@@ -730,6 +783,7 @@ void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
     if (ssInhibitors.contains(cookie)) {
         qDebug() << "removed screensaver inhibitor" << ssInhibitors[cookie];
         ssInhibitors.remove(cookie);
+        checkDevices();
     }
 }
 
@@ -738,6 +792,7 @@ void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
     if (pmInhibitors.contains(cookie)) {
         qDebug() << "removed powermanagement inhibitor" << pmInhibitors[cookie];
         pmInhibitors.remove(cookie);
+        checkDevices();
     }
 }
 
