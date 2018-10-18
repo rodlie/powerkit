@@ -154,7 +154,6 @@ SysTray::SysTray(QObject *parent)
 
     // start xscreensaver
     if (desktopSS) {
-        qDebug() << "run xscreensaver";
         xscreensaver->start(XSCREENSAVER_RUN);
     }
 
@@ -423,7 +422,7 @@ void SysTray::loadSettings()
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
 
-    qDebug() << "==>" << CONF_LID_XRANDR << lidXrandr;
+    /*qDebug() << "==>" << CONF_LID_XRANDR << lidXrandr;
     qDebug() << "==>" << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
     qDebug() << "==>" << CONF_TRAY_SHOW << showTray;
     qDebug() << "==>" << CONF_TRAY_NOTIFY << showNotifications;
@@ -442,7 +441,7 @@ void SysTray::loadSettings()
     qDebug() << "==>" << CONF_BACKLIGHT_BATTERY << backlightBatteryValue;
     qDebug() << "==>" << CONF_BACKLIGHT_BATTERY_ENABLE << backlightOnBattery;
     qDebug() << "==>" << CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER << backlightBatteryDisableIfLower;
-    qDebug() << "==>" << CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER << backlightACDisableIfHigher;
+    qDebug() << "==>" << CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER << backlightACDisableIfHigher;*/
 }
 
 // register session services
@@ -552,10 +551,6 @@ void SysTray::handleCritical(double left)
         left>(double)critBatteryValue ||
         !man->OnBattery()) { return; }
     qDebug() << "critical battery!" << criticalAction << left;
-    showMessage(tr("Critical Battery! (%1%)").arg(left),
-                tr("The battery is critical,"
-                   " running critical action."),
-                true);
     switch(criticalAction) {
     case criticalHibernate:
         man->Hibernate();
@@ -818,6 +813,7 @@ void SysTray::disableSuspend()
     }
 }
 
+// prepare for suspend or resume
 void SysTray::handlePrepareForSuspend(bool suspend)
 {
     qDebug() << "system prepare for suspend/resume" << suspend;
@@ -830,6 +826,8 @@ void SysTray::handlePrepareForSuspend(bool suspend)
     }
 }
 
+// turn off/on monitor using xrandr
+// optional "hidden" feature (should be handled by a display manager)
 void SysTray::switchInternalMonitor(bool toggle)
 {
     if (!lidXrandr) { return; }
@@ -840,6 +838,7 @@ void SysTray::switchInternalMonitor(bool toggle)
     xrandr.close();
 }
 
+// adjust backlight on wheel event (on systray)
 void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 {
     if (!hasBacklight) { return; }
@@ -856,18 +855,21 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
     }
 }
 
+// check devices if changed
 void SysTray::handleDeviceChanged(QString path)
 {
     Q_UNUSED(path)
     checkDevices();
 }
 
+// close dialog proc if open
 void SysTray::handleConfigDialogFinished(int result)
 {
     Q_UNUSED(result)
     if (configDialog->isOpen()) { configDialog->close(); }
 }
 
+// start dialog proc
 void SysTray::showConfigDialog()
 {
     if (configDialog->isOpen()) { return; }
@@ -875,6 +877,7 @@ void SysTray::showConfigDialog()
                         .arg(qApp->applicationFilePath()));
 }
 
+// catch wheel events
 bool TrayIcon::event(QEvent *e)
 {
     if (e->type() == QEvent::Wheel) {

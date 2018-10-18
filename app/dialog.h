@@ -83,7 +83,7 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
-    QCheckBox *lidXrandr;
+    //QCheckBox *lidXrandr;
     QString backlightDevice;
     bool hasBacklight;
     QSlider *backlightSlider;
@@ -116,7 +116,7 @@ private slots:
     void handleAutoSleepAC(int value);
     void handleDesktopSS(bool triggered);
     void handleDesktopPM(bool triggered);
-    void handleLidXrandr(bool triggered);
+    //void handleLidXrandr(bool triggered);
     void handleShowNotifications(bool triggered);
     void handleShowSystemTray(bool triggered);
     void handleDisableLidAction(bool triggered);

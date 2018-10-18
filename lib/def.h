@@ -47,7 +47,7 @@ enum criticalAction
 
 #define VIRTUAL_MONITOR "VIRTUAL"
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
-#define TURN_ON_MONITOR "xrandr --output %1 --preferred " //--auto"
+#define TURN_ON_MONITOR "xrandr --output %1 --auto "
 #define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
 
 #define LID_BATTERY_DEFAULT lidSleep

@@ -162,7 +162,6 @@ QString PowerKit::executeAction(const PowerKit::PKAction &action,
     if (backend == PKUPower) { reply = iface.call(cmd); }
     else { reply = iface.call(cmd, true); }
 
-    //qDebug() << "execute action?" << cmd << reply << service << path << interface;
     return reply.errorMessage();
 }
 
@@ -187,7 +186,6 @@ QStringList PowerKit::find()
     foreach (QDBusObjectPath device, objects) {
         result << device.path();
     }
-    //qDebug() << "found devices" << result;
     return result;
 }
 
@@ -304,7 +302,6 @@ void PowerKit::deviceAdded(const QDBusObjectPath &obj)
 
 void PowerKit::deviceAdded(const QString &path)
 {
-    //qDebug() << "added device" << path;
     if (!upower->isValid()) { return; }
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
     emit DeviceWasAdded(path);
@@ -318,7 +315,6 @@ void PowerKit::deviceRemoved(const QDBusObjectPath &obj)
 
 void PowerKit::deviceRemoved(const QString &path)
 {
-    //qDebug() << "remove device" << path;
     if (!upower->isValid()) { return; }
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }

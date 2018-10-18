@@ -103,7 +103,6 @@ powerkit requires the following dependencies to work:
  * [ConsoleKit](https://www.freedesktop.org/wiki/Software/ConsoleKit/) (or logind)
  * [UPower](https://upower.freedesktop.org/) 0.9.23(+)
  * [XScreenSaver](https://www.jwz.org/xscreensaver/)
- * [xrandr](https://www.x.org/archive/current/doc/man/man1/xrandr.1.xhtml)
  * [adwaita-icon-theme](https://github.com/GNOME/adwaita-icon-theme) (or similar)
 
 ### Icons

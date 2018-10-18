@@ -28,7 +28,7 @@ Dialog::Dialog(QWidget *parent)
     , sleepButton(0)
     , hibernateButton(0)
     , poweroffButton(0)
-    , lidXrandr(0)
+//    , lidXrandr(0)
     , hasBacklight(false)
     , backlightSlider(0)
     , backlightWatcher(0)
@@ -348,10 +348,10 @@ Dialog::Dialog(QWidget *parent)
     desktopPM->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
     desktopPM->setText("org.freedesktop.PowerManagement");
 
-    lidXrandr = new QCheckBox(this);
+    /*lidXrandr = new QCheckBox(this);
     lidXrandr->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
     lidXrandr->setText(tr("Switch internal monitor on/off"
-                          "\nwith xrandr if lid action disabled"));
+                          "\nwith xrandr if lid action disabled"));*/
 
     disableLidAction = new QCheckBox(this);
     disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
@@ -364,7 +364,7 @@ Dialog::Dialog(QWidget *parent)
     advContainerLayout->addWidget(desktopSS);
     advContainerLayout->addWidget(desktopPM);
     advContainerLayout->addWidget(disableLidAction);
-    advContainerLayout->addWidget(lidXrandr);
+    //advContainerLayout->addWidget(lidXrandr);
     advContainerLayout->addStretch();
 
     // extra
@@ -525,8 +525,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleAutoSleepBatteryAction(int)));
     connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
             this, SLOT(handleAutoSleepACAction(int)));
-    connect(lidXrandr, SIGNAL(toggled(bool)),
-            this, SLOT(handleLidXrandr(bool)));
+    /*connect(lidXrandr, SIGNAL(toggled(bool)),
+            this, SLOT(handleLidXrandr(bool)));*/
     connect(backlightSlider, SIGNAL(valueChanged(int)),
             this, SLOT(handleBacklightSlider(int)));
     connect(backlightWatcher, SIGNAL(fileChanged(QString)),
@@ -688,11 +688,11 @@ void Dialog::loadSettings()
     }
     desktopPM->setChecked(defaultDesktopPM);
 
-    bool defaultLidXrandr = false;
+    /*bool defaultLidXrandr = false;
     if (Common::validPowerSettings(CONF_LID_XRANDR)) {
         defaultLidXrandr = Common::loadPowerSettings(CONF_LID_XRANDR).toBool();
     }
-    lidXrandr->setChecked(defaultLidXrandr);
+    lidXrandr->setChecked(defaultLidXrandr);*/
 
     bool defaultShowNotifications = true;
     if (Common::validPowerSettings(CONF_TRAY_NOTIFY)) {
@@ -786,8 +786,8 @@ void Dialog::saveSettings()
                               desktopSS->isChecked());
     Common::savePowerSettings(CONF_FREEDESKTOP_PM,
                               desktopPM->isChecked());
-    Common::savePowerSettings(CONF_LID_XRANDR,
-                              lidXrandr->isChecked());
+    //Common::savePowerSettings(CONF_LID_XRANDR,
+                              //lidXrandr->isChecked());
     Common::savePowerSettings(CONF_TRAY_NOTIFY,
                               showNotifications->isChecked());
     Common::savePowerSettings(CONF_TRAY_SHOW,
@@ -892,10 +892,10 @@ void Dialog::handleDesktopPM(bool triggered)
     // TODO: add restart now?
 }
 
-void Dialog::handleLidXrandr(bool triggered)
+/*void Dialog::handleLidXrandr(bool triggered)
 {
     Common::savePowerSettings(CONF_LID_XRANDR, triggered);
-}
+}*/
 
 void Dialog::handleShowNotifications(bool triggered)
 {
@@ -909,9 +909,9 @@ void Dialog::handleShowSystemTray(bool triggered)
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
-    if (triggered && !lidXrandr->isEnabled()) {
+    /*if (triggered && !lidXrandr->isEnabled()) {
         lidXrandr->setEnabled(true);
-    } else { lidXrandr->setDisabled(true); }
+    } else { lidXrandr->setDisabled(true); }*/
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
 }
 
@@ -1074,7 +1074,7 @@ void Dialog::checkDevices()
     QMapIterator<QString, Device*> i(man->getDevices());
     while (i.hasNext()) {
         i.next();
-        qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
+        //qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
         QString uid = i.value()->path;
         if (!i.value()->isPresent) {
             if (deviceExists(uid)) { deviceRemove(uid); }
