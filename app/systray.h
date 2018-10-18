@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -27,11 +27,10 @@
 #include <QWheelEvent>
 
 #include "common.h"
-#include "power.h"
-#include "service.h"
 #include "powermanagement.h"
 #include "screensaver.h"
 #include "screens.h"
+#include "powerkit.h"
 
 #include <X11/extensions/scrnsaver.h>
 #undef CursorShape
@@ -78,10 +77,9 @@ public:
 
 private:
     TrayIcon *tray;
-    Power *man;
+    PowerKit *man;
     PowerManagement *pm;
     ScreenSaver *ss;
-    PowerDwarf *pd;
     bool wasLowBattery;
     bool wasVeryLowBattery;
     int lowBatteryValue;
@@ -115,6 +113,9 @@ private:
     bool backlightOnAC;
     int backlightBatteryValue;
     int backlightACValue;
+    bool backlightBatteryDisableIfLower;
+    bool backlightACDisableIfHigher;
+    QProcess *configDialog;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -149,11 +150,12 @@ private slots:
     void handleConfChanged(QString file);
     void disableHibernate();
     void disableSuspend();
-    void handleResume();
-    void handleSuspend();
+    void handlePrepareForSuspend(bool suspend);
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
     void handleDeviceChanged(QString path);
+    void handleConfigDialogFinished(int result);
+    void showConfigDialog();
 };
 
 #endif // SYSTRAY_H

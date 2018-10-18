@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -19,22 +19,24 @@
 
 #include "def.h"
 
+#define PK "powerkit"
+
 void Common::savePowerSettings(QString type, QVariant value)
 {
-    QSettings settings(PD, PD);
+    QSettings settings(PK, PK);
     settings.setValue(type, value);
     settings.sync();
 }
 
 QVariant Common::loadPowerSettings(QString type)
 {
-    QSettings settings(PD, PD);
+    QSettings settings(PK, PK);
     return settings.value(type);
 }
 
 bool Common::validPowerSettings(QString type)
 {
-    QSettings settings(PD, PD);
+    QSettings settings(PK, PK);
     return settings.value(type).isValid();
 }
 
@@ -70,6 +72,8 @@ void Common::setIconTheme()
         if(theme.isNull()) {
             qDebug() << "checking for icon theme in static fallback";
             QStringList themes;
+            themes << QString("%1/../share/icons/Humanity").arg(qApp->applicationFilePath());
+            themes << "/usr/share/icons/Humanity" << "/usr/local/share/icons/Humanity";
             themes << QString("%1/../share/icons/Adwaita").arg(qApp->applicationFilePath());
             themes << "/usr/share/icons/Adwaita" << "/usr/local/share/icons/Adwaita";
             themes << QString("%1/../share/icons/gnome").arg(qApp->applicationFilePath());
@@ -99,19 +103,30 @@ void Common::setIconTheme()
 
 QString Common::confFile()
 {
-    return QString("%1/.config/powerdwarf/powerdwarf.conf").arg(QDir::homePath());
+    QString config = QString("%1/.config/powerkit/powerkit.conf")
+                     .arg(QDir::homePath());
+    if (!QFile::exists(config)) {
+        QFile conf(config);
+        if (conf.open(QIODevice::WriteOnly)) { conf.close(); }
+    }
+    return config;
 }
 
 QString Common::confDir()
 {
-    return QString("%1/.config/powerdwarf").arg(QDir::homePath());
+    QString config = QString("%1/.config/powerkit").arg(QDir::homePath());
+    if (!QFile::exists(config)) {
+        QDir dir(config);
+        dir.mkpath(config);
+    }
+    return config;
 }
 
 bool Common::kernelCanResume()
 {
 #ifdef __FreeBSD__
     // ???
-    return true;
+    return false;
 #endif
     QFile cmdline("/proc/cmdline");
     if (cmdline.open(QIODevice::ReadOnly)) {

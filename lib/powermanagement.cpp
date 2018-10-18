@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -14,7 +14,7 @@
 
 #include "def.h"
 
-PowerManagement::PowerManagement()
+PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
 {
     timer.setInterval(PM_TIMEOUT);
     connect(&timer, SIGNAL(timeout()), this, SLOT(timeOut()));

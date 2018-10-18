@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -38,8 +38,7 @@
 
 #include "def.h"
 #include "common.h"
-#include "upower.h"
-#include "power.h"
+#include "powerkit.h"
 
 // fix X11 inc
 #undef CursorShape
@@ -53,9 +52,9 @@
 #undef FontChange
 #undef Expose
 
-
 #define DEVICE_UUID Qt::UserRole+1
 #define DEVICE_TYPE Qt::UserRole+2
+#define MAX_WIDTH 150
 
 class Dialog : public QDialog
 {
@@ -64,9 +63,6 @@ class Dialog : public QDialog
 public:
    explicit Dialog(QWidget *parent = NULL);
    ~Dialog();
-
-signals:
-    void refresh();
 
 private:
     QDBusInterface *dbus;
@@ -87,12 +83,12 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
-    QCheckBox *lidXrandr;
+    //QCheckBox *lidXrandr;
     QString backlightDevice;
     bool hasBacklight;
     QSlider *backlightSlider;
     QFileSystemWatcher *backlightWatcher;
-    Power *man;
+    PowerKit *man;
     QLabel *batteryIcon;
     QLabel *batteryLabel;
     QTreeWidget *deviceTree;
@@ -102,11 +98,13 @@ private:
     QSlider *backlightSliderAC;
     QCheckBox *backlightBatteryCheck;
     QCheckBox *backlightACCheck;
-    QGroupBox *backlightContainer;
+    QCheckBox *backlightBatteryLowerCheck;
+    QCheckBox *backlightACHigherCheck;
 
 private slots:
     void populate();
     void loadSettings();
+    void saveSettings();
     void setDefaultAction(QComboBox *box, int action);
     void setDefaultAction(QSpinBox *box, int action);
     void setDefaultAction(QComboBox *box, QString value);
@@ -118,7 +116,7 @@ private slots:
     void handleAutoSleepAC(int value);
     void handleDesktopSS(bool triggered);
     void handleDesktopPM(bool triggered);
-    void handleLidXrandr(bool triggered);
+    //void handleLidXrandr(bool triggered);
     void handleShowNotifications(bool triggered);
     void handleShowSystemTray(bool triggered);
     void handleDisableLidAction(bool triggered);
@@ -139,6 +137,10 @@ private slots:
     void handleBacklightACCheck(bool triggered);
     void handleBacklightBatterySlider(int value);
     void handleBacklightACSlider(int value);
+    void hibernateWarn();
+    void sleepWarn();
+    void handleBacklightBatteryCheckLower(bool triggered);
+    void handleBacklightACCheckHigher(bool triggered);
 };
 
 #endif // DIALOG_H

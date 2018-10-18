@@ -1,5 +1,5 @@
 /*
-# powerdwarf <https://github.com/rodlie/powerdwarf>
+# PowerKit <https://github.com/rodlie/powerkit>
 # Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
 #
 # Available under the 3-clause BSD license
@@ -13,13 +13,14 @@
 #include <QTimer>
 #include <QTime>
 #include <QMap>
+#include <QString>
 
 class ScreenSaver : public QObject
 {
     Q_OBJECT
 
 public:
-    explicit ScreenSaver();
+    explicit ScreenSaver(QObject *parent = NULL);
 
 private:
     QTimer timer;
