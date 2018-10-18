@@ -380,6 +380,36 @@ void PowerKit::clearDevices()
     devices.clear();
 }
 
+void PowerKit::handleNewInhibitScreenSaver(const QString &application, const QString &reason, quint32 cookie)
+{
+    Q_UNUSED(reason)
+    ssInhibitors[cookie] = application;
+    emit UpdatedInhibitors();
+}
+
+void PowerKit::handleNewInhibitPowerManagement(const QString &application, const QString &reason, quint32 cookie)
+{
+    Q_UNUSED(reason)
+    pmInhibitors[cookie] = application;
+    emit UpdatedInhibitors();
+}
+
+void PowerKit::handleDelInhibitScreenSaver(quint32 cookie)
+{
+    if (ssInhibitors.contains(cookie)) {
+        ssInhibitors.remove(cookie);
+        emit UpdatedInhibitors();
+    }
+}
+
+void PowerKit::handleDelInhibitPowerManagement(quint32 cookie)
+{
+    if (pmInhibitors.contains(cookie)) {
+        pmInhibitors.remove(cookie);
+        emit UpdatedInhibitors();
+    }
+}
+
 bool PowerKit::HasConsoleKit()
 {
     return availableService(CONSOLEKIT_SERVICE,
@@ -624,4 +654,26 @@ void PowerKit::UpdateBattery()
 void PowerKit::UpdateConfig()
 {
     emit Update();
+}
+
+QStringList PowerKit::ScreenSaverInhibitors()
+{
+    QStringList result;
+    QMapIterator<quint32, QString> i(ssInhibitors);
+    while (i.hasNext()) {
+        i.next();
+        result << i.value();
+    }
+    return result;
+}
+
+QStringList PowerKit::PowerManagementInhibitors()
+{
+    QStringList result;
+    QMapIterator<quint32, QString> i(pmInhibitors);
+    while (i.hasNext()) {
+        i.next();
+        result << i.value();
+    }
+    return result;
 }
