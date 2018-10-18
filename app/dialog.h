@@ -100,6 +100,7 @@ private:
     QCheckBox *backlightACCheck;
     QCheckBox *backlightBatteryLowerCheck;
     QCheckBox *backlightACHigherCheck;
+    QTreeWidget *inhibitorTree;
 
 private slots:
     void populate();
@@ -141,6 +142,8 @@ private slots:
     void sleepWarn();
     void handleBacklightBatteryCheckLower(bool triggered);
     void handleBacklightACCheckHigher(bool triggered);
+    void handleUpdatedInhibitors();
+    void getInhibitors();
 };
 
 #endif // DIALOG_H

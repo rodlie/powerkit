@@ -43,6 +43,7 @@ Dialog::Dialog(QWidget *parent)
     , backlightACCheck(0)
     , backlightBatteryLowerCheck(0)
     , backlightACHigherCheck(0)
+    , inhibitorTree(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -53,6 +54,12 @@ Dialog::Dialog(QWidget *parent)
     QDBusConnection session = QDBusConnection::sessionBus();
     dbus = new QDBusInterface(POWERKIT_SERVICE, POWERKIT_PATH, POWERKIT_SERVICE,
                               session, this);
+    session.connect(dbus->service(),
+                   dbus->path(),
+                   dbus->service(),
+                   "UpdatedInhibitors",
+                   this,
+                   SLOT(handleUpdatedInhibitors()));
 
     // setup powerkit
     man = new PowerKit(this);
@@ -361,9 +368,9 @@ Dialog::Dialog(QWidget *parent)
     // add widgets to advanced
     advContainerLayout->addWidget(showSystemTray);
     advContainerLayout->addWidget(showNotifications);
+    advContainerLayout->addWidget(disableLidAction);
     advContainerLayout->addWidget(desktopSS);
     advContainerLayout->addWidget(desktopPM);
-    advContainerLayout->addWidget(disableLidAction);
     //advContainerLayout->addWidget(lidXrandr);
     advContainerLayout->addStretch();
 
@@ -420,6 +427,7 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addWidget(hibernateButton);
     extraContainerLayout->addWidget(poweroffButton);
 
+    // status
     QWidget *statusContainer = new QWidget(this);
     QVBoxLayout *statusContainerLayout = new QVBoxLayout(statusContainer);
 
@@ -480,12 +488,20 @@ Dialog::Dialog(QWidget *parent)
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
 
+    // inhibitors
+    inhibitorTree = new QTreeWidget(this);
+    inhibitorTree->setHeaderHidden(true);
+
+    // add tabs
     containerWidget->addTab(statusContainer,
                             QIcon::fromTheme(DEFAULT_INFO_ICON),
                             tr("Status"));
     containerWidget->addTab(settingsContainerArea,
                             QIcon::fromTheme(DEFAULT_BATTERY_ICON),
                             tr("Settings"));
+    containerWidget->addTab(inhibitorTree,
+                            QIcon::fromTheme(DEFAULT_VIDEO_ICON),
+                            tr("Inhibitors"));
 
     populate(); // populate boxes
     loadSettings(); // load settings
@@ -766,6 +782,9 @@ void Dialog::loadSettings()
 
     // check devices
     checkDevices();
+
+    // check inhibitors
+    getInhibitors();
 }
 
 void Dialog::saveSettings()
@@ -1183,4 +1202,33 @@ void Dialog::handleBacklightBatteryCheckLower(bool triggered)
 void Dialog::handleBacklightACCheckHigher(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
+}
+
+void Dialog::handleUpdatedInhibitors()
+{
+    getInhibitors();
+}
+
+void Dialog::getInhibitors()
+{
+    if (!dbus->isValid()) { return; }
+    inhibitorTree->clear();
+    QDBusMessage replySS =  dbus->call("ScreenSaverInhibitors");
+    QDBusMessage replyPM =  dbus->call("PowerManagementInhibitors");
+    QStringList ssList = replySS.arguments().last().toStringList();
+    QStringList pmList = replyPM.arguments().last().toStringList();
+    for (int i=0;i<ssList.size();++i) {
+        QString inhibitor = ssList.at(i);
+        if (inhibitor.isEmpty()) { continue; }
+        QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
+        item->setText(0,inhibitor);
+        item->setIcon(0, QIcon::fromTheme("application-x-executable"));
+    }
+    for (int i=0;i<pmList.size();++i) {
+        QString inhibitor = pmList.at(i);
+        if (inhibitor.isEmpty()) { continue; }
+        QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
+        item->setText(0,inhibitor);
+        item->setIcon(0, QIcon::fromTheme("application-x-executable"));
+    }
 }
