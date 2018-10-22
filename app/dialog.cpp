@@ -1067,28 +1067,15 @@ void Dialog::updateBacklight(QString file)
 
 void Dialog::checkDevices()
 {
-    QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
     double left = man->BatteryLeft();
-    if (left<= 10) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left<=25) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left<=75) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left<=90) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
-    } else {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left>=100 && !man->OnBattery()) {
-            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-            batteryLeftLCD->display("00:00");
-        }
-    }
 
-    batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
     batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
-    batteryLeftLCD->display(QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
-                            .toUTC().toString("hh:mm"));
+    if (man->HasBattery()) {
+        batteryLeftLCD->display(QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
+                                .toUTC().toString("hh:mm"));
+    } else {
+        batteryLeftLCD->display("00:00");
+    }
 
     QMapIterator<QString, Device*> i(man->getDevices());
     while (i.hasNext()) {
@@ -1125,6 +1112,27 @@ void Dialog::checkDevices()
             devicesProg[i.value()->path]->setValue(i.value()->percentage);
         }
     }
+
+    QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+    if (left <=0 || !man->HasBattery()) {
+        batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
+        return;
+    }
+    if (left<= 10) {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
+    } else if (left<=25) {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
+    } else if (left<=75) {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
+    } else if (left<=90) {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
+    } else {
+        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
+        if (left>=100 && !man->OnBattery()) {
+            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+        }
+    }
+    batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
 }
 
 bool Dialog::deviceExists(QString uid)

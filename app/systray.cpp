@@ -235,7 +235,7 @@ void SysTray::checkDevices()
     // get battery left and add tooltip
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
-    if (batteryLeft > 0) {
+    if (batteryLeft > 0 && man->HasBattery()) {
         tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
         if (man->TimeToEmpty()>0 && man->OnBattery()) {
             tray->setToolTip(tray->toolTip()
@@ -625,9 +625,8 @@ void SysTray::drawBattery(double left)
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
-    if (left == 0.0) {
-        icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+    QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+    if (left <=0 || !man->HasBattery()) {
         tray->setIcon(icon);
         return;
     }
