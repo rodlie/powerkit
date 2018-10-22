@@ -730,7 +730,8 @@ void Dialog::loadSettings()
 
     // power actions
     sleepButton->setEnabled(man->CanSuspend());
-    hibernateButton->setEnabled(man->CanHibernate());
+    hibernateButton->setEnabled(man->CanHibernate() &&
+                                Common::kernelCanResume());
     poweroffButton->setEnabled(man->CanPowerOff());
 
     checkPerms();
