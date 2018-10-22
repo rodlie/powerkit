@@ -780,6 +780,7 @@ void Dialog::loadSettings()
         backlightACHigherCheck->setChecked(
                     Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER).toBool());
     }
+    enableBacklight(hasBacklight);
 
     // check devices
     checkDevices();
@@ -1234,6 +1235,7 @@ void Dialog::getInhibitors()
         if (inhibitor.isEmpty()) { continue; }
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
         item->setText(0,inhibitor);
+        item->setFlags(Qt::ItemIsEnabled);
         item->setIcon(0, QIcon::fromTheme("application-x-executable"));
     }
     for (int i=0;i<pmList.size();++i) {
@@ -1241,6 +1243,18 @@ void Dialog::getInhibitors()
         if (inhibitor.isEmpty()) { continue; }
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
         item->setText(0,inhibitor);
+        item->setFlags(Qt::ItemIsEnabled);
         item->setIcon(0, QIcon::fromTheme("application-x-executable"));
     }
+}
+
+void Dialog::enableBacklight(bool enabled)
+{
+    backlightSlider->setEnabled(enabled);
+    backlightSliderBattery->setEnabled(enabled);
+    backlightSliderAC->setEnabled(enabled);
+    backlightBatteryCheck->setEnabled(enabled);
+    backlightACCheck->setEnabled(enabled);
+    backlightBatteryLowerCheck->setEnabled(enabled);
+    backlightACHigherCheck->setEnabled(enabled);
 }

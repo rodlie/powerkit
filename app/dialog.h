@@ -144,6 +144,7 @@ private slots:
     void handleBacklightACCheckHigher(bool triggered);
     void handleUpdatedInhibitors();
     void getInhibitors();
+    void enableBacklight(bool enabled);
 };
 
 #endif // DIALOG_H
