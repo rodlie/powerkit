@@ -1068,13 +1068,16 @@ void Dialog::updateBacklight(QString file)
 void Dialog::checkDevices()
 {
     double left = man->BatteryLeft();
+    if (left<0) { left = 0; }
+    if (left>100) { left = 100; }
 
-    batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
     if (man->HasBattery()) {
         batteryLeftLCD->display(QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
                                 .toUTC().toString("hh:mm"));
+        batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
     } else {
         batteryLeftLCD->display("00:00");
+        batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">AC</h1>"));
     }
 
     QMapIterator<QString, Device*> i(man->getDevices());
