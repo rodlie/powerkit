@@ -52,7 +52,9 @@ Dialog::Dialog(QWidget *parent)
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
-    dbus = new QDBusInterface(POWERKIT_SERVICE, POWERKIT_PATH, POWERKIT_SERVICE,
+    dbus = new QDBusInterface(POWERKIT_SERVICE,
+                              POWERKIT_PATH,
+                              POWERKIT_SERVICE,
                               session, this);
     session.connect(dbus->service(),
                    dbus->path(),
@@ -104,7 +106,9 @@ Dialog::Dialog(QWidget *parent)
     lidActionBatteryIcon->setMinimumSize(48, 48);
     lidActionBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON)
                                     .pixmap(QSize(48, 48)));
-    lidActionBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
+    lidActionBatteryLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                                   .arg(tr("Lid action")));
+    lidActionBatteryLabel->setToolTip(tr("What to do when the lid is closed and running on battery."));
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
     lidActionBatteryContainerLayout->addStretch();
@@ -137,7 +141,9 @@ Dialog::Dialog(QWidget *parent)
     criticalBatteryIcon->setMinimumSize(48, 48);
     criticalBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT)
                                    .pixmap(QSize(48, 48)));
-    criticalBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Critical battery</h3>"));
+    criticalBatteryLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                                  .arg(tr("Critical battery")));
+    criticalBatteryLabel->setToolTip(tr("What to do when your battery is critical."));
     criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
     criticalBatteryContainerLayout->addStretch();
@@ -150,7 +156,7 @@ Dialog::Dialog(QWidget *parent)
     autoSleepBattery->setMinimumWidth(MAX_WIDTH);
     autoSleepBattery->setMinimum(0);
     autoSleepBattery->setMaximum(1000);
-    autoSleepBattery->setSuffix(tr(" min"));
+    autoSleepBattery->setSuffix(QString(" %1").arg(tr("min")));
     QLabel *sleepBatteryLabel = new QLabel(this);
 
     QWidget *sleepActionBatteryContainer = new QWidget(this);
@@ -169,7 +175,9 @@ Dialog::Dialog(QWidget *parent)
     sleepBatteryIcon->setMinimumSize(48, 48);
     sleepBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON)
                                 .pixmap(QSize(48, 48)));
-    sleepBatteryLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
+    sleepBatteryLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                               .arg(tr("Suspend after")));
+    sleepBatteryLabel->setToolTip(tr("Enable automatically suspend when on battery."));
     sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
     sleepBatteryContainerLayout->addStretch();
@@ -186,19 +194,22 @@ Dialog::Dialog(QWidget *parent)
     backlightBatteryCheck = new QCheckBox(this);
     backlightBatteryCheck->setCheckable(true);
     backlightBatteryCheck->setChecked(false);
-    backlightBatteryCheck->setText(QString(" ")); // ui bug workaround
+    backlightBatteryCheck->setToolTip(tr("Enable/Disable brightness override on battery."));
+    backlightBatteryCheck->setText(QString(" ")); // qt ui bug workaround
 
     backlightBatteryLowerCheck = new QCheckBox(this);
     backlightBatteryLowerCheck->setCheckable(true);
     backlightBatteryLowerCheck->setChecked(false);
-    backlightBatteryLowerCheck->setText(tr("Don't apply if lower."));
+    backlightBatteryLowerCheck->setText(tr("Don't apply if lower"));
+    backlightBatteryLowerCheck->setToolTip(tr("If your current brightness value is lower"
+                                              " do not apply a brightness override (on battery)."));
 
     QWidget *batteryBacklightOptContainer = new QWidget(this);
     QVBoxLayout *batteryBacklightOptContainerLayout = new QVBoxLayout(batteryBacklightOptContainer);
-    batteryBacklightOptContainer->setContentsMargins(0,0,0,0);
+    batteryBacklightOptContainer->setContentsMargins(0, 0, 0, 0);
     batteryBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
     batteryBacklightOptContainerLayout->setMargin(0);
-    batteryBacklightOptContainerLayout->setContentsMargins(0,0,0,0);
+    batteryBacklightOptContainerLayout->setContentsMargins(0, 0, 0, 0);
     batteryBacklightOptContainerLayout->addWidget(backlightSliderBattery);
     batteryBacklightOptContainerLayout->addWidget(backlightBatteryLowerCheck);
 
@@ -211,7 +222,9 @@ Dialog::Dialog(QWidget *parent)
     batteryBacklightIcon->setMinimumSize(48, 48);
     batteryBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
                                 .pixmap(QSize(48, 48)));
-    batteryBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">Brightness</h3>"));
+    batteryBacklightLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                                   .arg(tr("Brightness")));
+    batteryBacklightLabel->setToolTip(tr("Override brightness when switched to battery power."));
     batteryBacklightContainerLayout->addWidget(batteryBacklightIcon);
     batteryBacklightContainerLayout->addWidget(batteryBacklightLabel);
     batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
@@ -244,7 +257,9 @@ Dialog::Dialog(QWidget *parent)
     lidActionACIcon->setMinimumSize(48, 48);
     lidActionACIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON)
                                .pixmap(QSize(48, 48)));
-    lidActionACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Lid action</h3>"));
+    lidActionACLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                              .arg(tr("Lid action")));
+    lidActionACLabel->setToolTip(tr("What to do when the lid is closed and running on AC."));
     lidActionACContainerLayout->addWidget(lidActionACIcon);
     lidActionACContainerLayout->addWidget(lidActionACLabel);
     lidActionACContainerLayout->addStretch();
@@ -258,7 +273,7 @@ Dialog::Dialog(QWidget *parent)
     autoSleepAC->setMinimumWidth(MAX_WIDTH);
     autoSleepAC->setMinimum(0);
     autoSleepAC->setMaximum(1000);
-    autoSleepAC->setSuffix(tr(" min"));
+    autoSleepAC->setSuffix(QString(" %1").arg(tr("min")));
     QLabel *sleepACLabel = new QLabel(this);
 
     sleepACContainerLayout->addWidget(sleepACLabel);
@@ -276,11 +291,13 @@ Dialog::Dialog(QWidget *parent)
     sleepActionACContainerLayout->addWidget(autoSleepACAction);
 
     QLabel *sleepACIcon = new QLabel(this);
-    sleepACIcon->setMaximumSize(48,48);
-    sleepACIcon->setMinimumSize(48,48);
+    sleepACIcon->setMaximumSize(48, 48);
+    sleepACIcon->setMinimumSize(48, 48);
     sleepACIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON)
                            .pixmap(QSize(48, 48)));
-    sleepACLabel->setText(tr("<h3 style=\"font-weight:normal;\">Suspend after</h3>"));
+    sleepACLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                          .arg(tr("Suspend after")));
+    sleepACLabel->setToolTip(tr("Enable automatically suspend when on AC."));
     sleepACContainerLayout->addWidget(sleepACIcon);
     sleepACContainerLayout->addWidget(sleepACLabel);
     sleepACContainerLayout->addStretch();
@@ -297,19 +314,22 @@ Dialog::Dialog(QWidget *parent)
     backlightACCheck = new QCheckBox(this);
     backlightACCheck->setCheckable(true);
     backlightACCheck->setChecked(false);
-    backlightACCheck->setText(QString(" ")); // ui bug workaround
+    backlightACCheck->setToolTip(tr("Enable/Disable brightness override on AC."));
+    backlightACCheck->setText(QString(" ")); // qt ui bug workaround
 
     backlightACHigherCheck = new QCheckBox(this);
     backlightACHigherCheck->setCheckable(true);
     backlightACHigherCheck->setChecked(false);
-    backlightACHigherCheck->setText(tr("Don't apply if higher."));
+    backlightACHigherCheck->setText(tr("Don't apply if higher"));
+    backlightACHigherCheck->setToolTip(tr("If your current brightness value is higher"
+                                          " do not apply a brightness override (on AC)."));
 
     QWidget *acBacklightOptContainer = new QWidget(this);
     QVBoxLayout *acBacklightOptContainerLayout = new QVBoxLayout(acBacklightOptContainer);
-    acBacklightOptContainer->setContentsMargins(0,0,0,0);
+    acBacklightOptContainer->setContentsMargins(0, 0, 0, 0);
     acBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
     acBacklightOptContainerLayout->setMargin(0);
-    acBacklightOptContainerLayout->setContentsMargins(0,0,0,0);
+    acBacklightOptContainerLayout->setContentsMargins(0, 0, 0, 0);
     acBacklightOptContainerLayout->addWidget(backlightSliderAC);
     acBacklightOptContainerLayout->addWidget(backlightACHigherCheck);
 
@@ -322,7 +342,9 @@ Dialog::Dialog(QWidget *parent)
     acBacklightIcon->setMinimumSize(48, 48);
     acBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
                                 .pixmap(QSize(48, 48)));
-    acBacklightLabel->setText(tr("<h3 style=\"font-weight:normal;\">Brightness</h3>"));
+    acBacklightLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
+                              .arg(tr("Brightness")));
+    acBacklightLabel->setToolTip(tr("Override brightness when switched to AC power."));
     acBacklightContainerLayout->addWidget(acBacklightIcon);
     acBacklightContainerLayout->addWidget(acBacklightLabel);
     acBacklightContainerLayout->addWidget(backlightACCheck);
@@ -342,18 +364,25 @@ Dialog::Dialog(QWidget *parent)
     showSystemTray  = new QCheckBox(this);
     showSystemTray->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
     showSystemTray->setText(tr("Show system tray"));
+    showSystemTray->setToolTip(tr("Enable/Disable the system tray icon."
+                                  " Note that notifications will not work when the systemtray is disabled."));
 
     showNotifications = new QCheckBox(this);
     showNotifications->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
     showNotifications->setText(tr("Show notifications"));
+    showNotifications->setToolTip(tr("Show notifications for power related events."));
 
     desktopSS = new QCheckBox(this);
     desktopSS->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
     desktopSS->setText("org.freedesktop.ScreenSaver");
+    desktopSS->setToolTip(tr("Enable/Disable the screen saver D-Bus service."
+                             " Needed for applications to inhibit the running screen saver."));
 
     desktopPM = new QCheckBox(this);
     desktopPM->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
     desktopPM->setText("org.freedesktop.PowerManagement");
+    desktopPM->setToolTip(tr("Enable/Disable the power management D-Bus service."
+                             " Needed for applications to inhibit auto suspend action."));
 
     /*lidXrandr = new QCheckBox(this);
     lidXrandr->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
@@ -364,6 +393,8 @@ Dialog::Dialog(QWidget *parent)
     disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
     disableLidAction->setText(tr("Disable lid action if external"
                                  "\nmonitor(s) is connected"));
+    disableLidAction->setToolTip(tr("If an external monitor (HDMI/VGA/DVI/DP etc) is connected"
+                                    " to your laptop, disable/enable lid action."));
 
     // add widgets to advanced
     advContainerLayout->addWidget(showSystemTray);
@@ -414,10 +445,12 @@ Dialog::Dialog(QWidget *parent)
     backlightSlider->setMinimumWidth(100);
     backlightSlider->setSingleStep(1);
     backlightSlider->setOrientation(Qt::Horizontal);
+    backlightSlider->setToolTip(tr("Adjust the current brightness."));
     backlightWatcher = new QFileSystemWatcher(this);
 
     QLabel *backlightLabel = new QLabel(this);
-    backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON).pixmap(24, 24));
+    backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
+                              .pixmap(24, 24));
 
     extraContainerLayout->addWidget(backlightLabel);
     extraContainerLayout->addWidget(backlightSlider);
@@ -432,15 +465,18 @@ Dialog::Dialog(QWidget *parent)
     QVBoxLayout *statusContainerLayout = new QVBoxLayout(statusContainer);
 
     QGroupBox *batteryStatusBox = new QGroupBox(this);
-    batteryStatusBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    batteryStatusBox->setSizePolicy(QSizePolicy::Expanding,
+                                    QSizePolicy::Fixed);
     QHBoxLayout *batteryStatusLayout = new QHBoxLayout(batteryStatusBox);
 
     batteryIcon = new QLabel(this);
     batteryLabel = new QLabel(this);
-    batteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON).pixmap(QSize(48, 48)));
+    batteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON)
+                           .pixmap(QSize(48, 48)));
 
     batteryLeftLCD = new QLCDNumber(this);
-    batteryLeftLCD->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    batteryLeftLCD->setSizePolicy(QSizePolicy::Expanding,
+                                  QSizePolicy::Expanding);
     batteryLeftLCD->setFrameStyle(QFrame::NoFrame);
     batteryLeftLCD->setSegmentStyle(QLCDNumber::Flat);
     batteryLeftLCD->display("00:00");
@@ -565,7 +601,6 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightBatteryCheckLower(bool)));
     connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightACCheckHigher(bool)));
-
 }
 
 Dialog::~Dialog()
@@ -729,10 +764,23 @@ void Dialog::loadSettings()
     disableLidAction->setChecked(defaultDisableLidAction);
 
     // power actions
-    sleepButton->setEnabled(man->CanSuspend());
-    hibernateButton->setEnabled(man->CanHibernate() &&
+    bool canSuspend = man->CanSuspend();
+    bool canHibernate = man->CanHibernate();
+    bool canShutdown = man->CanPowerOff();
+    QString notSupported = tr("%1 is not supported. Check permissions and/or settings.");
+    sleepButton->setEnabled(canSuspend);
+    hibernateButton->setEnabled(canHibernate &&
                                 Common::kernelCanResume());
-    poweroffButton->setEnabled(man->CanPowerOff());
+    poweroffButton->setEnabled(canShutdown);
+    if (!canSuspend) {
+        sleepButton->setToolTip(notSupported.arg(tr("Suspend")));
+    }
+    if (!canHibernate) {
+        hibernateButton->setToolTip(notSupported.arg(tr("Hibernate")));
+    }
+    if (!canShutdown) {
+        poweroffButton->setToolTip(notSupported.arg(tr("Shutdown")));
+    }
 
     checkPerms();
 
@@ -774,11 +822,13 @@ void Dialog::loadSettings()
     }
     if (Common::validPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
         backlightBatteryLowerCheck->setChecked(
-                    Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER).toBool());
+                    Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)
+                    .toBool());
     }
     if (Common::validPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
         backlightACHigherCheck->setChecked(
-                    Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER).toBool());
+                    Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
+                    .toBool());
     }
     enableBacklight(hasBacklight);
 
@@ -901,7 +951,7 @@ void Dialog::handleDesktopSS(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_SS, triggered);
     QMessageBox::information(this, tr("Restart required"),
-                             tr("You must restart the power daemon to apply this setting"));
+                             tr("You must restart the powerkit daemon to apply this setting"));
     // TODO: add restart now?
 }
 
@@ -909,7 +959,7 @@ void Dialog::handleDesktopPM(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_PM, triggered);
     QMessageBox::information(this, tr("Restart required"),
-                             tr("You must restart the power daemon to apply this setting"));
+                             tr("You must restart the powerkit daemon to apply this setting"));
     // TODO: add restart now?
 }
 
@@ -967,7 +1017,8 @@ void Dialog::handleSleepButton()
 
 void Dialog::handleHibernateButton()
 {
-    if (man->CanHibernate()) { man->Hibernate(); }
+    if (man->CanHibernate() &&
+        Common::kernelCanResume()) { man->Hibernate(); }
     else {
         QMessageBox::information(this,
                                  tr("Power Action"),
@@ -1079,7 +1130,7 @@ void Dialog::checkDevices()
         batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
     } else {
         batteryLeftLCD->display("00:00");
-        batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">AC</h1>"));
+        batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1</h1>").arg(tr("AC")));
     }
 
     QMapIterator<QString, Device*> i(man->getDevices());
@@ -1119,21 +1170,21 @@ void Dialog::checkDevices()
     }
 
     QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-    if (left <=0 || !man->HasBattery()) {
+    if (left == 0 || !man->HasBattery()) {
         batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
         return;
     }
-    if (left<= 10) {
+    if (left <= 10) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left<=25) {
+    } else if (left <= 25) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left<=75) {
+    } else if (left <= 75) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left<=90) {
+    } else if (left <= 90) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left>=100 && !man->OnBattery()) {
+        if (left == 100 && !man->OnBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
         }
     }
@@ -1234,7 +1285,7 @@ void Dialog::getInhibitors()
         QString inhibitor = ssList.at(i);
         if (inhibitor.isEmpty()) { continue; }
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
-        item->setText(0,inhibitor);
+        item->setText(0, inhibitor);
         item->setFlags(Qt::ItemIsEnabled);
         item->setIcon(0, QIcon::fromTheme("application-x-executable"));
     }
@@ -1242,7 +1293,7 @@ void Dialog::getInhibitors()
         QString inhibitor = pmList.at(i);
         if (inhibitor.isEmpty()) { continue; }
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
-        item->setText(0,inhibitor);
+        item->setText(0, inhibitor);
         item->setFlags(Qt::ItemIsEnabled);
         item->setIcon(0, QIcon::fromTheme("application-x-executable"));
     }
