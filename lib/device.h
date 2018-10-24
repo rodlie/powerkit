@@ -61,7 +61,7 @@ private:
     QDBusInterface *dbusp;
 
 signals:
-    void deviceChanged(QString devicePath);
+    void deviceChanged(const QString &devicePath);
 
 private slots:
     void updateDeviceProperties();

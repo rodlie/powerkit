@@ -18,7 +18,8 @@
 ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 {
     timer.setInterval(SS_TIMEOUT);
-    connect(&timer, SIGNAL(timeout()), this, SLOT(timeOut()));
+    connect(&timer, SIGNAL(timeout()),
+            this, SLOT(timeOut()));
     timer.start();
 }
 
@@ -46,7 +47,10 @@ void ScreenSaver::checkForExpiredClients()
     QMapIterator<quint32, QTime> client(clients);
     while (client.hasNext()) {
         client.next();
-        if (client.value().secsTo(QTime::currentTime())>=SS_MAX_INHIBIT) { clients.remove(client.key()); }
+        if (client.value()
+            .secsTo(QTime::currentTime())>=SS_MAX_INHIBIT) {
+            clients.remove(client.key());
+        }
     }
 }
 
@@ -90,7 +94,8 @@ void ScreenSaver::SimulateUserActivity()
     pingPM();
 }
 
-quint32 ScreenSaver::Inhibit(QString application, QString reason)
+quint32 ScreenSaver::Inhibit(const QString &application,
+                             const QString &reason)
 {
     quint32 cookie = genCookie();
     emit newInhibit(application, reason, cookie);

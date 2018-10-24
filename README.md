@@ -2,8 +2,6 @@
 
 powerkit is an lightweight desktop independent full featured power manager, originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
 
-**NOTE!** Under development, a stable version will be available October 2018.
-
 ## Features
 
  * Enables applications to inhibit the screen saver
@@ -48,7 +46,7 @@ Note that powerkit will start [XScreenSaver](https://www.jwz.org/xscreensaver/) 
 
 ### Back light
 
-powerkit supports back light only on Linux through ``/sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the system tray icon or through the configuration GUI (bottom left slider).
+powerkit supports back light on Linux through ``/sys/class/backlight``. The current brightness can be adjusted with the mouse wheel on the system tray icon or through the configuration GUI (bottom left slider).
 
 **Note!** udev permissions are required to adjust the brightness, on [Slackware](http://www.slackware.com/) an [example](https://github.com/rodlie/powerkit/blob/master/app/share/udev/90-backlight.rules) rule file is included with the package (see ``/usr/doc/powerkit-VERSION/90-backlight.rules``). You can also let powerkit add the rule during build with the ``CONFIG+=install_udev_rules`` option.
 

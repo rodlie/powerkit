@@ -137,23 +137,25 @@ private slots:
     void setInternalMonitor();
     bool internalMonitorIsConnected();
     bool externalMonitorIsConnected();
-    void handleNewInhibitScreenSaver(QString application,
-                                     QString reason,
+    void handleNewInhibitScreenSaver(const QString &application,
+                                     const QString &reason,
                                      quint32 cookie);
-    void handleNewInhibitPowerManagement(QString application,
-                                         QString reason,
+    void handleNewInhibitPowerManagement(const QString &application,
+                                         const QString &reason,
                                          quint32 cookie);
     void handleDelInhibitScreenSaver(quint32 cookie);
     void handleDelInhibitPowerManagement(quint32 cookie);
     void handleScreensaverFinished(int exitcode);
-    void showMessage(QString title, QString msg, bool critical = false);
-    void handleConfChanged(QString file);
+    void showMessage(const QString &title,
+                     const QString &msg,
+                     bool critical = false);
+    void handleConfChanged(const QString &file);
     void disableHibernate();
     void disableSuspend();
     void handlePrepareForSuspend(bool suspend);
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
-    void handleDeviceChanged(QString path);
+    void handleDeviceChanged(const QString &path);
     void handleConfigDialogFinished(int result);
     void showConfigDialog();
 };
