@@ -27,7 +27,9 @@ private:
     QMap<quint32, QTime> clients;
 
 signals:
-    void newInhibit(QString application, QString reason, quint32 cookie);
+    void newInhibit(const QString &application,
+                    const QString &reason,
+                    quint32 cookie);
     void removedInhibit(quint32 cookie);
 
 private slots:
@@ -41,7 +43,8 @@ private slots:
 
 public slots:
     void SimulateUserActivity();
-    quint32 Inhibit(QString application, QString reason);
+    quint32 Inhibit(const QString &application,
+                    const QString &reason);
     void UnInhibit(quint32 cookie);
 };
 

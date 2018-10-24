@@ -33,7 +33,7 @@ SysTray::SysTray(QObject *parent)
     , desktopSS(true)
     , desktopPM(true)
     , showTray(true)
-    , disableLidOnExternalMonitors(true)
+    , disableLidOnExternalMonitors(false)
     , autoSuspendBatteryAction(suspendSleep)
     , autoSuspendACAction(suspendNone)
     , xscreensaver(0)
@@ -114,6 +114,14 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(removedInhibit(quint32)),
             this,
             SLOT(handleDelInhibitPowerManagement(quint32)));
+    connect(pm,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            man,
+            SLOT(handleNewInhibitPowerManagement(QString,QString,quint32)));
+    connect(pm,
+            SIGNAL(removedInhibit(quint32)),
+            man,
+            SLOT(handleDelInhibitPowerManagement(quint32)));
 
     // setup org.freedesktop.ScreenSaver
     ss = new ScreenSaver(this);
@@ -124,6 +132,14 @@ SysTray::SysTray(QObject *parent)
     connect(ss,
             SIGNAL(removedInhibit(quint32)),
             this,
+            SLOT(handleDelInhibitScreenSaver(quint32)));
+    connect(ss,
+            SIGNAL(newInhibit(QString,QString,quint32)),
+            man,
+            SLOT(handleNewInhibitScreenSaver(QString,QString,quint32)));
+    connect(ss,
+            SIGNAL(removedInhibit(quint32)),
+            man,
             SLOT(handleDelInhibitScreenSaver(quint32)));
 
     // setup xscreensaver
@@ -207,25 +223,51 @@ void SysTray::checkDevices()
     if (!showTray &&
         tray->isVisible()) { tray->hide(); }
 
-    // warn if systray has no icons
-    if (tray->isVisible() && (QIcon::themeName().isEmpty() ||
-        QIcon::themeName() == "hicolor")) {
-        showMessage(tr("No icon theme found!"),
-                    tr("Unable to find any icon theme,"
-                       " please install a theme and restart powerkit."),
-                    true);
-    }
-
     // get battery left and add tooltip
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
-    if (batteryLeft > 0) {
+    if (batteryLeft > 0 && man->HasBattery()) {
         tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
+        if (man->TimeToEmpty()>0 && man->OnBattery()) {
+            tray->setToolTip(tray->toolTip()
+                             .append(tr(", %1 left")
+                             .arg(QDateTime::fromTime_t(man->TimeToEmpty())
+                                                        .toUTC().toString("hh:mm"))));
+        }
         if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
         if (!man->OnBattery() &&
-            man->BatteryLeft() <= 99)
-        { tray->setToolTip(tray->toolTip().append(tr(" (Charging)"))); }
+            man->BatteryLeft() <= 99) {
+            if (man->TimeToFull()>0) {
+                tray->setToolTip(tray->toolTip()
+                                 .append(tr(", %1 left")
+                                 .arg(QDateTime::fromTime_t(man->TimeToFull())
+                                                            .toUTC().toString("hh:mm"))));
+            }
+            tray->setToolTip(tray->toolTip().append(tr(" (Charging)")));
+        }
     } else { tray->setToolTip(tr("On AC")); }
+
+    // inhibitors tooltip
+    if (ssInhibitors.size()>0) {
+        QString tooltip = "\n\n";
+        tooltip.append(tr("Screen Saver Inhibitors:\n"));
+        QMapIterator<quint32, QString> i(ssInhibitors);
+        while (i.hasNext()) {
+            i.next();
+            tooltip.append(QString(" * %1\n").arg(i.value()));
+        }
+        tray->setToolTip(tray->toolTip().append(tooltip));
+    }
+    if (pmInhibitors.size()>0) {
+        QString tooltip = "\n\n";
+        tooltip.append(tr("Power Manager Inhibitors:\n"));
+        QMapIterator<quint32, QString> i(pmInhibitors);
+        while (i.hasNext()) {
+            i.next();
+            tooltip.append(QString(" * %1\n").arg(i.value()));
+        }
+        tray->setToolTip(tray->toolTip().append(tooltip));
+    }
 
     // draw battery systray
     drawBattery(batteryLeft);
@@ -421,27 +463,6 @@ void SysTray::loadSettings()
     // backlight
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
-
-    /*qDebug() << "==>" << CONF_LID_XRANDR << lidXrandr;
-    qDebug() << "==>" << CONF_LID_DISABLE_IF_EXTERNAL << disableLidOnExternalMonitors;
-    qDebug() << "==>" << CONF_TRAY_SHOW << showTray;
-    qDebug() << "==>" << CONF_TRAY_NOTIFY << showNotifications;
-    qDebug() << "==>" << CONF_FREEDESKTOP_SS << desktopSS;
-    qDebug() << "==>" << CONF_FREEDESKTOP_PM << desktopPM;
-    qDebug() << "==>" << CONF_SUSPEND_BATTERY_TIMEOUT << autoSuspendBattery;
-    qDebug() << "==>" << CONF_SUSPEND_AC_TIMEOUT << autoSuspendAC;
-    qDebug() << "==>" << CONF_SUSPEND_BATTERY_ACTION << autoSuspendBatteryAction;
-    qDebug() << "==>" << CONF_SUSPEND_AC_ACTION << autoSuspendACAction;
-    qDebug() << "==>" << CONF_CRITICAL_BATTERY_TIMEOUT << critBatteryValue;
-    qDebug() << "==>" << CONF_LID_BATTERY_ACTION << lidActionBattery;
-    qDebug() << "==>" << CONF_LID_AC_ACTION << lidActionAC;
-    qDebug() << "==>" << CONF_CRITICAL_BATTERY_ACTION << criticalAction;
-    qDebug() << "==>" << CONF_BACKLIGHT_AC << backlightACValue;
-    qDebug() << "==>" << CONF_BACKLIGHT_AC_ENABLE << backlightOnAC;
-    qDebug() << "==>" << CONF_BACKLIGHT_BATTERY << backlightBatteryValue;
-    qDebug() << "==>" << CONF_BACKLIGHT_BATTERY_ENABLE << backlightOnBattery;
-    qDebug() << "==>" << CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER << backlightBatteryDisableIfLower;
-    qDebug() << "==>" << CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER << backlightACDisableIfHigher;*/
 }
 
 // register session services
@@ -574,24 +595,23 @@ void SysTray::drawBattery(double left)
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    QIcon icon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
-    if (left == 0.0) {
-        icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+    QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+    if (left <= 0 || !man->HasBattery()) {
         tray->setIcon(icon);
         return;
     }
 
-    if (left<= 10) {
+    if (left <= 10) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left<=25) {
+    } else if (left <= 25) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left<=75) {
+    } else if (left <= 75) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left<=90) {
+    } else if (left <= 90) {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left>=100 && !man->OnBattery()) {
+        if (left >= 100 && !man->OnBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
         }
     }
@@ -711,18 +731,24 @@ bool SysTray::externalMonitorIsConnected()
 }
 
 // handle new inhibits
-void SysTray::handleNewInhibitScreenSaver(QString application, QString reason, quint32 cookie)
+void SysTray::handleNewInhibitScreenSaver(const QString &application,
+                                          const QString &reason,
+                                          quint32 cookie)
 {
     qDebug() << "new screensaver inhibit" << application << reason << cookie;
     Q_UNUSED(reason)
     ssInhibitors[cookie] = application;
+    checkDevices();
 }
 
-void SysTray::handleNewInhibitPowerManagement(QString application, QString reason, quint32 cookie)
+void SysTray::handleNewInhibitPowerManagement(const QString &application,
+                                              const QString &reason,
+                                              quint32 cookie)
 {
     qDebug() << "new powermanagement inhibit" << application << reason << cookie;
     Q_UNUSED(reason)
     pmInhibitors[cookie] = application;
+    checkDevices();
 }
 
 void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
@@ -730,6 +756,7 @@ void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
     if (ssInhibitors.contains(cookie)) {
         qDebug() << "removed screensaver inhibitor" << ssInhibitors[cookie];
         ssInhibitors.remove(cookie);
+        checkDevices();
     }
 }
 
@@ -738,6 +765,7 @@ void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
     if (pmInhibitors.contains(cookie)) {
         qDebug() << "removed powermanagement inhibitor" << pmInhibitors[cookie];
         pmInhibitors.remove(cookie);
+        checkDevices();
     }
 }
 
@@ -748,7 +776,9 @@ void SysTray::handleScreensaverFinished(int exitcode)
 }
 
 // show notifications
-void SysTray::showMessage(QString title, QString msg, bool critical)
+void SysTray::showMessage(const QString &title,
+                          const QString &msg,
+                          bool critical)
 {
     if (tray->isVisible() && showNotifications) {
         if (critical) {
@@ -761,7 +791,7 @@ void SysTray::showMessage(QString title, QString msg, bool critical)
 }
 
 // reload settings if conf changed
-void SysTray::handleConfChanged(QString file)
+void SysTray::handleConfChanged(const QString &file)
 {
     Q_UNUSED(file)
     loadSettings();
@@ -856,7 +886,7 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 }
 
 // check devices if changed
-void SysTray::handleDeviceChanged(QString path)
+void SysTray::handleDeviceChanged(const QString &path)
 {
     Q_UNUSED(path)
     checkDevices();

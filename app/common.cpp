@@ -40,6 +40,42 @@ bool Common::validPowerSettings(QString type)
     return settings.value(type).isValid();
 }
 
+void Common::saveDefaultSettings()
+{
+    savePowerSettings(CONF_LID_BATTERY_ACTION,
+                      LID_BATTERY_DEFAULT);
+    savePowerSettings(CONF_LID_AC_ACTION,
+                      LID_AC_DEFAULT);
+    savePowerSettings(CONF_CRITICAL_BATTERY_ACTION,
+                      CRITICAL_DEFAULT);
+    savePowerSettings(CONF_CRITICAL_BATTERY_TIMEOUT,
+                      CRITICAL_BATTERY);
+    savePowerSettings(CONF_SUSPEND_BATTERY_TIMEOUT,
+                      AUTO_SLEEP_BATTERY);
+    savePowerSettings(CONF_FREEDESKTOP_SS,
+                      true);
+    savePowerSettings(CONF_FREEDESKTOP_PM,
+                      true);
+    savePowerSettings(CONF_TRAY_NOTIFY,
+                      true);
+    savePowerSettings(CONF_TRAY_SHOW,
+                      true);
+    savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL,
+                      false);
+    savePowerSettings(CONF_SUSPEND_BATTERY_ACTION,
+                      suspendSleep);
+    savePowerSettings(CONF_SUSPEND_AC_ACTION,
+                      suspendNone);
+    savePowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE,
+                      false);
+    savePowerSettings(CONF_BACKLIGHT_AC_ENABLE,
+                      false);
+    savePowerSettings(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER,
+                      false);
+    savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER,
+                      false);
+}
+
 void Common::setIconTheme()
 {
     // setup icon theme search path
@@ -105,10 +141,7 @@ QString Common::confFile()
 {
     QString config = QString("%1/.config/powerkit/powerkit.conf")
                      .arg(QDir::homePath());
-    if (!QFile::exists(config)) {
-        QFile conf(config);
-        if (conf.open(QIODevice::WriteOnly)) { conf.close(); }
-    }
+    if (!QFile::exists(config)) { saveDefaultSettings(); }
     return config;
 }
 

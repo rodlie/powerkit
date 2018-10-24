@@ -17,7 +17,8 @@
 PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
 {
     timer.setInterval(PM_TIMEOUT);
-    connect(&timer, SIGNAL(timeout()), this, SLOT(timeOut()));
+    connect(&timer, SIGNAL(timeout()),
+            this, SLOT(timeOut()));
     timer.start();
 }
 
@@ -45,7 +46,10 @@ void PowerManagement::checkForExpiredClients()
     QMapIterator<quint32, QTime> client(clients);
     while (client.hasNext()) {
         client.next();
-        if (client.value().secsTo(QTime::currentTime())>=PM_MAX_INHIBIT) { clients.remove(client.key()); }
+        if (client.value()
+            .secsTo(QTime::currentTime())>=PM_MAX_INHIBIT) {
+            clients.remove(client.key());
+        }
     }
 }
 
@@ -66,7 +70,8 @@ void PowerManagement::SimulateUserActivity()
     emit HasInhibitChanged(true);
 }
 
-quint32 PowerManagement::Inhibit(QString application, QString reason)
+quint32 PowerManagement::Inhibit(const QString &application,
+                                 const QString &reason)
 {
     quint32 cookie = genCookie();
     timeOut();

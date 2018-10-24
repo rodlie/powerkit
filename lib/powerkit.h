@@ -111,6 +111,9 @@ public:
 
 private:
     QMap<QString, Device*> devices;
+    QMap<quint32,QString> ssInhibitors;
+    QMap<quint32,QString> pmInhibitors;
+
     QDBusInterface *upower;
     QDBusInterface *logind;
 
@@ -128,8 +131,9 @@ signals:
     void SwitchedToBattery();
     void SwitchedToAC();
     void PrepareForSuspend(bool suspend);
-    void DeviceWasRemoved(QString path);
-    void DeviceWasAdded(QString path);
+    void DeviceWasRemoved(const QString &path);
+    void DeviceWasAdded(const QString &path);
+    void UpdatedInhibitors();
 
 private slots:
     bool availableService(const QString &service,
@@ -155,6 +159,14 @@ private slots:
     void handleSuspend();
     void handlePrepareForSuspend(bool suspend);
     void clearDevices();
+    void handleNewInhibitScreenSaver(const QString &application,
+                                     const QString &reason,
+                                     quint32 cookie);
+    void handleNewInhibitPowerManagement(const QString &application,
+                                         const QString &reason,
+                                         quint32 cookie);
+    void handleDelInhibitScreenSaver(quint32 cookie);
+    void handleDelInhibitPowerManagement(quint32 cookie);
 
 public slots:
     bool HasConsoleKit();
@@ -185,6 +197,8 @@ public slots:
     void UpdateDevices();
     void UpdateBattery();
     void UpdateConfig();
+    QStringList ScreenSaverInhibitors();
+    QStringList PowerManagementInhibitors();
 };
 
 #endif // POWERKIT_H
