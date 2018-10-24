@@ -101,6 +101,9 @@ private:
     QCheckBox *backlightBatteryLowerCheck;
     QCheckBox *backlightACHigherCheck;
     QTreeWidget *inhibitorTree;
+    QCheckBox *warnOnLowBattery;
+    QCheckBox *warnOnVeryLowBattery;
+    QPushButton *aboutButton;
 
 private slots:
     void populate();
@@ -145,6 +148,7 @@ private slots:
     void handleUpdatedInhibitors();
     void getInhibitors();
     void enableBacklight(bool enabled);
+    void showAboutDialog();
 };
 
 #endif // DIALOG_H

@@ -28,7 +28,6 @@ Dialog::Dialog(QWidget *parent)
     , sleepButton(0)
     , hibernateButton(0)
     , poweroffButton(0)
-//    , lidXrandr(0)
     , hasBacklight(false)
     , backlightSlider(0)
     , backlightWatcher(0)
@@ -44,6 +43,9 @@ Dialog::Dialog(QWidget *parent)
     , backlightBatteryLowerCheck(0)
     , backlightACHigherCheck(0)
     , inhibitorTree(0)
+    , warnOnLowBattery(0)
+    , warnOnVeryLowBattery(0)
+    , aboutButton(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -358,19 +360,8 @@ Dialog::Dialog(QWidget *parent)
 
     // advanced
     QGroupBox *advContainer = new QGroupBox(this);
-    advContainer->setTitle(tr("Advanced"));
+    advContainer->setTitle(tr("Services"));
     QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
-
-    showSystemTray  = new QCheckBox(this);
-    showSystemTray->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    showSystemTray->setText(tr("Show system tray"));
-    showSystemTray->setToolTip(tr("Enable/Disable the system tray icon."
-                                  " Note that notifications will not work when the systemtray is disabled."));
-
-    showNotifications = new QCheckBox(this);
-    showNotifications->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
-    showNotifications->setText(tr("Show notifications"));
-    showNotifications->setToolTip(tr("Show notifications for power related events."));
 
     desktopSS = new QCheckBox(this);
     desktopSS->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
@@ -384,30 +375,68 @@ Dialog::Dialog(QWidget *parent)
     desktopPM->setToolTip(tr("Enable/Disable the power management D-Bus service."
                              " Needed for applications to inhibit auto suspend action."));
 
-    /*lidXrandr = new QCheckBox(this);
-    lidXrandr->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-    lidXrandr->setText(tr("Switch internal monitor on/off"
-                          "\nwith xrandr if lid action disabled"));*/
+    // add widgets to advanced
+    advContainerLayout->addWidget(desktopSS);
+    advContainerLayout->addWidget(desktopPM);
+    advContainerLayout->addStretch();
+
+    // common
+    QGroupBox *daemonContainer = new QGroupBox(this);
+    daemonContainer->setTitle(tr("Common"));
+    QVBoxLayout *daemonContainerLayout = new QVBoxLayout(daemonContainer);
+
+    showSystemTray  = new QCheckBox(this);
+    showSystemTray->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
+    showSystemTray->setText(tr("Show system tray"));
+    showSystemTray->setToolTip(tr("Enable/Disable the system tray icon."
+                                  " Note that notifications will not work when the systemtray is disabled."));
+
+    showNotifications = new QCheckBox(this);
+    showNotifications->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    showNotifications->setText(tr("Show notifications"));
+    showNotifications->setToolTip(tr("Show notifications for power related events."));
 
     disableLidAction = new QCheckBox(this);
     disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
     disableLidAction->setText(tr("Disable lid action if external"
                                  "\nmonitor(s) is connected"));
-    disableLidAction->setToolTip(tr("If an external monitor (HDMI/VGA/DVI/DP etc) is connected"
-                                    " to your laptop, disable/enable lid action."));
+    disableLidAction->setToolTip(tr("Disable lid action if an external monitor is connected"
+                                    " to your laptop."));
 
-    // add widgets to advanced
-    advContainerLayout->addWidget(showSystemTray);
-    advContainerLayout->addWidget(showNotifications);
-    advContainerLayout->addWidget(disableLidAction);
-    advContainerLayout->addWidget(desktopSS);
-    advContainerLayout->addWidget(desktopPM);
-    //advContainerLayout->addWidget(lidXrandr);
-    advContainerLayout->addStretch();
+    daemonContainerLayout->addWidget(showSystemTray);
+    daemonContainerLayout->addWidget(showNotifications);
+    daemonContainerLayout->addWidget(disableLidAction);
+
+    // notify
+    QGroupBox *notifyContainer = new QGroupBox(this);
+    notifyContainer->setTitle(tr("Notifications"));
+    QVBoxLayout *notifyContainerLayout = new QVBoxLayout(notifyContainer);
+
+    warnOnLowBattery = new QCheckBox(this);
+    warnOnLowBattery->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    warnOnLowBattery->setText(tr("Notify on low battery"));
+    warnOnLowBattery->setToolTip(tr("Show a notification when on low battery (%1% over critical)")
+                                 .arg(LOW_BATTERY));
+
+    warnOnVeryLowBattery = new QCheckBox(this);
+    warnOnVeryLowBattery->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    warnOnVeryLowBattery->setText(tr("Notify on very low battery"));
+    warnOnVeryLowBattery->setToolTip(tr("Show a notification when on very low battery (1% over critical)"));
+
+    notifyContainerLayout->addWidget(warnOnLowBattery);
+    notifyContainerLayout->addWidget(warnOnVeryLowBattery);
 
     // extra
     QWidget *extraContainer = new QWidget(this);
     QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
+
+    aboutButton = new QPushButton(this);
+    aboutButton->setIcon(QIcon::fromTheme(DEFAULT_ABOUT_ICON));
+    aboutButton->setIconSize(QSize(24, 24));
+    aboutButton->setToolTip(tr("About"));
+    if (aboutButton->icon().isNull()) {
+        aboutButton->setText(tr("About"));
+    }
 
     lockscreenButton = new QPushButton(this);
     lockscreenButton->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
@@ -455,6 +484,7 @@ Dialog::Dialog(QWidget *parent)
     extraContainerLayout->addWidget(backlightLabel);
     extraContainerLayout->addWidget(backlightSlider);
     extraContainerLayout->addStretch();
+    extraContainerLayout->addWidget(aboutButton);
     extraContainerLayout->addWidget(lockscreenButton);
     extraContainerLayout->addWidget(sleepButton);
     extraContainerLayout->addWidget(hibernateButton);
@@ -489,11 +519,11 @@ Dialog::Dialog(QWidget *parent)
     deviceTree->setHeaderLabels(QStringList() << "1" << "2");
     deviceTree->setColumnWidth(0, 150);
 
-    QLabel *aboutLabel = new QLabel(this);
+    /*QLabel *aboutLabel = new QLabel(this);
     aboutLabel->setText(QString("<p style=\"font-size:small;\">"
                                 "<a href=\"https://github.com/rodlie/powerkit\">"
                                 "PowerKit</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
-                        .arg(qApp->applicationVersion()));
+                        .arg(qApp->applicationVersion()));*/
 
     batteryStatusLayout->addWidget(batteryIcon);
     batteryStatusLayout->addWidget(batteryLabel);
@@ -503,7 +533,7 @@ Dialog::Dialog(QWidget *parent)
     statusContainerLayout->addWidget(batteryStatusBox);
     statusContainerLayout->addWidget(deviceTree);
     statusContainerLayout->addStretch();
-    statusContainerLayout->addWidget(aboutLabel);
+    //statusContainerLayout->addWidget(aboutLabel);
 
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
@@ -520,7 +550,8 @@ Dialog::Dialog(QWidget *parent)
     // add widgets to settings
     settingsLayout->addWidget(batteryContainer);
     settingsLayout->addWidget(acContainer);
-    //settingsLayout->addWidget(backlightContainer);
+    settingsLayout->addWidget(daemonContainer);
+    settingsLayout->addWidget(notifyContainer);
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
 
@@ -577,8 +608,6 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleAutoSleepBatteryAction(int)));
     connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
             this, SLOT(handleAutoSleepACAction(int)));
-    /*connect(lidXrandr, SIGNAL(toggled(bool)),
-            this, SLOT(handleLidXrandr(bool)));*/
     connect(backlightSlider, SIGNAL(valueChanged(int)),
             this, SLOT(handleBacklightSlider(int)));
     connect(backlightWatcher, SIGNAL(fileChanged(QString)),
@@ -601,6 +630,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightBatteryCheckLower(bool)));
     connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightACCheckHigher(bool)));
+    connect(aboutButton, SIGNAL(released()),
+            this, SLOT(showAboutDialog()));
 }
 
 Dialog::~Dialog()
@@ -762,6 +793,18 @@ void Dialog::loadSettings()
         defaultDisableLidAction = Common::loadPowerSettings(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
     }
     disableLidAction->setChecked(defaultDisableLidAction);
+
+    bool defaultWarnOnLowBattery = true;
+    if (Common::validPowerSettings(CONF_WARN_ON_LOW_BATTERY)) {
+        defaultWarnOnLowBattery = Common::loadPowerSettings(CONF_WARN_ON_LOW_BATTERY).toBool();
+    }
+    warnOnLowBattery->setChecked(defaultWarnOnLowBattery);
+
+    bool defaultWarnOnVeryLowBattery = true;
+    if (Common::validPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY)) {
+        defaultWarnOnVeryLowBattery = Common::loadPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
+    }
+    warnOnVeryLowBattery->setChecked(defaultWarnOnVeryLowBattery);
 
     // power actions
     bool canSuspend = man->CanSuspend();
@@ -1308,4 +1351,23 @@ void Dialog::enableBacklight(bool enabled)
     backlightACCheck->setEnabled(enabled);
     backlightBatteryLowerCheck->setEnabled(enabled);
     backlightACHigherCheck->setEnabled(enabled);
+}
+
+void Dialog::showAboutDialog()
+{
+    QMessageBox about;
+    about.setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
+    about.setIconPixmap(QIcon::fromTheme(DEFAULT_AC_ICON).pixmap(48, 48));
+    about.setWindowTitle(tr("About PowerKit"));
+    about.setText(QString("<h1 style=\"font-weight:normal;\">PowerKit %1</h1>"
+                          "<h3>Desktop independent power manager.</h3>"
+                          "<p>&copy;2018 Ole-Andr&eacute; Rodlie. All rights reserved.<br>"
+                          "Available under the 3-clause BSD license.<br> See the"
+                          " <a href=\"https://github.com/rodlie/powerkit/blob/master/LICENSE\">LICENSE</a>"
+                          " file for full details.</p>"
+                          "<p>Available on <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
+                          " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> or"
+                          " <a href=\"https://sourceforge.net/p/powerkit\">SourceForge</a>.</p>")
+                  .arg(qApp->applicationVersion()));
+    about.exec();
 }
