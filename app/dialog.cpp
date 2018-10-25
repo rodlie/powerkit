@@ -1075,8 +1075,9 @@ void Dialog::handleSleepButton()
 {
     if (QMessageBox::question(this,
                               tr("Suspend computer"),
-                              tr("Are you sure you want to suspend?")
-                              ) == QMessageBox::No) { return; }
+                              tr("Are you sure you want to suspend?"),
+                              QMessageBox::Yes,
+                              QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanSuspend()) { man->Suspend(); }
     else {
         QMessageBox::information(this,
@@ -1091,8 +1092,9 @@ void Dialog::handleHibernateButton()
 {
     if (QMessageBox::question(this,
                               tr("Hibernate computer"),
-                              tr("Are you sure you want to hibernate?")
-                              ) == QMessageBox::No) { return; }
+                              tr("Are you sure you want to hibernate?"),
+                              QMessageBox::Yes,
+                              QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanHibernate() &&
         Common::kernelCanResume()) { man->Hibernate(); }
     else {
@@ -1108,8 +1110,9 @@ void Dialog::handlePoweroffButton()
 {
     if (QMessageBox::question(this,
                               tr("Shutdown computer"),
-                              tr("Are you sure you want to shutdown?")
-                              ) == QMessageBox::No) { return; }
+                              tr("Are you sure you want to shutdown?"),
+                              QMessageBox::Yes,
+                              QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanPowerOff()) { man->PowerOff(); }
     else {
         QMessageBox::information(this,
