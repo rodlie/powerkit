@@ -46,6 +46,10 @@ Dialog::Dialog(QWidget *parent)
     , warnOnLowBattery(0)
     , warnOnVeryLowBattery(0)
     , aboutButton(0)
+    , lidActionACLabel(0)
+    , lidActionBatteryLabel(0)
+    , batteryBacklightLabel(0)
+    , acBacklightLabel(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -101,7 +105,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionBattery = new QComboBox(this);
     lidActionBattery->setMaximumWidth(MAX_WIDTH);
     lidActionBattery->setMinimumWidth(MAX_WIDTH);
-    QLabel *lidActionBatteryLabel = new QLabel(this);
+    lidActionBatteryLabel = new QLabel(this);
 
     QLabel *lidActionBatteryIcon = new QLabel(this);
     lidActionBatteryIcon->setMaximumSize(48, 48);
@@ -217,7 +221,7 @@ Dialog::Dialog(QWidget *parent)
 
     QWidget *batteryBacklightContainer = new QWidget(this);
     QHBoxLayout *batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
-    QLabel *batteryBacklightLabel = new QLabel(this);
+    batteryBacklightLabel = new QLabel(this);
     QLabel *batteryBacklightIcon = new QLabel(this);
 
     batteryBacklightIcon->setMaximumSize(48, 48);
@@ -252,7 +256,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionAC = new QComboBox(this);
     lidActionAC->setMaximumWidth(MAX_WIDTH);
     lidActionAC->setMinimumWidth(MAX_WIDTH);
-    QLabel *lidActionACLabel = new QLabel(this);
+    lidActionACLabel = new QLabel(this);
 
     QLabel *lidActionACIcon = new QLabel(this);
     lidActionACIcon->setMaximumSize(48, 48);
@@ -337,7 +341,7 @@ Dialog::Dialog(QWidget *parent)
 
     QWidget *acBacklightContainer = new QWidget(this);
     QHBoxLayout *acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
-    QLabel *acBacklightLabel = new QLabel(this);
+    acBacklightLabel = new QLabel(this);
     QLabel *acBacklightIcon = new QLabel(this);
 
     acBacklightIcon->setMaximumSize(48, 48);
@@ -423,8 +427,20 @@ Dialog::Dialog(QWidget *parent)
     warnOnVeryLowBattery->setText(tr("Notify on very low battery"));
     warnOnVeryLowBattery->setToolTip(tr("Show a notification when on very low battery (1% over critical)"));
 
+    notifyOnBattery = new QCheckBox(this);
+    notifyOnBattery->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    notifyOnBattery->setText(tr("Notify on battery"));
+    notifyOnBattery->setToolTip(tr("Notify when switched on battery power"));
+
+    notifyOnAC = new QCheckBox(this);
+    notifyOnAC->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    notifyOnAC->setText(tr("Notify on AC"));
+    notifyOnAC->setToolTip(tr("Notify when switched on AC power"));
+
     notifyContainerLayout->addWidget(warnOnLowBattery);
     notifyContainerLayout->addWidget(warnOnVeryLowBattery);
+    notifyContainerLayout->addWidget(notifyOnBattery);
+    notifyContainerLayout->addWidget(notifyOnAC);
 
     // extra
     QWidget *extraContainer = new QWidget(this);
@@ -519,12 +535,6 @@ Dialog::Dialog(QWidget *parent)
     deviceTree->setHeaderLabels(QStringList() << "1" << "2");
     deviceTree->setColumnWidth(0, 150);
 
-    /*QLabel *aboutLabel = new QLabel(this);
-    aboutLabel->setText(QString("<p style=\"font-size:small;\">"
-                                "<a href=\"https://github.com/rodlie/powerkit\">"
-                                "PowerKit</a> %1 &copy;2018 Ole-Andr&eacute; Rodlie")
-                        .arg(qApp->applicationVersion()));*/
-
     batteryStatusLayout->addWidget(batteryIcon);
     batteryStatusLayout->addWidget(batteryLabel);
     batteryStatusLayout->addStretch();
@@ -533,7 +543,6 @@ Dialog::Dialog(QWidget *parent)
     statusContainerLayout->addWidget(batteryStatusBox);
     statusContainerLayout->addWidget(deviceTree);
     statusContainerLayout->addStretch();
-    //statusContainerLayout->addWidget(aboutLabel);
 
     layout->addWidget(wrapper);
     layout->addWidget(extraContainer);
@@ -558,6 +567,7 @@ Dialog::Dialog(QWidget *parent)
     // inhibitors
     inhibitorTree = new QTreeWidget(this);
     inhibitorTree->setHeaderHidden(true);
+    inhibitorTree->setStyleSheet("QTreeWidget {border:0;}");
 
     // add tabs
     containerWidget->addTab(statusContainer,
@@ -632,11 +642,20 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightACCheckHigher(bool)));
     connect(aboutButton, SIGNAL(released()),
             this, SLOT(showAboutDialog()));
+    connect(warnOnLowBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleWarnOnLowBattery(bool)));
+    connect(warnOnVeryLowBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleWarnOnVeryLowBattery(bool)));
+    connect(notifyOnBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyBattery(bool)));
+    connect(notifyOnAC, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyAC(bool)));
 }
 
 Dialog::~Dialog()
 {
-    saveSettings();
+    Common::savePowerSettings(CONF_DIALOG,
+                              saveGeometry());
 }
 
 // populate widgets with default values
@@ -770,12 +789,6 @@ void Dialog::loadSettings()
     }
     desktopPM->setChecked(defaultDesktopPM);
 
-    /*bool defaultLidXrandr = false;
-    if (Common::validPowerSettings(CONF_LID_XRANDR)) {
-        defaultLidXrandr = Common::loadPowerSettings(CONF_LID_XRANDR).toBool();
-    }
-    lidXrandr->setChecked(defaultLidXrandr);*/
-
     bool defaultShowNotifications = true;
     if (Common::validPowerSettings(CONF_TRAY_NOTIFY)) {
         defaultShowNotifications = Common::loadPowerSettings(CONF_TRAY_NOTIFY).toBool();
@@ -806,9 +819,21 @@ void Dialog::loadSettings()
     }
     warnOnVeryLowBattery->setChecked(defaultWarnOnVeryLowBattery);
 
+    bool defaultNotifyOnBattery = true;
+    if (Common::validPowerSettings(CONF_NOTIFY_ON_BATTERY)) {
+        defaultNotifyOnBattery = Common::loadPowerSettings(CONF_NOTIFY_ON_BATTERY).toBool();
+    }
+    notifyOnBattery->setChecked(defaultNotifyOnBattery);
+
+    bool defaultNotifyOnAC = true;
+    if (Common::validPowerSettings(CONF_NOTIFY_ON_AC)) {
+        defaultNotifyOnAC = Common::loadPowerSettings(CONF_NOTIFY_ON_AC).toBool();
+    }
+    notifyOnAC->setChecked(defaultNotifyOnAC);
+
     // power actions
     bool canSuspend = man->CanSuspend();
-    bool canHibernate = man->CanHibernate();
+    bool canHibernate = man->CanHibernate() && Common::kernelCanResume();
     bool canShutdown = man->CanPowerOff();
     QString notSupported = tr("%1 is not supported. Check permissions and/or settings.");
     sleepButton->setEnabled(canSuspend);
@@ -873,7 +898,9 @@ void Dialog::loadSettings()
                     Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
                     .toBool());
     }
+
     enableBacklight(hasBacklight);
+    enableLid(man->LidIsPresent());
 
     // check devices
     checkDevices();
@@ -900,8 +927,6 @@ void Dialog::saveSettings()
                               desktopSS->isChecked());
     Common::savePowerSettings(CONF_FREEDESKTOP_PM,
                               desktopPM->isChecked());
-    //Common::savePowerSettings(CONF_LID_XRANDR,
-                              //lidXrandr->isChecked());
     Common::savePowerSettings(CONF_TRAY_NOTIFY,
                               showNotifications->isChecked());
     Common::savePowerSettings(CONF_TRAY_SHOW,
@@ -926,6 +951,14 @@ void Dialog::saveSettings()
                               backlightACHigherCheck->isChecked());
     Common::savePowerSettings(CONF_DIALOG,
                               saveGeometry());
+    Common::savePowerSettings(CONF_WARN_ON_LOW_BATTERY,
+                              warnOnLowBattery->isChecked());
+    Common::savePowerSettings(CONF_WARN_ON_VERYLOW_BATTERY,
+                              warnOnVeryLowBattery->isChecked());
+    Common::savePowerSettings(CONF_NOTIFY_ON_BATTERY,
+                              notifyOnBattery->isChecked());
+    Common::savePowerSettings(CONF_NOTIFY_ON_AC,
+                              notifyOnAC->isChecked());
 }
 
 // set default action in combobox
@@ -1006,11 +1039,6 @@ void Dialog::handleDesktopPM(bool triggered)
     // TODO: add restart now?
 }
 
-/*void Dialog::handleLidXrandr(bool triggered)
-{
-    Common::savePowerSettings(CONF_LID_XRANDR, triggered);
-}*/
-
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
@@ -1023,9 +1051,6 @@ void Dialog::handleShowSystemTray(bool triggered)
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
-    /*if (triggered && !lidXrandr->isEnabled()) {
-        lidXrandr->setEnabled(true);
-    } else { lidXrandr->setDisabled(true); }*/
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
 }
 
@@ -1050,8 +1075,9 @@ void Dialog::handleSleepButton()
 {
     if (QMessageBox::question(this,
                               tr("Suspend computer"),
-                              tr("Are you sure you want to suspend?")
-                              ) == QMessageBox::No) { return; }
+                              tr("Are you sure you want to suspend?"),
+                              QMessageBox::Yes,
+                              QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanSuspend()) { man->Suspend(); }
     else {
         QMessageBox::information(this,
@@ -1066,8 +1092,9 @@ void Dialog::handleHibernateButton()
 {
     if (QMessageBox::question(this,
                               tr("Hibernate computer"),
-                              tr("Are you sure you want to hibernate?")
-                              ) == QMessageBox::No) { return; }
+                              tr("Are you sure you want to hibernate?"),
+                              QMessageBox::Yes,
+                              QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanHibernate() &&
         Common::kernelCanResume()) { man->Hibernate(); }
     else {
@@ -1083,8 +1110,9 @@ void Dialog::handlePoweroffButton()
 {
     if (QMessageBox::question(this,
                               tr("Shutdown computer"),
-                              tr("Are you sure you want to shutdown?")
-                              ) == QMessageBox::No) { return; }
+                              tr("Are you sure you want to shutdown?"),
+                              QMessageBox::Yes,
+                              QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanPowerOff()) { man->PowerOff(); }
     else {
         QMessageBox::information(this,
@@ -1363,6 +1391,8 @@ void Dialog::enableBacklight(bool enabled)
     backlightACCheck->setEnabled(enabled);
     backlightBatteryLowerCheck->setEnabled(enabled);
     backlightACHigherCheck->setEnabled(enabled);
+    batteryBacklightLabel->setEnabled(enabled);
+    acBacklightLabel->setEnabled(enabled);
 }
 
 void Dialog::showAboutDialog()
@@ -1372,14 +1402,50 @@ void Dialog::showAboutDialog()
     about.setIconPixmap(QIcon::fromTheme(DEFAULT_AC_ICON).pixmap(48, 48));
     about.setWindowTitle(tr("About PowerKit"));
     about.setText(QString("<h1 style=\"font-weight:normal;\">PowerKit %1</h1>"
-                          "<h3>Desktop independent power manager.</h3>"
-                          "<p>&copy;2018 Ole-Andr&eacute; Rodlie. All rights reserved.<br>"
-                          "Available under the 3-clause BSD license.<br> See the"
+                          "<h3>%2</h3>"
+                          "<p>&copy;2018 Ole-Andr&eacute; Rodlie. %3<br>"
+                          "%4<br> %5"
                           " <a href=\"https://github.com/rodlie/powerkit/blob/master/LICENSE\">LICENSE</a>"
-                          " file for full details.</p>"
-                          "<p>Available on <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
-                          " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> or"
+                          " %6</p>"
+                          "<p>%7 <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
+                          " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> %8"
                           " <a href=\"https://sourceforge.net/p/powerkit\">SourceForge</a>.</p>")
-                  .arg(qApp->applicationVersion()));
+                  .arg(qApp->applicationVersion())
+                  .arg(tr("Desktop independent power manager"))
+                  .arg(tr("All rights reserved."))
+                  .arg(tr("Licensed under the 3-clause BSD license."))
+                  .arg(tr("See the included"))
+                  .arg(tr("file for full details."))
+                  .arg(tr("Available on"))
+                  .arg(tr("and")));
     about.exec();
+}
+
+void Dialog::handleWarnOnLowBattery(bool triggered)
+{
+    Common::savePowerSettings(CONF_WARN_ON_LOW_BATTERY, triggered);
+}
+
+void Dialog::handleWarnOnVeryLowBattery(bool triggered)
+{
+    Common::savePowerSettings(CONF_WARN_ON_VERYLOW_BATTERY, triggered);
+}
+
+void Dialog::handleNotifyBattery(bool triggered)
+{
+    Common::savePowerSettings(CONF_NOTIFY_ON_BATTERY, triggered);
+}
+
+void Dialog::handleNotifyAC(bool triggered)
+{
+    Common::savePowerSettings(CONF_NOTIFY_ON_AC, triggered);
+}
+
+void Dialog::enableLid(bool enabled)
+{
+    lidActionAC->setEnabled(enabled);
+    lidActionBattery->setEnabled(enabled);
+    lidActionACLabel->setEnabled(enabled);
+    lidActionBatteryLabel->setEnabled(enabled);
+    disableLidAction->setEnabled(enabled);
 }

@@ -51,6 +51,8 @@ SysTray::SysTray(QObject *parent)
     , configDialog(0)
     , warnOnLowBattery(true)
     , warnOnVeryLowBattery(true)
+    , notifyOnBattery(true)
+    , notifyOnAC(true)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -160,6 +162,9 @@ SysTray::SysTray(QObject *parent)
             SLOT(timeout()));
     timer->start();
 
+    // check for config
+    Common::checkSettings();
+
     // setup theme
     Common::setIconTheme();
     if (tray->icon().isNull()) {
@@ -229,30 +234,32 @@ void SysTray::checkDevices()
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
     if (batteryLeft > 0 && man->HasBattery()) {
-        tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
+        tray->setToolTip(QString("%1 %2%").arg(tr("Battery at")).arg(batteryLeft));
         if (man->TimeToEmpty()>0 && man->OnBattery()) {
             tray->setToolTip(tray->toolTip()
-                             .append(tr(", %1 left")
+                             .append(QString(", %1 %2")
                              .arg(QDateTime::fromTime_t(man->TimeToEmpty())
-                                                        .toUTC().toString("hh:mm"))));
+                                                        .toUTC().toString("hh:mm")))
+                             .arg(tr("left")));
         }
         if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
         if (!man->OnBattery() &&
             man->BatteryLeft() <= 99) {
             if (man->TimeToFull()>0) {
                 tray->setToolTip(tray->toolTip()
-                                 .append(tr(", %1 left")
+                                 .append(QString(", %1 %2")
                                  .arg(QDateTime::fromTime_t(man->TimeToFull())
-                                                            .toUTC().toString("hh:mm"))));
+                                                            .toUTC().toString("hh:mm")))
+                                 .arg(tr("left")));
             }
-            tray->setToolTip(tray->toolTip().append(tr(" (Charging)")));
+            tray->setToolTip(tray->toolTip().append(QString(" (%1)").arg(tr("Charging"))));
         }
     } else { tray->setToolTip(tr("On AC")); }
 
     // inhibitors tooltip
     if (ssInhibitors.size()>0) {
         QString tooltip = "\n\n";
-        tooltip.append(tr("Screen Saver Inhibitors:\n"));
+        tooltip.append(QString("%1:\n").arg(tr("Screen Saver Inhibitors")));
         QMapIterator<quint32, QString> i(ssInhibitors);
         while (i.hasNext()) {
             i.next();
@@ -262,7 +269,7 @@ void SysTray::checkDevices()
     }
     if (pmInhibitors.size()>0) {
         QString tooltip = "\n\n";
-        tooltip.append(tr("Power Manager Inhibitors:\n"));
+        tooltip.append(QString("%1:\n").arg(tr("Power Manager Inhibitors")));
         QMapIterator<quint32, QString> i(pmInhibitors);
         while (i.hasNext()) {
             i.next();
@@ -341,8 +348,11 @@ void SysTray::handleOpenedLid()
 // do something when switched to battery power
 void SysTray::handleOnBattery()
 {
-    showMessage(tr("On Battery"),
-                tr("Switched to battery power."));
+    if (notifyOnBattery) {
+        showMessage(tr("On Battery"),
+                    tr("Switched to battery power."));
+    }
+
     // brightness
     if (hasBacklight &&
         backlightOnBattery &&
@@ -360,11 +370,14 @@ void SysTray::handleOnBattery()
 // do something when switched to ac power
 void SysTray::handleOnAC()
 {
-    showMessage(tr("On AC"),
-                tr("Switched to AC power."));
+    if (notifyOnAC) {
+        showMessage(tr("On AC"),
+                    tr("Switched to AC power."));
+    }
 
     wasLowBattery = false;
     wasVeryLowBattery = false;
+
     // brightness
     if (hasBacklight &&
         backlightOnAC &&
@@ -452,6 +465,12 @@ void SysTray::loadSettings()
     }
     if (Common::validPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY)) {
         warnOnVeryLowBattery = Common::loadPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
+    }
+    if (Common::validPowerSettings(CONF_NOTIFY_ON_BATTERY)) {
+        notifyOnBattery = Common::loadPowerSettings(CONF_NOTIFY_ON_BATTERY).toBool();
+    }
+    if (Common::validPowerSettings(CONF_NOTIFY_ON_AC)) {
+        notifyOnAC = Common::loadPowerSettings(CONF_NOTIFY_ON_AC).toBool();
     }
 
     // verify
@@ -549,7 +568,7 @@ void SysTray::handleLow(double left)
     double batteryLow = (double)(lowBatteryValue+critBatteryValue);
     if (left<=batteryLow && man->OnBattery()) {
         if (!wasLowBattery) {
-            showMessage(tr("Low Battery! (%1%)").arg(left),
+            showMessage(QString("%1 (%2%)").arg(tr("Low Battery!")).arg(left),
                         tr("The battery is low,"
                            " please consider connecting"
                            " your computer to a power supply."),
@@ -565,7 +584,7 @@ void SysTray::handleVeryLow(double left)
     double batteryVeryLow = (double)(critBatteryValue+1);
     if (left<=batteryVeryLow && man->OnBattery()) {
         if (!wasVeryLowBattery) {
-            showMessage(tr("Very Low Battery! (%1%)").arg(left),
+            showMessage(QString("%1 (%2%)").arg(tr("Very Low Battery!")).arg(left),
                         tr("The battery is almost empty,"
                            " please connect"
                            " your computer to a power supply now."),
@@ -813,22 +832,27 @@ void SysTray::disableHibernate()
     if (criticalAction == criticalHibernate) {
         qWarning() << "reset critical action to shutdown";
         criticalAction = criticalShutdown;
+        Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, criticalAction);
     }
     if (lidActionBattery == lidHibernate) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
+        Common::savePowerSettings(CONF_LID_BATTERY_ACTION, lidActionBattery);
     }
     if (lidActionAC == lidHibernate) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
+        Common::savePowerSettings(CONF_LID_AC_ACTION, lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendHibernate) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
+        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendHibernate) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
+        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, autoSuspendACAction);
     }
 }
 
@@ -838,18 +862,22 @@ void SysTray::disableSuspend()
     if (lidActionBattery == lidSleep) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
+        Common::savePowerSettings(CONF_LID_BATTERY_ACTION, lidActionBattery);
     }
     if (lidActionAC == lidSleep) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
+        Common::savePowerSettings(CONF_LID_AC_ACTION, lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendSleep) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
+        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendSleep) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
+        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, autoSuspendACAction);
     }
 }
 

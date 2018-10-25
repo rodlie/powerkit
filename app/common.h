@@ -28,6 +28,7 @@ public:
     static int backlightMax(QString device);
     static int backlightValue(QString device);
     static bool adjustBacklight(QString device, int value);
+    static void checkSettings();
 };
 
 #endif // COMMON_H

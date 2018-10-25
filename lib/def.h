@@ -127,5 +127,7 @@ enum criticalAction
 #define CONF_DIALOG "dialog_geometry"
 #define CONF_WARN_ON_LOW_BATTERY "warn_on_low_battery"
 #define CONF_WARN_ON_VERYLOW_BATTERY "warn_on_verylow_battery"
+#define CONF_NOTIFY_ON_BATTERY "notify_on_battery"
+#define CONF_NOTIFY_ON_AC "notify_on_ac"
 
 #endif // DEF_H
