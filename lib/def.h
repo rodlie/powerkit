@@ -82,6 +82,7 @@ enum criticalAction
 #define DEFAULT_INFO_ICON "dialog-information"
 #define DEFAULT_KEYBOARD_ICON "input-keyboard"
 #define DEFAULT_MOUSE_ICON "input-mouse"
+#define DEFAULT_ABOUT_ICON "dialog-question"
 
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
@@ -124,5 +125,7 @@ enum criticalAction
 #define CONF_BACKLIGHT_AC_ENABLE "backlight_ac_enable"
 #define CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER "backlight_ac_disable_if_higher"
 #define CONF_DIALOG "dialog_geometry"
+#define CONF_WARN_ON_LOW_BATTERY "warn_on_low_battery"
+#define CONF_WARN_ON_VERYLOW_BATTERY "warn_on_verylow_battery"
 
 #endif // DEF_H

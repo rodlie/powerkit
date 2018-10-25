@@ -74,6 +74,10 @@ void Common::saveDefaultSettings()
                       false);
     savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER,
                       false);
+    savePowerSettings(CONF_WARN_ON_LOW_BATTERY,
+                      true);
+    savePowerSettings(CONF_WARN_ON_VERYLOW_BATTERY,
+                      true);
 }
 
 void Common::setIconTheme()

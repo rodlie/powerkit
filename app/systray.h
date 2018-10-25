@@ -116,6 +116,8 @@ private:
     bool backlightBatteryDisableIfLower;
     bool backlightACDisableIfHigher;
     QProcess *configDialog;
+    bool warnOnLowBattery;
+    bool warnOnVeryLowBattery;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);

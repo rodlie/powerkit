@@ -49,6 +49,8 @@ SysTray::SysTray(QObject *parent)
     , backlightBatteryDisableIfLower(false)
     , backlightACDisableIfHigher(false)
     , configDialog(0)
+    , warnOnLowBattery(true)
+    , warnOnVeryLowBattery(true)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -445,6 +447,12 @@ void SysTray::loadSettings()
         backlightACDisableIfHigher = Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
                                                                .toBool();
     }
+    if (Common::validPowerSettings(CONF_WARN_ON_LOW_BATTERY)) {
+        warnOnLowBattery = Common::loadPowerSettings(CONF_WARN_ON_LOW_BATTERY).toBool();
+    }
+    if (Common::validPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY)) {
+        warnOnVeryLowBattery = Common::loadPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
+    }
 
     // verify
     if (!Common::kernelCanResume()) {
@@ -537,6 +545,7 @@ void SysTray::handleHasInhibitChanged(bool has_inhibit)
 
 void SysTray::handleLow(double left)
 {
+    if (!warnOnLowBattery) { return; }
     double batteryLow = (double)(lowBatteryValue+critBatteryValue);
     if (left<=batteryLow && man->OnBattery()) {
         if (!wasLowBattery) {
@@ -552,6 +561,7 @@ void SysTray::handleLow(double left)
 
 void SysTray::handleVeryLow(double left)
 {
+    if (!warnOnVeryLowBattery) { return; }
     double batteryVeryLow = (double)(critBatteryValue+1);
     if (left<=batteryVeryLow && man->OnBattery()) {
         if (!wasVeryLowBattery) {
