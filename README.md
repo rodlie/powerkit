@@ -1,6 +1,11 @@
 # PowerKit
 
+![screenshot](app/share/images/screenshot-03.png)
+
 powerkit is an lightweight desktop independent full featured power manager, originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
+
+![screenshot](app/share/images/screenshot-01.png)
+![screenshot](app/share/images/screenshot-02.png)
 
 ## Features
 
