@@ -654,7 +654,8 @@ Dialog::Dialog(QWidget *parent)
 
 Dialog::~Dialog()
 {
-    saveSettings();
+    Common::savePowerSettings(CONF_DIALOG,
+                              saveGeometry());
 }
 
 // populate widgets with default values
@@ -1401,15 +1402,21 @@ void Dialog::showAboutDialog()
     about.setIconPixmap(QIcon::fromTheme(DEFAULT_AC_ICON).pixmap(48, 48));
     about.setWindowTitle(tr("About PowerKit"));
     about.setText(QString("<h1 style=\"font-weight:normal;\">PowerKit %1</h1>"
-                          "<h3>Desktop independent power manager.</h3>"
-                          "<p>&copy;2018 Ole-Andr&eacute; Rodlie. All rights reserved.<br>"
-                          "Licensed under the 3-clause BSD license.<br> See the included"
+                          "<h3>%2</h3>"
+                          "<p>&copy;2018 Ole-Andr&eacute; Rodlie. %3<br>"
+                          "%4<br> %5"
                           " <a href=\"https://github.com/rodlie/powerkit/blob/master/LICENSE\">LICENSE</a>"
-                          " file for full details.</p>"
-                          "<p>Available on <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
+                          " %6</p>"
+                          "<p>%7 <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
                           " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> or"
                           " <a href=\"https://sourceforge.net/p/powerkit\">SourceForge</a>.</p>")
-                  .arg(qApp->applicationVersion()));
+                  .arg(qApp->applicationVersion())
+                  .arg(tr("Desktop independent power manager"))
+                  .arg(tr("All rights reserved."))
+                  .arg(tr("Licensed under the 3-clause BSD license."))
+                  .arg(tr("See the included"))
+                  .arg(tr("file for full details."))
+                  .arg(tr("Available on")));
     about.exec();
 }
 

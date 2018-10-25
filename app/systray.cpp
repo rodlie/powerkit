@@ -231,30 +231,32 @@ void SysTray::checkDevices()
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
     if (batteryLeft > 0 && man->HasBattery()) {
-        tray->setToolTip(tr("Battery at %1%").arg(batteryLeft));
+        tray->setToolTip(QString("%1 %2%").arg(tr("Battery at")).arg(batteryLeft));
         if (man->TimeToEmpty()>0 && man->OnBattery()) {
             tray->setToolTip(tray->toolTip()
-                             .append(tr(", %1 left")
+                             .append(QString(", %1 %2")
                              .arg(QDateTime::fromTime_t(man->TimeToEmpty())
-                                                        .toUTC().toString("hh:mm"))));
+                                                        .toUTC().toString("hh:mm")))
+                             .arg(tr("left")));
         }
         if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
         if (!man->OnBattery() &&
             man->BatteryLeft() <= 99) {
             if (man->TimeToFull()>0) {
                 tray->setToolTip(tray->toolTip()
-                                 .append(tr(", %1 left")
+                                 .append(QString(", %1 %2")
                                  .arg(QDateTime::fromTime_t(man->TimeToFull())
-                                                            .toUTC().toString("hh:mm"))));
+                                                            .toUTC().toString("hh:mm")))
+                                 .arg(tr("left")));
             }
-            tray->setToolTip(tray->toolTip().append(tr(" (Charging)")));
+            tray->setToolTip(tray->toolTip().append(QString(" (%1)").arg(tr("Charging"))));
         }
     } else { tray->setToolTip(tr("On AC")); }
 
     // inhibitors tooltip
     if (ssInhibitors.size()>0) {
         QString tooltip = "\n\n";
-        tooltip.append(tr("Screen Saver Inhibitors:\n"));
+        tooltip.append(QString("%1:\n").arg(tr("Screen Saver Inhibitors")));
         QMapIterator<quint32, QString> i(ssInhibitors);
         while (i.hasNext()) {
             i.next();
@@ -264,7 +266,7 @@ void SysTray::checkDevices()
     }
     if (pmInhibitors.size()>0) {
         QString tooltip = "\n\n";
-        tooltip.append(tr("Power Manager Inhibitors:\n"));
+        tooltip.append(QString("%1:\n").arg(tr("Power Manager Inhibitors")));
         QMapIterator<quint32, QString> i(pmInhibitors);
         while (i.hasNext()) {
             i.next();
@@ -372,6 +374,7 @@ void SysTray::handleOnAC()
 
     wasLowBattery = false;
     wasVeryLowBattery = false;
+
     // brightness
     if (hasBacklight &&
         backlightOnAC &&
@@ -562,7 +565,7 @@ void SysTray::handleLow(double left)
     double batteryLow = (double)(lowBatteryValue+critBatteryValue);
     if (left<=batteryLow && man->OnBattery()) {
         if (!wasLowBattery) {
-            showMessage(tr("Low Battery! (%1%)").arg(left),
+            showMessage(QString("%1 (%2%)").arg(tr("Low Battery!")).arg(left),
                         tr("The battery is low,"
                            " please consider connecting"
                            " your computer to a power supply."),
@@ -578,7 +581,7 @@ void SysTray::handleVeryLow(double left)
     double batteryVeryLow = (double)(critBatteryValue+1);
     if (left<=batteryVeryLow && man->OnBattery()) {
         if (!wasVeryLowBattery) {
-            showMessage(tr("Very Low Battery! (%1%)").arg(left),
+            showMessage(QString("%1 (%2%)").arg(tr("Very Low Battery!")).arg(left),
                         tr("The battery is almost empty,"
                            " please connect"
                            " your computer to a power supply now."),
