@@ -83,7 +83,6 @@ private:
     QPushButton *sleepButton;
     QPushButton *hibernateButton;
     QPushButton *poweroffButton;
-    //QCheckBox *lidXrandr;
     QString backlightDevice;
     bool hasBacklight;
     QSlider *backlightSlider;
@@ -104,6 +103,8 @@ private:
     QCheckBox *warnOnLowBattery;
     QCheckBox *warnOnVeryLowBattery;
     QPushButton *aboutButton;
+    QCheckBox *notifyOnBattery;
+    QCheckBox *notifyOnAC;
 
 private slots:
     void populate();
@@ -120,7 +121,6 @@ private slots:
     void handleAutoSleepAC(int value);
     void handleDesktopSS(bool triggered);
     void handleDesktopPM(bool triggered);
-    //void handleLidXrandr(bool triggered);
     void handleShowNotifications(bool triggered);
     void handleShowSystemTray(bool triggered);
     void handleDisableLidAction(bool triggered);
@@ -149,6 +149,10 @@ private slots:
     void getInhibitors();
     void enableBacklight(bool enabled);
     void showAboutDialog();
+    void handleWarnOnLowBattery(bool triggered);
+    void handleWarnOnVeryLowBattery(bool triggered);
+    void handleNotifyBattery(bool triggered);
+    void handleNotifyAC(bool triggered);
 };
 
 #endif // DIALOG_H

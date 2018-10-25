@@ -51,6 +51,8 @@ SysTray::SysTray(QObject *parent)
     , configDialog(0)
     , warnOnLowBattery(true)
     , warnOnVeryLowBattery(true)
+    , notifyOnBattery(true)
+    , notifyOnAC(true)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -341,8 +343,11 @@ void SysTray::handleOpenedLid()
 // do something when switched to battery power
 void SysTray::handleOnBattery()
 {
-    showMessage(tr("On Battery"),
-                tr("Switched to battery power."));
+    if (notifyOnBattery) {
+        showMessage(tr("On Battery"),
+                    tr("Switched to battery power."));
+    }
+
     // brightness
     if (hasBacklight &&
         backlightOnBattery &&
@@ -360,8 +365,10 @@ void SysTray::handleOnBattery()
 // do something when switched to ac power
 void SysTray::handleOnAC()
 {
-    showMessage(tr("On AC"),
-                tr("Switched to AC power."));
+    if (notifyOnAC) {
+        showMessage(tr("On AC"),
+                    tr("Switched to AC power."));
+    }
 
     wasLowBattery = false;
     wasVeryLowBattery = false;
@@ -452,6 +459,12 @@ void SysTray::loadSettings()
     }
     if (Common::validPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY)) {
         warnOnVeryLowBattery = Common::loadPowerSettings(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
+    }
+    if (Common::validPowerSettings(CONF_NOTIFY_ON_BATTERY)) {
+        notifyOnBattery = Common::loadPowerSettings(CONF_NOTIFY_ON_BATTERY).toBool();
+    }
+    if (Common::validPowerSettings(CONF_NOTIFY_ON_AC)) {
+        notifyOnAC = Common::loadPowerSettings(CONF_NOTIFY_ON_AC).toBool();
     }
 
     // verify

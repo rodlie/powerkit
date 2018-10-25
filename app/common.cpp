@@ -78,6 +78,10 @@ void Common::saveDefaultSettings()
                       true);
     savePowerSettings(CONF_WARN_ON_VERYLOW_BATTERY,
                       true);
+    savePowerSettings(CONF_NOTIFY_ON_BATTERY,
+                      true);
+    savePowerSettings(CONF_NOTIFY_ON_AC,
+                      true);
 }
 
 void Common::setIconTheme()

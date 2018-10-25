@@ -118,6 +118,8 @@ private:
     QProcess *configDialog;
     bool warnOnLowBattery;
     bool warnOnVeryLowBattery;
+    bool notifyOnBattery;
+    bool notifyOnAC;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
