@@ -46,6 +46,10 @@ Dialog::Dialog(QWidget *parent)
     , warnOnLowBattery(0)
     , warnOnVeryLowBattery(0)
     , aboutButton(0)
+    , lidActionACLabel(0)
+    , lidActionBatteryLabel(0)
+    , batteryBacklightLabel(0)
+    , acBacklightLabel(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -101,7 +105,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionBattery = new QComboBox(this);
     lidActionBattery->setMaximumWidth(MAX_WIDTH);
     lidActionBattery->setMinimumWidth(MAX_WIDTH);
-    QLabel *lidActionBatteryLabel = new QLabel(this);
+    lidActionBatteryLabel = new QLabel(this);
 
     QLabel *lidActionBatteryIcon = new QLabel(this);
     lidActionBatteryIcon->setMaximumSize(48, 48);
@@ -217,7 +221,7 @@ Dialog::Dialog(QWidget *parent)
 
     QWidget *batteryBacklightContainer = new QWidget(this);
     QHBoxLayout *batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
-    QLabel *batteryBacklightLabel = new QLabel(this);
+    batteryBacklightLabel = new QLabel(this);
     QLabel *batteryBacklightIcon = new QLabel(this);
 
     batteryBacklightIcon->setMaximumSize(48, 48);
@@ -252,7 +256,7 @@ Dialog::Dialog(QWidget *parent)
     lidActionAC = new QComboBox(this);
     lidActionAC->setMaximumWidth(MAX_WIDTH);
     lidActionAC->setMinimumWidth(MAX_WIDTH);
-    QLabel *lidActionACLabel = new QLabel(this);
+    lidActionACLabel = new QLabel(this);
 
     QLabel *lidActionACIcon = new QLabel(this);
     lidActionACIcon->setMaximumSize(48, 48);
@@ -337,7 +341,7 @@ Dialog::Dialog(QWidget *parent)
 
     QWidget *acBacklightContainer = new QWidget(this);
     QHBoxLayout *acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
-    QLabel *acBacklightLabel = new QLabel(this);
+    acBacklightLabel = new QLabel(this);
     QLabel *acBacklightIcon = new QLabel(this);
 
     acBacklightIcon->setMaximumSize(48, 48);
@@ -563,6 +567,7 @@ Dialog::Dialog(QWidget *parent)
     // inhibitors
     inhibitorTree = new QTreeWidget(this);
     inhibitorTree->setHeaderHidden(true);
+    inhibitorTree->setStyleSheet("QTreeWidget {border:0;}");
 
     // add tabs
     containerWidget->addTab(statusContainer,
@@ -892,7 +897,9 @@ void Dialog::loadSettings()
                     Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
                     .toBool());
     }
+
     enableBacklight(hasBacklight);
+    enableLid(man->LidIsPresent());
 
     // check devices
     checkDevices();
@@ -1031,11 +1038,6 @@ void Dialog::handleDesktopPM(bool triggered)
     // TODO: add restart now?
 }
 
-/*void Dialog::handleLidXrandr(bool triggered)
-{
-    Common::savePowerSettings(CONF_LID_XRANDR, triggered);
-}*/
-
 void Dialog::handleShowNotifications(bool triggered)
 {
     Common::savePowerSettings(CONF_TRAY_NOTIFY, triggered);
@@ -1048,9 +1050,6 @@ void Dialog::handleShowSystemTray(bool triggered)
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
-    /*if (triggered && !lidXrandr->isEnabled()) {
-        lidXrandr->setEnabled(true);
-    } else { lidXrandr->setDisabled(true); }*/
     Common::savePowerSettings(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
 }
 
@@ -1391,6 +1390,8 @@ void Dialog::enableBacklight(bool enabled)
     backlightACCheck->setEnabled(enabled);
     backlightBatteryLowerCheck->setEnabled(enabled);
     backlightACHigherCheck->setEnabled(enabled);
+    batteryBacklightLabel->setEnabled(enabled);
+    acBacklightLabel->setEnabled(enabled);
 }
 
 void Dialog::showAboutDialog()
@@ -1402,7 +1403,7 @@ void Dialog::showAboutDialog()
     about.setText(QString("<h1 style=\"font-weight:normal;\">PowerKit %1</h1>"
                           "<h3>Desktop independent power manager.</h3>"
                           "<p>&copy;2018 Ole-Andr&eacute; Rodlie. All rights reserved.<br>"
-                          "Available under the 3-clause BSD license.<br> See the"
+                          "Licensed under the 3-clause BSD license.<br> See the included"
                           " <a href=\"https://github.com/rodlie/powerkit/blob/master/LICENSE\">LICENSE</a>"
                           " file for full details.</p>"
                           "<p>Available on <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
@@ -1430,4 +1431,13 @@ void Dialog::handleNotifyBattery(bool triggered)
 void Dialog::handleNotifyAC(bool triggered)
 {
     Common::savePowerSettings(CONF_NOTIFY_ON_AC, triggered);
+}
+
+void Dialog::enableLid(bool enabled)
+{
+    lidActionAC->setEnabled(enabled);
+    lidActionBattery->setEnabled(enabled);
+    lidActionACLabel->setEnabled(enabled);
+    lidActionBatteryLabel->setEnabled(enabled);
+    disableLidAction->setEnabled(enabled);
 }

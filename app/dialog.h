@@ -105,6 +105,10 @@ private:
     QPushButton *aboutButton;
     QCheckBox *notifyOnBattery;
     QCheckBox *notifyOnAC;
+    QLabel *lidActionACLabel;
+    QLabel *lidActionBatteryLabel;
+    QLabel *batteryBacklightLabel;
+    QLabel *acBacklightLabel;
 
 private slots:
     void populate();
@@ -153,6 +157,7 @@ private slots:
     void handleWarnOnVeryLowBattery(bool triggered);
     void handleNotifyBattery(bool triggered);
     void handleNotifyAC(bool triggered);
+    void enableLid(bool enabled);
 };
 
 #endif // DIALOG_H
