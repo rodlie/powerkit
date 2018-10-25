@@ -72,6 +72,9 @@ Dialog::Dialog(QWidget *parent)
     // setup powerkit
     man = new PowerKit(this);
 
+    // check settings
+    Common::checkSettings();
+
     // setup theme
     Common::setIconTheme();
     setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
