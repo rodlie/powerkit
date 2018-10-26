@@ -173,6 +173,10 @@ QStringList PowerKit::find()
                                                        DBUS_INTROSPECTABLE,
                                                        "Introspect");
     QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(call);
+    if (reply.isError()) {
+        qWarning() << "powerkit find devices failed, check the upower service!!!";
+        return result;
+    }
     QList<QDBusObjectPath> objects;
     QXmlStreamReader xml(reply.value());
     while (!xml.atEnd()) {
