@@ -242,3 +242,8 @@ bool Common::adjustBacklight(QString device, int value)
     }
     return false;
 }
+
+void Common::checkSettings()
+{
+    confFile();
+}

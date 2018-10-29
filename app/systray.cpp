@@ -162,6 +162,9 @@ SysTray::SysTray(QObject *parent)
             SLOT(timeout()));
     timer->start();
 
+    // check for config
+    Common::checkSettings();
+
     // setup theme
     Common::setIconTheme();
     if (tray->icon().isNull()) {

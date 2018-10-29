@@ -833,7 +833,7 @@ void Dialog::loadSettings()
 
     // power actions
     bool canSuspend = man->CanSuspend();
-    bool canHibernate = man->CanHibernate();
+    bool canHibernate = man->CanHibernate() && Common::kernelCanResume();
     bool canShutdown = man->CanPowerOff();
     QString notSupported = tr("%1 is not supported. Check permissions and/or settings.");
     sleepButton->setEnabled(canSuspend);
@@ -1408,7 +1408,7 @@ void Dialog::showAboutDialog()
                           " <a href=\"https://github.com/rodlie/powerkit/blob/master/LICENSE\">LICENSE</a>"
                           " %6</p>"
                           "<p>%7 <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
-                          " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> or"
+                          " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> %8"
                           " <a href=\"https://sourceforge.net/p/powerkit\">SourceForge</a>.</p>")
                   .arg(qApp->applicationVersion())
                   .arg(tr("Desktop independent power manager"))
@@ -1416,7 +1416,8 @@ void Dialog::showAboutDialog()
                   .arg(tr("Licensed under the 3-clause BSD license."))
                   .arg(tr("See the included"))
                   .arg(tr("file for full details."))
-                  .arg(tr("Available on")));
+                  .arg(tr("Available on"))
+                  .arg(tr("and")));
     about.exec();
 }
 
