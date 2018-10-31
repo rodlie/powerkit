@@ -34,10 +34,10 @@ quint32 ScreenSaver::genCookie()
 {
     int low = 0;
     int high = 1000;
-    quint32 cookie = randInt(low, high);
+    quint32 cookie = (quint32)randInt(low, high);
     while(!clients.contains(cookie)) {
         if (!clients.contains(cookie)) { clients[cookie] = QTime::currentTime(); }
-        else { cookie = randInt(low, high); }
+        else { cookie = (quint32)randInt(low, high); }
     }
     return cookie;
 }
@@ -61,17 +61,8 @@ bool ScreenSaver::canInhibit()
     return false;
 }
 
-void ScreenSaver::checkForDBusSession()
-{
-    //if (!QDBusConnection::sessionBus().isConnected()) {
-    // DBus session has probably ended(?), so quit ...
-    //qApp->quit();
-    //}
-}
-
 void ScreenSaver::timeOut()
 {
-    checkForDBusSession();
     if (canInhibit()) { SimulateUserActivity(); }
 }
 

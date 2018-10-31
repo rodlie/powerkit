@@ -1248,15 +1248,15 @@ void Dialog::checkDevices()
             devicesProg[uid] = new QProgressBar(this);
             devicesProg[uid]->setMinimum(0);
             devicesProg[uid]->setMaximum(100);
-            devicesProg[uid]->setValue(i.value()->percentage);
+            devicesProg[uid]->setValue((int)i.value()->percentage);
             deviceTree->setItemWidget(item, 1, devicesProg[uid]);
         } else {
-            devicesProg[i.value()->path]->setValue(i.value()->percentage);
+            devicesProg[i.value()->path]->setValue((int)i.value()->percentage);
         }
     }
 
     QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-    if (left == 0 || !man->HasBattery()) {
+    if (left <1 || !man->HasBattery()) {
         batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
         return;
     }
@@ -1270,7 +1270,7 @@ void Dialog::checkDevices()
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left == 100 && !man->OnBattery()) {
+        if (left > 99 && !man->OnBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
         }
     }

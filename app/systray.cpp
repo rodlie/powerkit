@@ -238,7 +238,7 @@ void SysTray::checkDevices()
         if (man->TimeToEmpty()>0 && man->OnBattery()) {
             tray->setToolTip(tray->toolTip()
                              .append(QString(", %1 %2")
-                             .arg(QDateTime::fromTime_t(man->TimeToEmpty())
+                             .arg(QDateTime::fromTime_t((uint)man->TimeToEmpty())
                                                         .toUTC().toString("hh:mm")))
                              .arg(tr("left")));
         }
@@ -248,7 +248,7 @@ void SysTray::checkDevices()
             if (man->TimeToFull()>0) {
                 tray->setToolTip(tray->toolTip()
                                  .append(QString(", %1 %2")
-                                 .arg(QDateTime::fromTime_t(man->TimeToFull())
+                                 .arg(QDateTime::fromTime_t((uint)man->TimeToFull())
                                                             .toUTC().toString("hh:mm")))
                                  .arg(tr("left")));
             }
