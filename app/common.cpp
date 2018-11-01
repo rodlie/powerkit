@@ -82,6 +82,8 @@ void Common::saveDefaultSettings()
                       true);
     savePowerSettings(CONF_NOTIFY_ON_AC,
                       true);
+    savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL,
+                      true);
 }
 
 void Common::setIconTheme()

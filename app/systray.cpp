@@ -53,6 +53,7 @@ SysTray::SysTray(QObject *parent)
     , warnOnVeryLowBattery(true)
     , notifyOnBattery(true)
     , notifyOnAC(true)
+    , backlightMouseWheel(true)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -490,6 +491,9 @@ void SysTray::loadSettings()
     // backlight
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
+    if (Common::validPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL)) {
+        backlightMouseWheel = Common::loadPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
+    }
 }
 
 // register session services
@@ -909,17 +913,17 @@ void SysTray::switchInternalMonitor(bool toggle)
 // adjust backlight on wheel event (on systray)
 void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 {
-    if (!hasBacklight) { return; }
+    if (!hasBacklight || !backlightMouseWheel) { return; }
     switch (action) {
     case TrayIcon::WheelUp:
         Common::adjustBacklight(backlightDevice,
-                                Common::backlightValue(backlightDevice)+10);
+                                Common::backlightValue(backlightDevice)+BACKLIGHT_MOVE_VALUE);
         break;
     case TrayIcon::WheelDown:
         Common::adjustBacklight(backlightDevice,
-                                Common::backlightValue(backlightDevice)-10);
+                                Common::backlightValue(backlightDevice)-BACKLIGHT_MOVE_VALUE);
         break;
-    default: ;
+    default:;
     }
 }
 

@@ -109,6 +109,7 @@ private:
     QLabel *lidActionBatteryLabel;
     QLabel *batteryBacklightLabel;
     QLabel *acBacklightLabel;
+    QCheckBox *backlightMouseWheel;
 
 private slots:
     void populate();
@@ -158,6 +159,7 @@ private slots:
     void handleNotifyBattery(bool triggered);
     void handleNotifyAC(bool triggered);
     void enableLid(bool enabled);
+    void handleBacklightMouseWheel(bool triggered);
 };
 
 #endif // DIALOG_H

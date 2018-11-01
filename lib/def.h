@@ -54,6 +54,7 @@ enum criticalAction
 #define LID_AC_DEFAULT lidLock
 #define CRITICAL_DEFAULT criticalNone
 
+#define BACKLIGHT_MOVE_VALUE 10
 #define LOW_BATTERY 5 // % over critical
 #define CRITICAL_BATTERY 10
 #define AUTO_SLEEP_BATTERY 15
@@ -124,6 +125,7 @@ enum criticalAction
 #define CONF_BACKLIGHT_AC "backlight_ac_value"
 #define CONF_BACKLIGHT_AC_ENABLE "backlight_ac_enable"
 #define CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER "backlight_ac_disable_if_higher"
+#define CONF_BACKLIGHT_MOUSE_WHEEL "backlight_mouse_wheel"
 #define CONF_DIALOG "dialog_geometry"
 #define CONF_WARN_ON_LOW_BATTERY "warn_on_low_battery"
 #define CONF_WARN_ON_VERYLOW_BATTERY "warn_on_verylow_battery"

@@ -50,6 +50,7 @@ Dialog::Dialog(QWidget *parent)
     , lidActionBatteryLabel(0)
     , batteryBacklightLabel(0)
     , acBacklightLabel(0)
+    , backlightMouseWheel(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -410,9 +411,15 @@ Dialog::Dialog(QWidget *parent)
     disableLidAction->setToolTip(tr("Disable lid action if an external monitor is connected"
                                     " to your laptop."));
 
+    backlightMouseWheel = new QCheckBox(this);
+    backlightMouseWheel->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    backlightMouseWheel->setText(tr("Adjust backlight in system tray"));
+    backlightMouseWheel->setToolTip(tr("Adjust the display backlight with the mouse wheel on the system tray icon."));
+
     daemonContainerLayout->addWidget(showSystemTray);
     daemonContainerLayout->addWidget(showNotifications);
     daemonContainerLayout->addWidget(disableLidAction);
+    daemonContainerLayout->addWidget(backlightMouseWheel);
 
     // notify
     QGroupBox *notifyContainer = new QGroupBox(this);
@@ -653,6 +660,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleNotifyBattery(bool)));
     connect(notifyOnAC, SIGNAL(toggled(bool)),
             this, SLOT(handleNotifyAC(bool)));
+    connect(backlightMouseWheel, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightMouseWheel(bool)));
 }
 
 Dialog::~Dialog()
@@ -901,6 +910,11 @@ void Dialog::loadSettings()
                     Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
                     .toBool());
     }
+    bool defaultBacklightMouseWheel = true;
+    if (Common::validPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL)) {
+        defaultBacklightMouseWheel = Common::loadPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
+    }
+    backlightMouseWheel->setChecked(defaultBacklightMouseWheel);
 
     enableBacklight(hasBacklight);
     enableLid(man->LidIsPresent());
@@ -962,6 +976,8 @@ void Dialog::saveSettings()
                               notifyOnBattery->isChecked());
     Common::savePowerSettings(CONF_NOTIFY_ON_AC,
                               notifyOnAC->isChecked());
+    Common::savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL,
+                              backlightMouseWheel->isChecked());
 }
 
 // set default action in combobox
@@ -1396,6 +1412,7 @@ void Dialog::enableBacklight(bool enabled)
     backlightACHigherCheck->setEnabled(enabled);
     batteryBacklightLabel->setEnabled(enabled);
     acBacklightLabel->setEnabled(enabled);
+    backlightMouseWheel->setEnabled(enabled);
 }
 
 void Dialog::showAboutDialog()
@@ -1451,4 +1468,9 @@ void Dialog::enableLid(bool enabled)
     lidActionACLabel->setEnabled(enabled);
     lidActionBatteryLabel->setEnabled(enabled);
     disableLidAction->setEnabled(enabled);
+}
+
+void Dialog::handleBacklightMouseWheel(bool triggered)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
 }
