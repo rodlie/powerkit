@@ -412,7 +412,7 @@ Dialog::Dialog(QWidget *parent)
                                     " to your laptop."));
 
     backlightMouseWheel = new QCheckBox(this);
-    backlightMouseWheel->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    backlightMouseWheel->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
     backlightMouseWheel->setText(tr("Adjust backlight in system tray"));
     backlightMouseWheel->setToolTip(tr("Adjust the display backlight with the mouse wheel on the system tray icon."));
 
