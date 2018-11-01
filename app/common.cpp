@@ -84,6 +84,10 @@ void Common::saveDefaultSettings()
                       true);
     savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL,
                       true);
+    savePowerSettings(CONF_SUSPEND_LOCK_SCREEN,
+                      true);
+    savePowerSettings(CONF_RESUME_LOCK_SCREEN,
+                      false);
 }
 
 void Common::setIconTheme()

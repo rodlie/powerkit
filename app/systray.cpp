@@ -54,6 +54,8 @@ SysTray::SysTray(QObject *parent)
     , notifyOnBattery(true)
     , notifyOnAC(true)
     , backlightMouseWheel(true)
+    , lockScreenOnSuspend(true)
+    , lockScreenOnResume(false)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -473,6 +475,12 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings(CONF_NOTIFY_ON_AC)) {
         notifyOnAC = Common::loadPowerSettings(CONF_NOTIFY_ON_AC).toBool();
     }
+    if (Common::validPowerSettings(CONF_SUSPEND_LOCK_SCREEN)) {
+        lockScreenOnSuspend = Common::loadPowerSettings(CONF_SUSPEND_LOCK_SCREEN).toBool();
+    }
+    if (Common::validPowerSettings(CONF_RESUME_LOCK_SCREEN)) {
+        lockScreenOnResume = Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool();
+    }
 
     // verify
     if (!Common::kernelCanResume()) {
@@ -889,9 +897,10 @@ void SysTray::disableSuspend()
 void SysTray::handlePrepareForSuspend(bool suspend)
 {
     qDebug() << "system prepare for suspend/resume" << suspend;
-    man->LockScreen();
     resetTimer();
+    if (lockScreenOnSuspend) { man->LockScreen(); }
     if (!suspend) { // resume
+        if (lockScreenOnResume) { man->LockScreen(); }
         tray->showMessage(QString(), QString());
         man->UpdateDevices();
         ss->SimulateUserActivity();

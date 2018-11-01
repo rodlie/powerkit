@@ -110,6 +110,8 @@ private:
     QLabel *batteryBacklightLabel;
     QLabel *acBacklightLabel;
     QCheckBox *backlightMouseWheel;
+    QCheckBox *suspendLockScreen;
+    QCheckBox *resumeLockScreen;
 
 private slots:
     void populate();
@@ -160,6 +162,8 @@ private slots:
     void handleNotifyAC(bool triggered);
     void enableLid(bool enabled);
     void handleBacklightMouseWheel(bool triggered);
+    void handleSuspendLockScreen(bool triggered);
+    void handleResumeLockScreen(bool triggered);
 };
 
 #endif // DIALOG_H

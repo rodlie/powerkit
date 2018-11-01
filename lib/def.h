@@ -131,5 +131,7 @@ enum criticalAction
 #define CONF_WARN_ON_VERYLOW_BATTERY "warn_on_verylow_battery"
 #define CONF_NOTIFY_ON_BATTERY "notify_on_battery"
 #define CONF_NOTIFY_ON_AC "notify_on_ac"
+#define CONF_SUSPEND_LOCK_SCREEN "lock_screen_on_suspend"
+#define CONF_RESUME_LOCK_SCREEN "lock_screen_on_resume"
 
 #endif // DEF_H

@@ -51,6 +51,8 @@ Dialog::Dialog(QWidget *parent)
     , batteryBacklightLabel(0)
     , acBacklightLabel(0)
     , backlightMouseWheel(0)
+    , suspendLockScreen(0)
+    , resumeLockScreen(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -421,6 +423,24 @@ Dialog::Dialog(QWidget *parent)
     daemonContainerLayout->addWidget(disableLidAction);
     daemonContainerLayout->addWidget(backlightMouseWheel);
 
+    // screensaver
+    QGroupBox *ssContainer = new QGroupBox(this);
+    ssContainer->setTitle(tr("Screensaver"));
+    QVBoxLayout *ssContainerLayout = new QVBoxLayout(ssContainer);
+
+    suspendLockScreen = new QCheckBox(this);
+    suspendLockScreen->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
+    suspendLockScreen->setText(tr("Lock screen on suspend"));
+    suspendLockScreen->setToolTip(tr("Lock the screen before suspending the computer"));
+
+    resumeLockScreen = new QCheckBox(this);
+    resumeLockScreen->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
+    resumeLockScreen->setText(tr("Lock screen on resume"));
+    resumeLockScreen->setToolTip(tr("Lock the screen before resuming the computer."));
+
+    ssContainerLayout->addWidget(suspendLockScreen);
+    ssContainerLayout->addWidget(resumeLockScreen);
+
     // notify
     QGroupBox *notifyContainer = new QGroupBox(this);
     notifyContainer->setTitle(tr("Notifications"));
@@ -570,6 +590,7 @@ Dialog::Dialog(QWidget *parent)
     settingsLayout->addWidget(batteryContainer);
     settingsLayout->addWidget(acContainer);
     settingsLayout->addWidget(daemonContainer);
+    settingsLayout->addWidget(ssContainer);
     settingsLayout->addWidget(notifyContainer);
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
@@ -662,6 +683,10 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleNotifyAC(bool)));
     connect(backlightMouseWheel, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightMouseWheel(bool)));
+    connect(suspendLockScreen, SIGNAL(toggled(bool)),
+            this, SLOT(handleSuspendLockScreen(bool)));
+    connect(resumeLockScreen, SIGNAL(toggled(bool)),
+            this, SLOT(handleResumeLockScreen(bool)));
 }
 
 Dialog::~Dialog()
@@ -843,6 +868,18 @@ void Dialog::loadSettings()
     }
     notifyOnAC->setChecked(defaultNotifyOnAC);
 
+    bool defaultSuspendLockScreen = true;
+    if (Common::validPowerSettings(CONF_SUSPEND_LOCK_SCREEN)) {
+        defaultSuspendLockScreen = Common::loadPowerSettings(CONF_SUSPEND_LOCK_SCREEN).toBool();
+    }
+    suspendLockScreen->setChecked(defaultSuspendLockScreen);
+
+    bool defaultResumeLockScreen = false;
+    if (Common::validPowerSettings(CONF_RESUME_LOCK_SCREEN)) {
+        defaultResumeLockScreen = Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool();
+    }
+    resumeLockScreen->setChecked(defaultResumeLockScreen);
+
     // power actions
     bool canSuspend = man->CanSuspend();
     bool canHibernate = man->CanHibernate() && Common::kernelCanResume();
@@ -978,6 +1015,10 @@ void Dialog::saveSettings()
                               notifyOnAC->isChecked());
     Common::savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL,
                               backlightMouseWheel->isChecked());
+    Common::savePowerSettings(CONF_SUSPEND_LOCK_SCREEN,
+                              suspendLockScreen->isChecked());
+    Common::savePowerSettings(CONF_RESUME_LOCK_SCREEN,
+                              resumeLockScreen->isChecked());
 }
 
 // set default action in combobox
@@ -1473,4 +1514,14 @@ void Dialog::enableLid(bool enabled)
 void Dialog::handleBacklightMouseWheel(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
+}
+
+void Dialog::handleSuspendLockScreen(bool triggered)
+{
+    Common::savePowerSettings(CONF_SUSPEND_LOCK_SCREEN, triggered);
+}
+
+void Dialog::handleResumeLockScreen(bool triggered)
+{
+    Common::savePowerSettings(CONF_RESUME_LOCK_SCREEN, triggered);
 }
