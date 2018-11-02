@@ -824,7 +824,8 @@ void SysTray::showMessage(const QString &title,
     if (tray->isVisible() && showNotifications) {
         if (critical) {
             tray->showMessage(title, msg,
-                              QSystemTrayIcon::Critical, 900000);
+                              QSystemTrayIcon::Critical,
+                              900000);
         } else {
             tray->showMessage(title, msg);
         }
@@ -844,27 +845,32 @@ void SysTray::disableHibernate()
     if (criticalAction == criticalHibernate) {
         qWarning() << "reset critical action to shutdown";
         criticalAction = criticalShutdown;
-        Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, criticalAction);
+        Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION,
+                                  criticalAction);
     }
     if (lidActionBattery == lidHibernate) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
-        Common::savePowerSettings(CONF_LID_BATTERY_ACTION, lidActionBattery);
+        Common::savePowerSettings(CONF_LID_BATTERY_ACTION,
+                                  lidActionBattery);
     }
     if (lidActionAC == lidHibernate) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
-        Common::savePowerSettings(CONF_LID_AC_ACTION, lidActionAC);
+        Common::savePowerSettings(CONF_LID_AC_ACTION,
+                                  lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendHibernate) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, autoSuspendBatteryAction);
+        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION,
+                                  autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendHibernate) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, autoSuspendACAction);
+        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION,
+                                  autoSuspendACAction);
     }
 }
 
@@ -874,22 +880,26 @@ void SysTray::disableSuspend()
     if (lidActionBattery == lidSleep) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
-        Common::savePowerSettings(CONF_LID_BATTERY_ACTION, lidActionBattery);
+        Common::savePowerSettings(CONF_LID_BATTERY_ACTION,
+                                  lidActionBattery);
     }
     if (lidActionAC == lidSleep) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
-        Common::savePowerSettings(CONF_LID_AC_ACTION, lidActionAC);
+        Common::savePowerSettings(CONF_LID_AC_ACTION,
+                                  lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendSleep) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, autoSuspendBatteryAction);
+        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION,
+                                  autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendSleep) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, autoSuspendACAction);
+        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION,
+                                  autoSuspendACAction);
     }
 }
 
@@ -898,12 +908,13 @@ void SysTray::handlePrepareForSuspend(bool suspend)
 {
     qDebug() << "system prepare for suspend/resume" << suspend;
     resetTimer();
-    if (lockScreenOnSuspend) { man->LockScreen(); }
+    man->UpdateDevices();
     if (!suspend) { // resume
         if (lockScreenOnResume) { man->LockScreen(); }
         tray->showMessage(QString(), QString());
-        man->UpdateDevices();
         ss->SimulateUserActivity();
+    } else { // suspend
+        if (lockScreenOnSuspend) { man->LockScreen(); }
     }
 }
 

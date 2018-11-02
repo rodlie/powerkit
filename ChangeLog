@@ -1,2 +1,6 @@
+## 1.0.0rc2 - 20181103
+ * Added more configuration options
+ * Added option to bundle failsafe icons
+
 ## 1.0.0rc1 - 20181025
  * first public release

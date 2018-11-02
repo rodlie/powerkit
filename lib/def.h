@@ -58,6 +58,7 @@ enum criticalAction
 #define LOW_BATTERY 5 // % over critical
 #define CRITICAL_BATTERY 10
 #define AUTO_SLEEP_BATTERY 15
+#define DEFAULT_THEME "Adwaita"
 #define DEFAULT_AC_ICON "ac-adapter"
 #define DEFAULT_BATTERY_ICON "battery"
 #define DEFAULT_BATTERY_ICON_CRIT "battery-caution"
@@ -133,5 +134,6 @@ enum criticalAction
 #define CONF_NOTIFY_ON_AC "notify_on_ac"
 #define CONF_SUSPEND_LOCK_SCREEN "lock_screen_on_suspend"
 #define CONF_RESUME_LOCK_SCREEN "lock_screen_on_resume"
+#define CONF_ICON_THEME "icon_theme"
 
 #endif // DEF_H

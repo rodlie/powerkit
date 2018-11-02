@@ -14,6 +14,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp systray.cpp dialog.cpp common.cpp
 HEADERS += systray.h dialog.h common.h
+
 LIBS += -L../lib -lPowerKit
 INCLUDEPATH += ../lib
 
@@ -21,12 +22,18 @@ include(../powerkit.pri)
 DEFINES += APP_VERSION=\"\\\"$${VERSION}\\\"\"
 DEFINES += APP_VERSION_EXTRA=\"\\\"$${VERSION_EXTRA}\\\"\"
 
+CONFIG(bundle_icons) {
+    RESOURCES += icons.qrc
+    DEFINES += BUNDLE_ICONS
+}
 !CONFIG(no_app_install) {
     target.path = $${PREFIX}/bin
     INSTALLS += target
     !CONFIG(no_doc_install) {
         target_docs.path = $${DOCDIR}/$${TARGET}-$${VERSION}$${VERSION_EXTRA}
         target_docs.files = ../LICENSE ../README.md ../ChangeLog
+        CONFIG(bundle_icons): target_docs.files += icons/Adwaita/LICENSE.Adwaita
+        exists(../ChangeLog.git): target_docs.files += ../ChangeLog.git
         INSTALLS += target_docs
     }
     !CONFIG(no_man_install) {

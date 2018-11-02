@@ -106,16 +106,13 @@ powerkit requires the following dependencies to work:
  * [ConsoleKit](https://www.freedesktop.org/wiki/Software/ConsoleKit/) (or logind)
  * [UPower](https://upower.freedesktop.org/) 0.9.23(+)
  * [XScreenSaver](https://www.jwz.org/xscreensaver/)
- * [adwaita-icon-theme](https://github.com/GNOME/adwaita-icon-theme) (or similar)
+ * [adwaita-icon-theme](https://github.com/GNOME/adwaita-icon-theme) (if built without ``CONFIG+=bundle_icons``)
 
 ### Icons
 
-powerkit does not bundle any icons, so you will need a compatible theme installed. powerkit will use the existing icon theme from your running DE/WM or fallback to a known theme:
+powerkit will use the existing icon theme from the running DE/WM, else check the GTK settings then fallback to Adwaita if no theme was found. So you should have (a proper version) of Adwaita installed or enable ``CONFIG+=bundle_icons`` when building powerkit.
 
- * Adwaita
- * Gnome
- * Oxygen
- * Tango (not recommended)
+You can override the icon theme in the `~/.config/powerkit/powerkit.conf` file, see ``icon_theme=<theme_name>``.
  
 ## Build
 
@@ -137,6 +134,7 @@ First make sure you have the required dependencies installed, then review the bu
  * **``CONFIG+=install_lib``**: Build and install shared library.
     * **``CONFIG+=no_include_install``**: Do not install include files.
     * **``CONFIG+=no_pkgconfig_install``**: Do not install pkgconfig file.
+ * **``CONFIG+=bundle_icons``**: Bundle a set of fallback icons (Adwaita), this will add 200k to the binary size.
 
 ### Build application
 

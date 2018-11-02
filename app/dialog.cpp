@@ -1430,7 +1430,7 @@ void Dialog::getInhibitors()
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
         item->setText(0, inhibitor);
         item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme("application-x-executable"));
+        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
     }
     for (int i=0;i<pmList.size();++i) {
         QString inhibitor = pmList.at(i);
@@ -1438,7 +1438,7 @@ void Dialog::getInhibitors()
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
         item->setText(0, inhibitor);
         item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme("application-x-executable"));
+        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
     }
 }
 
@@ -1479,6 +1479,13 @@ void Dialog::showAboutDialog()
                   .arg(tr("file for full details."))
                   .arg(tr("Available on"))
                   .arg(tr("and")));
+#ifdef BUNDLE_ICONS
+    about.setDetailedText(tr("Includes icons from the GNOME project <http://www.gnome.org>.\n\n"
+                             "This work is licenced under the Creative Commons Attribution-Share Alike 3.0 "
+                             "United States License.\n\nTo view a copy of this licence, visit "
+                             "http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative "
+                             "Commons, 171 Second Street, Suite 300, San Francisco, California 94105, USA."));
+#endif
     about.exec();
 }
 

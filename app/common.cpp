@@ -96,59 +96,43 @@ void Common::setIconTheme()
     QStringList iconsPath = QIcon::themeSearchPaths();
     QString iconsHomeLocal = QString("%1/.local/share/icons").arg(QDir::homePath());
     QString iconsHome = QString("%1/.icons").arg(QDir::homePath());
-    if (QFile::exists(iconsHomeLocal) && !iconsPath.contains(iconsHomeLocal)) { iconsPath.prepend(iconsHomeLocal); }
-    if (QFile::exists(iconsHome) && !iconsPath.contains(iconsHome)) { iconsPath.prepend(iconsHome); }
+    if (QFile::exists(iconsHomeLocal) &&
+        !iconsPath.contains(iconsHomeLocal)) { iconsPath.prepend(iconsHomeLocal); }
+    if (QFile::exists(iconsHome) &&
+        !iconsPath.contains(iconsHome)) { iconsPath.prepend(iconsHome); }
     iconsPath << QString("%1/../share/icons").arg(qApp->applicationDirPath());
     QIcon::setThemeSearchPaths(iconsPath);
     qDebug() << "using icon theme search path" << QIcon::themeSearchPaths();
 
     QString theme = QIcon::themeName();
     if (theme.isEmpty() || theme == "hicolor") { // try to load saved theme
-        qDebug() << "checking for icon theme in settings";
-        theme = loadPowerSettings("icon_theme").toString();
+        theme = loadPowerSettings(CONF_ICON_THEME).toString();
     }
     if(theme.isEmpty() || theme == "hicolor") { // Nope, then scan for first available
         // gtk
         if(QFile::exists(QDir::homePath() + "/" + ".gtkrc-2.0")) {
-            qDebug() << "checking for icon theme in gtkrc-2.0";
             QSettings gtkFile(QDir::homePath() + "/.gtkrc-2.0", QSettings::IniFormat);
             theme = gtkFile.value("gtk-icon-theme-name").toString().remove("\"");
         } else {
-            qDebug() << "checking for icon theme in gtk-3.0";
             QSettings gtkFile(QDir::homePath() + "/.config/gtk-3.0/settings.ini", QSettings::IniFormat);
             theme = gtkFile.value("gtk-fallback-icon-theme").toString().remove("\"");
         }
         // fallback
-        if(theme.isNull()) {
-            qDebug() << "checking for icon theme in static fallback";
-            QStringList themes;
-            themes << QString("%1/../share/icons/Humanity").arg(qApp->applicationFilePath());
-            themes << "/usr/share/icons/Humanity" << "/usr/local/share/icons/Humanity";
-            themes << QString("%1/../share/icons/Adwaita").arg(qApp->applicationFilePath());
-            themes << "/usr/share/icons/Adwaita" << "/usr/local/share/icons/Adwaita";
-            themes << QString("%1/../share/icons/gnome").arg(qApp->applicationFilePath());
-            themes << "/usr/share/icons/gnome" << "/usr/local/share/icons/gnome";
-            themes << QString("%1/../share/icons/oxygen").arg(qApp->applicationFilePath());
-            themes << "/usr/share/icons/oxygen" << "/usr/local/share/icons/oxygen";
-            themes << QString("%1/../share/icons/hicolor").arg(qApp->applicationFilePath());
-            themes << QString("%1/../share/icons/Tango").arg(qApp->applicationFilePath());
-            themes << "/usr/share/icons/Tango" << "/usr/local/share/icons/Tango";
-            themes << "/usr/share/icons/hicolor" << "/usr/local/share/icons/hicolor";
-            for (int i=0;i<themes.size();++i) {
-                if (QFile::exists(themes.at(i))) {
-                    theme = QString(themes.at(i)).split("/").takeLast();
-                    break;
-                }
-            }
-        }
-        if (theme != "hicolor" && !theme.isEmpty()) {
-            qDebug() << "save icon theme for later use";
-            savePowerSettings("icon_theme", theme);
-        } else {
-            qDebug() << "No icons available!";
+        if(theme.isNull()) { theme = DEFAULT_THEME; }
+        if (!theme.isEmpty()) { savePowerSettings(CONF_ICON_THEME, theme); }
+    }
+    qDebug() << "Using icon theme" << theme;
+    QIcon::setThemeName(theme);
+#ifdef BUNDLE_ICONS
+    if (theme != DEFAULT_THEME) { // validate theme
+        QIcon testTheme = QIcon::fromTheme(DEFAULT_AC_ICON);
+        if (testTheme.isNull()) {
+            qDebug() << "icon theme is broken, use failsafe!";
+            QIcon::setThemeName(DEFAULT_THEME);
+            savePowerSettings(CONF_ICON_THEME, DEFAULT_THEME);
         }
     }
-    QIcon::setThemeName(theme);
+#endif
 }
 
 QString Common::confFile()
