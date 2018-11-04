@@ -34,6 +34,7 @@ CONFIG(install_lib) {
     !CONFIG(no_doc_install) {
         target_docs.path = $${DOCDIR}/powerkit-$${VERSION}$${VERSION_EXTRA}
         target_docs.files = ../LICENSE ../README.md ../ChangeLog
+        exists(../ChangeLog.git): target_docs.files += ../ChangeLog.git
         INSTALLS += target_docs
     }
     !CONFIG(no_include_install) {

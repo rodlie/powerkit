@@ -37,7 +37,6 @@ private slots:
     quint32 genCookie();
     void checkForExpiredClients();
     bool canInhibit();
-    void checkForDBusSession();
     void timeOut();
     void pingPM();
 

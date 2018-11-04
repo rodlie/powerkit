@@ -120,6 +120,9 @@ private:
     bool warnOnVeryLowBattery;
     bool notifyOnBattery;
     bool notifyOnAC;
+    bool backlightMouseWheel;
+    bool lockScreenOnSuspend;
+    bool lockScreenOnResume;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);

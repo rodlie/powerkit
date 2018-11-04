@@ -53,6 +53,9 @@ SysTray::SysTray(QObject *parent)
     , warnOnVeryLowBattery(true)
     , notifyOnBattery(true)
     , notifyOnAC(true)
+    , backlightMouseWheel(true)
+    , lockScreenOnSuspend(true)
+    , lockScreenOnResume(false)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -238,7 +241,7 @@ void SysTray::checkDevices()
         if (man->TimeToEmpty()>0 && man->OnBattery()) {
             tray->setToolTip(tray->toolTip()
                              .append(QString(", %1 %2")
-                             .arg(QDateTime::fromTime_t(man->TimeToEmpty())
+                             .arg(QDateTime::fromTime_t((uint)man->TimeToEmpty())
                                                         .toUTC().toString("hh:mm")))
                              .arg(tr("left")));
         }
@@ -248,7 +251,7 @@ void SysTray::checkDevices()
             if (man->TimeToFull()>0) {
                 tray->setToolTip(tray->toolTip()
                                  .append(QString(", %1 %2")
-                                 .arg(QDateTime::fromTime_t(man->TimeToFull())
+                                 .arg(QDateTime::fromTime_t((uint)man->TimeToFull())
                                                             .toUTC().toString("hh:mm")))
                                  .arg(tr("left")));
             }
@@ -472,6 +475,12 @@ void SysTray::loadSettings()
     if (Common::validPowerSettings(CONF_NOTIFY_ON_AC)) {
         notifyOnAC = Common::loadPowerSettings(CONF_NOTIFY_ON_AC).toBool();
     }
+    if (Common::validPowerSettings(CONF_SUSPEND_LOCK_SCREEN)) {
+        lockScreenOnSuspend = Common::loadPowerSettings(CONF_SUSPEND_LOCK_SCREEN).toBool();
+    }
+    if (Common::validPowerSettings(CONF_RESUME_LOCK_SCREEN)) {
+        lockScreenOnResume = Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool();
+    }
 
     // verify
     if (!Common::kernelCanResume()) {
@@ -490,6 +499,9 @@ void SysTray::loadSettings()
     // backlight
     backlightDevice = Common::backlightDevice();
     hasBacklight = Common::canAdjustBacklight(backlightDevice);
+    if (Common::validPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL)) {
+        backlightMouseWheel = Common::loadPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
+    }
 }
 
 // register session services
@@ -812,7 +824,8 @@ void SysTray::showMessage(const QString &title,
     if (tray->isVisible() && showNotifications) {
         if (critical) {
             tray->showMessage(title, msg,
-                              QSystemTrayIcon::Critical, 900000);
+                              QSystemTrayIcon::Critical,
+                              900000);
         } else {
             tray->showMessage(title, msg);
         }
@@ -832,27 +845,32 @@ void SysTray::disableHibernate()
     if (criticalAction == criticalHibernate) {
         qWarning() << "reset critical action to shutdown";
         criticalAction = criticalShutdown;
-        Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION, criticalAction);
+        Common::savePowerSettings(CONF_CRITICAL_BATTERY_ACTION,
+                                  criticalAction);
     }
     if (lidActionBattery == lidHibernate) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
-        Common::savePowerSettings(CONF_LID_BATTERY_ACTION, lidActionBattery);
+        Common::savePowerSettings(CONF_LID_BATTERY_ACTION,
+                                  lidActionBattery);
     }
     if (lidActionAC == lidHibernate) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
-        Common::savePowerSettings(CONF_LID_AC_ACTION, lidActionAC);
+        Common::savePowerSettings(CONF_LID_AC_ACTION,
+                                  lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendHibernate) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, autoSuspendBatteryAction);
+        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION,
+                                  autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendHibernate) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, autoSuspendACAction);
+        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION,
+                                  autoSuspendACAction);
     }
 }
 
@@ -862,22 +880,26 @@ void SysTray::disableSuspend()
     if (lidActionBattery == lidSleep) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
-        Common::savePowerSettings(CONF_LID_BATTERY_ACTION, lidActionBattery);
+        Common::savePowerSettings(CONF_LID_BATTERY_ACTION,
+                                  lidActionBattery);
     }
     if (lidActionAC == lidSleep) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
-        Common::savePowerSettings(CONF_LID_AC_ACTION, lidActionAC);
+        Common::savePowerSettings(CONF_LID_AC_ACTION,
+                                  lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendSleep) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION, autoSuspendBatteryAction);
+        Common::savePowerSettings(CONF_SUSPEND_BATTERY_ACTION,
+                                  autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendSleep) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
-        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, autoSuspendACAction);
+        Common::savePowerSettings(CONF_SUSPEND_AC_ACTION,
+                                  autoSuspendACAction);
     }
 }
 
@@ -885,12 +907,14 @@ void SysTray::disableSuspend()
 void SysTray::handlePrepareForSuspend(bool suspend)
 {
     qDebug() << "system prepare for suspend/resume" << suspend;
-    man->LockScreen();
     resetTimer();
+    man->UpdateDevices();
     if (!suspend) { // resume
+        if (lockScreenOnResume) { man->LockScreen(); }
         tray->showMessage(QString(), QString());
-        man->UpdateDevices();
         ss->SimulateUserActivity();
+    } else { // suspend
+        if (lockScreenOnSuspend) { man->LockScreen(); }
     }
 }
 
@@ -909,17 +933,17 @@ void SysTray::switchInternalMonitor(bool toggle)
 // adjust backlight on wheel event (on systray)
 void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 {
-    if (!hasBacklight) { return; }
+    if (!hasBacklight || !backlightMouseWheel) { return; }
     switch (action) {
     case TrayIcon::WheelUp:
         Common::adjustBacklight(backlightDevice,
-                                Common::backlightValue(backlightDevice)+10);
+                                Common::backlightValue(backlightDevice)+BACKLIGHT_MOVE_VALUE);
         break;
     case TrayIcon::WheelDown:
         Common::adjustBacklight(backlightDevice,
-                                Common::backlightValue(backlightDevice)-10);
+                                Common::backlightValue(backlightDevice)-BACKLIGHT_MOVE_VALUE);
         break;
-    default: ;
+    default:;
     }
 }
 

@@ -7,7 +7,7 @@
 #
 
 VERSION = 1.0.0
-VERSION_EXTRA = "rc1"
+VERSION_EXTRA = "rc2"
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local

@@ -48,7 +48,6 @@ bool PowerKit::availableService(const QString &service,
                          path,
                          interface,
                          QDBusConnection::systemBus());
-    //qDebug() << "has service?" << iface.isValid() << service << path << interface;
     if (iface.isValid()) { return true; }
     return false;
 }
@@ -105,7 +104,6 @@ bool PowerKit::availableAction(const PowerKit::PKMethod &method,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call(cmd);
-    //qDebug() << "available action?" << cmd << reply << service << path << interface;
     if (reply.arguments().first().toString() == DBUS_OK_REPLY) { return true; }
     bool result = reply.arguments().first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
@@ -261,13 +259,15 @@ void PowerKit::setup()
             upower = new QDBusInterface(UPOWER_SERVICE,
                                         UPOWER_PATH,
                                         UPOWER_MANAGER,
-                                        system);
+                                        system,
+                                        this);
         }
         if (logind == NULL) {
             logind = new QDBusInterface(LOGIND_SERVICE,
                                         LOGIND_PATH,
                                         LOGIND_MANAGER,
-                                        system);
+                                        system,
+                                        this);
         }
         scan();
     }

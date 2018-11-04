@@ -50,6 +50,9 @@ Dialog::Dialog(QWidget *parent)
     , lidActionBatteryLabel(0)
     , batteryBacklightLabel(0)
     , acBacklightLabel(0)
+    , backlightMouseWheel(0)
+    , suspendLockScreen(0)
+    , resumeLockScreen(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -410,9 +413,33 @@ Dialog::Dialog(QWidget *parent)
     disableLidAction->setToolTip(tr("Disable lid action if an external monitor is connected"
                                     " to your laptop."));
 
+    backlightMouseWheel = new QCheckBox(this);
+    backlightMouseWheel->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
+    backlightMouseWheel->setText(tr("Adjust backlight in system tray"));
+    backlightMouseWheel->setToolTip(tr("Adjust the display backlight with the mouse wheel on the system tray icon."));
+
     daemonContainerLayout->addWidget(showSystemTray);
     daemonContainerLayout->addWidget(showNotifications);
     daemonContainerLayout->addWidget(disableLidAction);
+    daemonContainerLayout->addWidget(backlightMouseWheel);
+
+    // screensaver
+    QGroupBox *ssContainer = new QGroupBox(this);
+    ssContainer->setTitle(tr("Screensaver"));
+    QVBoxLayout *ssContainerLayout = new QVBoxLayout(ssContainer);
+
+    suspendLockScreen = new QCheckBox(this);
+    suspendLockScreen->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
+    suspendLockScreen->setText(tr("Lock screen on suspend"));
+    suspendLockScreen->setToolTip(tr("Lock the screen before suspending the computer"));
+
+    resumeLockScreen = new QCheckBox(this);
+    resumeLockScreen->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
+    resumeLockScreen->setText(tr("Lock screen on resume"));
+    resumeLockScreen->setToolTip(tr("Lock the screen before resuming the computer."));
+
+    ssContainerLayout->addWidget(suspendLockScreen);
+    ssContainerLayout->addWidget(resumeLockScreen);
 
     // notify
     QGroupBox *notifyContainer = new QGroupBox(this);
@@ -563,6 +590,7 @@ Dialog::Dialog(QWidget *parent)
     settingsLayout->addWidget(batteryContainer);
     settingsLayout->addWidget(acContainer);
     settingsLayout->addWidget(daemonContainer);
+    settingsLayout->addWidget(ssContainer);
     settingsLayout->addWidget(notifyContainer);
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
@@ -653,6 +681,12 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleNotifyBattery(bool)));
     connect(notifyOnAC, SIGNAL(toggled(bool)),
             this, SLOT(handleNotifyAC(bool)));
+    connect(backlightMouseWheel, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightMouseWheel(bool)));
+    connect(suspendLockScreen, SIGNAL(toggled(bool)),
+            this, SLOT(handleSuspendLockScreen(bool)));
+    connect(resumeLockScreen, SIGNAL(toggled(bool)),
+            this, SLOT(handleResumeLockScreen(bool)));
 }
 
 Dialog::~Dialog()
@@ -834,6 +868,18 @@ void Dialog::loadSettings()
     }
     notifyOnAC->setChecked(defaultNotifyOnAC);
 
+    bool defaultSuspendLockScreen = true;
+    if (Common::validPowerSettings(CONF_SUSPEND_LOCK_SCREEN)) {
+        defaultSuspendLockScreen = Common::loadPowerSettings(CONF_SUSPEND_LOCK_SCREEN).toBool();
+    }
+    suspendLockScreen->setChecked(defaultSuspendLockScreen);
+
+    bool defaultResumeLockScreen = false;
+    if (Common::validPowerSettings(CONF_RESUME_LOCK_SCREEN)) {
+        defaultResumeLockScreen = Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool();
+    }
+    resumeLockScreen->setChecked(defaultResumeLockScreen);
+
     // power actions
     bool canSuspend = man->CanSuspend();
     bool canHibernate = man->CanHibernate() && Common::kernelCanResume();
@@ -901,6 +947,11 @@ void Dialog::loadSettings()
                     Common::loadPowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
                     .toBool());
     }
+    bool defaultBacklightMouseWheel = true;
+    if (Common::validPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL)) {
+        defaultBacklightMouseWheel = Common::loadPowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
+    }
+    backlightMouseWheel->setChecked(defaultBacklightMouseWheel);
 
     enableBacklight(hasBacklight);
     enableLid(man->LidIsPresent());
@@ -962,6 +1013,12 @@ void Dialog::saveSettings()
                               notifyOnBattery->isChecked());
     Common::savePowerSettings(CONF_NOTIFY_ON_AC,
                               notifyOnAC->isChecked());
+    Common::savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL,
+                              backlightMouseWheel->isChecked());
+    Common::savePowerSettings(CONF_SUSPEND_LOCK_SCREEN,
+                              suspendLockScreen->isChecked());
+    Common::savePowerSettings(CONF_RESUME_LOCK_SCREEN,
+                              resumeLockScreen->isChecked());
 }
 
 // set default action in combobox
@@ -1248,15 +1305,15 @@ void Dialog::checkDevices()
             devicesProg[uid] = new QProgressBar(this);
             devicesProg[uid]->setMinimum(0);
             devicesProg[uid]->setMaximum(100);
-            devicesProg[uid]->setValue(i.value()->percentage);
+            devicesProg[uid]->setValue((int)i.value()->percentage);
             deviceTree->setItemWidget(item, 1, devicesProg[uid]);
         } else {
-            devicesProg[i.value()->path]->setValue(i.value()->percentage);
+            devicesProg[i.value()->path]->setValue((int)i.value()->percentage);
         }
     }
 
     QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-    if (left == 0 || !man->HasBattery()) {
+    if (left <1 || !man->HasBattery()) {
         batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
         return;
     }
@@ -1270,7 +1327,7 @@ void Dialog::checkDevices()
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
     } else {
         icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left == 100 && !man->OnBattery()) {
+        if (left > 99 && !man->OnBattery()) {
             icon = QIcon::fromTheme(DEFAULT_AC_ICON);
         }
     }
@@ -1373,7 +1430,7 @@ void Dialog::getInhibitors()
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
         item->setText(0, inhibitor);
         item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme("application-x-executable"));
+        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
     }
     for (int i=0;i<pmList.size();++i) {
         QString inhibitor = pmList.at(i);
@@ -1381,7 +1438,7 @@ void Dialog::getInhibitors()
         QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
         item->setText(0, inhibitor);
         item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme("application-x-executable"));
+        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
     }
 }
 
@@ -1396,6 +1453,7 @@ void Dialog::enableBacklight(bool enabled)
     backlightACHigherCheck->setEnabled(enabled);
     batteryBacklightLabel->setEnabled(enabled);
     acBacklightLabel->setEnabled(enabled);
+    backlightMouseWheel->setEnabled(enabled);
 }
 
 void Dialog::showAboutDialog()
@@ -1421,6 +1479,13 @@ void Dialog::showAboutDialog()
                   .arg(tr("file for full details."))
                   .arg(tr("Available on"))
                   .arg(tr("and")));
+#ifdef BUNDLE_ICONS
+    about.setDetailedText(tr("Includes icons from the GNOME project <http://www.gnome.org>.\n\n"
+                             "This work is licenced under the Creative Commons Attribution-Share Alike 3.0 "
+                             "United States License.\n\nTo view a copy of this licence, visit "
+                             "http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative "
+                             "Commons, 171 Second Street, Suite 300, San Francisco, California 94105, USA."));
+#endif
     about.exec();
 }
 
@@ -1451,4 +1516,19 @@ void Dialog::enableLid(bool enabled)
     lidActionACLabel->setEnabled(enabled);
     lidActionBatteryLabel->setEnabled(enabled);
     disableLidAction->setEnabled(enabled);
+}
+
+void Dialog::handleBacklightMouseWheel(bool triggered)
+{
+    Common::savePowerSettings(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
+}
+
+void Dialog::handleSuspendLockScreen(bool triggered)
+{
+    Common::savePowerSettings(CONF_SUSPEND_LOCK_SCREEN, triggered);
+}
+
+void Dialog::handleResumeLockScreen(bool triggered)
+{
+    Common::savePowerSettings(CONF_RESUME_LOCK_SCREEN, triggered);
 }

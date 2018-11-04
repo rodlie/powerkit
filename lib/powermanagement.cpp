@@ -33,10 +33,10 @@ quint32 PowerManagement::genCookie()
 {
     int low = 0;
     int high = 1000;
-    quint32 cookie = randInt(low, high);
+    quint32 cookie = (quint32)randInt(low, high);
     while(!clients.contains(cookie)) {
         if (!clients.contains(cookie)) { clients[cookie] = QTime::currentTime(); }
-        else { cookie = randInt(low, high); }
+        else { cookie = (quint32)randInt(low, high); }
     }
     return cookie;
 }
