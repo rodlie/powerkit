@@ -97,9 +97,9 @@ powerkit requires the following dependencies to work:
  * [X11](https://www.x.org)
  * [Xss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)
  * [Xrandr](https://www.x.org/wiki/libraries/libxrandr/)
- * [QtDBus](https://qt.io)
- * [QtGui](https://qt.io)
- * [QtCore](https://qt.io)
+ * [QtDBus](https://qt.io) 4.8+
+ * [QtGui](https://qt.io) 4.8+
+ * [QtCore](https://qt.io) 4.8+
 
 ### Run-time dependencies
 
@@ -140,7 +140,7 @@ First make sure you have the required dependencies installed, then review the bu
 
 ```
 mkdir build && cd build
-qmake CONFIG+=release .. && make
+qmake .. && make
 ```
 
 Then just run ``app/powerkit`` or ``app/powerkit --config``, or install with:
@@ -152,7 +152,7 @@ sudo make install
 ### Package application
 
 ```
-qmake CONFIG+=release PREFIX=/usr
+qmake PREFIX=/usr
 make
 make INSTALL_ROOT=pkg_path install
 ```
