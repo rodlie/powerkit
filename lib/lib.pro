@@ -17,14 +17,16 @@ SOURCES += \
     screensaver.cpp \
     device.cpp \
     screens.cpp \
-    powerkit.cpp
+    powerkit.cpp \
+    rtc.cpp
 HEADERS += \
     powermanagement.h \
     screensaver.h \
     def.h \
     device.h \
     screens.h \
-    powerkit.h
+    powerkit.h \
+    rtc.h
 
 include(../powerkit.pri)
 CONFIG(install_lib) {
