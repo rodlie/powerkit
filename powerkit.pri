@@ -6,30 +6,22 @@
 # See the LICENSE file for full details
 #
 
-VERSION = 1.0.0
-VERSION_EXTRA = ""
+VERSION = 1.1.0
+VERSION_EXTRA = "beta"
 
 isEmpty(PREFIX) {
     PREFIX = /usr/local
-    isEmpty(XDGDIR) {
-        XDGDIR = $${PREFIX}/etc/xdg
-    }
-    isEmpty(UDEVDIR) {
-        UDEVDIR = $${PREFIX}/etc/udev
-    }
+    isEmpty(XDGDIR): XDGDIR = $${PREFIX}/etc/xdg
+    isEmpty(UDEVDIR): UDEVDIR = $${PREFIX}/etc/udev
 }
-isEmpty(DOCDIR) {
-    DOCDIR = $$PREFIX/share/doc
-}
-isEmpty(MANDIR) {
-    MANDIR = $$PREFIX/share/man
-}
-isEmpty(XDGDIR) {
-    XDGDIR = /etc/xdg
-}
-isEmpty(UDEVDIR) {
-    UDEVDIR = /etc/udev
-}
+isEmpty(DOCDIR): DOCDIR = $$PREFIX/share/doc
+isEmpty(MANDIR): MANDIR = $$PREFIX/share/man
+isEmpty(XDGDIR): XDGDIR = /etc/xdg
+isEmpty(UDEVDIR): UDEVDIR = /etc/udev
+isEmpty(DBUS_CONF): DBUS_CONF = /etc
+isEmpty(DBUS_SERVICE): DBUS_SERVICE = /usr/share
+isEmpty(USER): USER = root
+isEmpty(GROUP): GROUP = users
 
 CONFIG(release, debug|release) {
     DEFINES += QT_NO_DEBUG_OUTPUT

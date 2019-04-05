@@ -2,7 +2,7 @@
 
 ![screenshot](app/share/images/screenshot-03.png)
 
-powerkit is an lightweight desktop independent full featured power manager, originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/) and others.
+powerkit is an lightweight desktop independent full featured power manager, originally created for [Slackware](http://www.slackware.com/) for use with alternative desktop environments and window managers, like  [Fluxbox](http://fluxbox.org/), [Blackbox](https://en.wikipedia.org/wiki/Blackbox), [FVWM](http://www.fvwm.org/), [WindowMaker](https://www.windowmaker.org/), [Openbox](http://openbox.org/wiki/Main_Page), [Lumina](https://lumina-desktop.org/), [Draco](https://desktop.dracolinux.org/) and others.
 
 ![screenshot](app/share/images/screenshot-01.png)
 ![screenshot](app/share/images/screenshot-02.png)
@@ -103,7 +103,8 @@ powerkit requires the following dependencies to work:
 
 ### Run-time dependencies
 
- * [ConsoleKit](https://www.freedesktop.org/wiki/Software/ConsoleKit/) (or logind)
+ * D-Bus
+ * [ConsoleKit](https://www.freedesktop.org/wiki/Software/ConsoleKit/) (or logind) (will work without, but with limited functions)
  * [UPower](https://upower.freedesktop.org/) 0.9.23(+)
  * [XScreenSaver](https://www.jwz.org/xscreensaver/)
  * [adwaita-icon-theme](https://github.com/GNOME/adwaita-icon-theme) (if built without ``CONFIG+=bundle_icons``)
@@ -124,7 +125,10 @@ First make sure you have the required dependencies installed, then review the bu
  * **``XDGDIR=</etc/xdg>``** : Path to xdg autostart directory.
  * **``DOCDIR=<PREFIX/share/doc>``** : Path to the system documentation.
  * **``MANDIR=<PREFIX/share/man>``** : Path to the system manual.
- * **``CONFIG+=release``** : Creates a release build
+ * **``DBUS_CONF=</etc>``** : Where the ``dbus-1`` config folder is located.
+ * **``DBUS_SERVICE=</usr/share>``** : Where the ``dbus-1`` service folder is located.
+ * **``GROUP=<users>``**: User group that is allowed to use the daemon, should be a common group used by desktop users.
+ * **``USER=<root>``**: Run the daemon as this user, must be allowed to write to /dev/rtc.
  * **``CONFIG+=no_doc_install``** : Do not install application documentation.
  * **``CONFIG+=no_man_install``** : Do not install application manual.
  * **``CONFIG+=no_desktop_install``** : Do not install the application desktop file.
@@ -156,6 +160,35 @@ qmake PREFIX=/usr
 make
 make INSTALL_ROOT=pkg_path install
 ```
+```
+pkg
+├── etc
+│   ├── dbus-1
+│   │   └── system.d
+│   │       └── org.freedesktop.powerkitd.conf
+│   └── xdg
+│       └── autostart
+│           └── powerkit.desktop
+└── usr
+    ├── bin
+    │   └── powerkit
+    ├── sbin
+    │   └── powerkitd
+    └── share
+        ├── applications
+        │   └── powerkit.desktop
+        ├── dbus-1
+        │   └── system-services
+        │       └── org.freedesktop.powerkitd.service
+        ├── doc
+        │   └── powerkit-VERSION
+        │       ├── ChangeLog
+        │       ├── LICENSE
+        │       └── README.md
+        └── man
+            └── man1
+                └── powerkit.1
+```
 
 ## Links
 
@@ -164,4 +197,4 @@ make INSTALL_ROOT=pkg_path install
  * [https://sourceforge.net/p/powerkit](https://sourceforge.net/p/powerkit)
  * [http://powerkit.sf.net](http://powerkit.sf.net)
  * [https://powerkit.dracolinux.org](https://powerkit.dracolinux.org)
- 
+
