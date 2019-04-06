@@ -49,6 +49,7 @@ enum criticalAction
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
 #define TURN_ON_MONITOR "xrandr --output %1 --auto "
 #define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
+#define DRACO_XCONFIG "draco-xconfig --reset-monitors"
 
 #define LID_BATTERY_DEFAULT lidSleep
 #define LID_AC_DEFAULT lidLock
@@ -89,6 +90,10 @@ enum criticalAction
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
 
+#define PMD_SERVICE "org.freedesktop.powerkitd"
+#define PMD_PATH "/org/freedesktop/powerkitd"
+#define PMD_MANAGER "org.freedesktop.powerkitd.Manager"
+
 #define PM_SERVICE "org.freedesktop.PowerManagement"
 #define PM_PATH "/PowerManagement"
 #define PM_FULL_PATH "/org/freedesktop/PowerManagement"
@@ -110,6 +115,8 @@ enum criticalAction
 #define CONF_SUSPEND_BATTERY_ACTION "suspend_battery_action"
 #define CONF_SUSPEND_AC_TIMEOUT "suspend_ac_timeout"
 #define CONF_SUSPEND_AC_ACTION "suspend_ac_action"
+#define CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY "suspend_wakeup_hibernate_battery"
+#define CONF_SUSPEND_WAKEUP_HIBERNATE_AC "suspend_wakeup_hibernate_ac"
 #define CONF_CRITICAL_BATTERY_TIMEOUT "critical_battery_timeout"
 #define CONF_CRITICAL_BATTERY_ACTION "critical_battery_action"
 #define CONF_LID_BATTERY_ACTION "lid_battery_action"

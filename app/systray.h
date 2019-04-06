@@ -121,8 +121,6 @@ private:
     bool notifyOnBattery;
     bool notifyOnAC;
     bool backlightMouseWheel;
-    bool lockScreenOnSuspend;
-    bool lockScreenOnResume;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -159,7 +157,8 @@ private slots:
     void handleConfChanged(const QString &file);
     void disableHibernate();
     void disableSuspend();
-    void handlePrepareForSuspend(bool suspend);
+    void handlePrepareForSuspend();
+    void handlePrepareForResume();
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
     void handleDeviceChanged(const QString &path);

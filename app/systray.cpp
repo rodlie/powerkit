@@ -54,8 +54,6 @@ SysTray::SysTray(QObject *parent)
     , notifyOnBattery(true)
     , notifyOnAC(true)
     , backlightMouseWheel(true)
-    , lockScreenOnSuspend(true)
-    , lockScreenOnResume(false)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -91,9 +89,13 @@ SysTray::SysTray(QObject *parent)
             this,
             SLOT(handleOnAC()));
     connect(man,
-            SIGNAL(PrepareForSuspend(bool)),
+            SIGNAL(PrepareForSuspend()),
             this,
-            SLOT(handlePrepareForSuspend(bool)));
+            SLOT(handlePrepareForSuspend()));
+    connect(man,
+            SIGNAL(PrepareForResume()),
+            this,
+            SLOT(handlePrepareForResume()));
     connect(man,
             SIGNAL(DeviceWasAdded(QString)),
             this,
@@ -476,10 +478,16 @@ void SysTray::loadSettings()
         notifyOnAC = Common::loadPowerSettings(CONF_NOTIFY_ON_AC).toBool();
     }
     if (Common::validPowerSettings(CONF_SUSPEND_LOCK_SCREEN)) {
-        lockScreenOnSuspend = Common::loadPowerSettings(CONF_SUSPEND_LOCK_SCREEN).toBool();
+        man->setLockScreenOnSuspend(Common::loadPowerSettings(CONF_SUSPEND_LOCK_SCREEN).toBool());
     }
     if (Common::validPowerSettings(CONF_RESUME_LOCK_SCREEN)) {
-        lockScreenOnResume = Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool();
+        man->setLockScreenOnResume(Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool());
+    }
+    if (Common::validPowerSettings(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY)) {
+        man->setSuspendWakeAlarmOnBattery(Common::loadPowerSettings(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY).toInt());
+    }
+    if (Common::validPowerSettings(CONF_SUSPEND_WAKEUP_HIBERNATE_AC)) {
+        man->setSuspendWakeAlarmOnAC(Common::loadPowerSettings(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
     }
 
     // verify
@@ -903,19 +911,22 @@ void SysTray::disableSuspend()
     }
 }
 
-// prepare for suspend or resume
-void SysTray::handlePrepareForSuspend(bool suspend)
+// prepare for suspend
+void SysTray::handlePrepareForSuspend()
 {
-    qDebug() << "system prepare for suspend/resume" << suspend;
+    /*qDebug() << "prepare for suspend";
     resetTimer();
-    man->UpdateDevices();
-    if (!suspend) { // resume
-        if (lockScreenOnResume) { man->LockScreen(); }
-        tray->showMessage(QString(), QString());
-        ss->SimulateUserActivity();
-    } else { // suspend
-        if (lockScreenOnSuspend) { man->LockScreen(); }
-    }
+    man->releaseSuspendLock();*/
+    qDebug() << "do nothing";
+}
+
+// prepare for resume
+void SysTray::handlePrepareForResume()
+{
+    qDebug() << "prepare for resume ...";
+    resetTimer();
+    tray->showMessage(QString(), QString());
+    ss->SimulateUserActivity();
 }
 
 // turn off/on monitor using xrandr

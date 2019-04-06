@@ -7,6 +7,7 @@
 */
 
 #include "powerkit.h"
+#include "def.h"
 
 #include <QDBusInterface>
 #include <QDBusMessage>
@@ -15,13 +16,21 @@
 #include <QProcess>
 #include <QMapIterator>
 #include <QDebug>
+#include <QDBusReply>
 
 PowerKit::PowerKit(QObject *parent) : QObject(parent)
   , upower(0)
   , logind(0)
+  , ckit(0)
+  , pmd(0)
   , wasDocked(false)
   , wasLidClosed(false)
   , wasOnBattery(false)
+  , wakeAlarm(false)
+  , suspendWakeupBattery(0)
+  , suspendWakeupAC(0)
+  , lockScreenOnSuspend(true)
+  , lockScreenOnResume(false)
 {
     setup();
     timer.setInterval(TIMEOUT_CHECK);
@@ -33,6 +42,7 @@ PowerKit::PowerKit(QObject *parent) : QObject(parent)
 PowerKit::~PowerKit()
 {
     clearDevices();
+    releaseSuspendLock();
 }
 
 QMap<QString, Device *> PowerKit::getDevices()
@@ -177,6 +187,7 @@ QStringList PowerKit::find()
     }
     QList<QDBusObjectPath> objects;
     QXmlStreamReader xml(reply.value());
+    if (xml.hasError()) { return result; }
     while (!xml.atEnd()) {
         xml.readNext();
         if (xml.tokenType() == QXmlStreamReader::StartElement &&
@@ -269,6 +280,21 @@ void PowerKit::setup()
                                         system,
                                         this);
         }
+        if (ckit == NULL) {
+            ckit = new QDBusInterface(CONSOLEKIT_SERVICE,
+                                      CONSOLEKIT_PATH,
+                                      CONSOLEKIT_MANAGER,
+                                      system,
+                                      this);
+        }
+        if (pmd == NULL) {
+            pmd = new QDBusInterface(PMD_SERVICE,
+                                     PMD_PATH,
+                                     PMD_MANAGER,
+                                     system,
+                                     this);
+        }
+        if (!suspendLock) { registerSuspendLock(); }
         scan();
     }
 }
@@ -279,6 +305,7 @@ void PowerKit::check()
         setup();
         return;
     }
+    if (!suspendLock) { registerSuspendLock(); }
     if (!upower->isValid()) { scan(); }
 }
 
@@ -361,17 +388,46 @@ void PowerKit::handleDeviceChanged(const QString &device)
 
 void PowerKit::handleResume()
 {
-    emit PrepareForSuspend(false);
+    if (HasLogind() || HasConsoleKit()) { return; }
+    qDebug() << "handle resume from upower";
+    handlePrepareForSuspend(false);
 }
 
 void PowerKit::handleSuspend()
 {
-    emit PrepareForSuspend(true);
+    if (HasLogind() || HasConsoleKit()) { return; }
+    qDebug() << "handle suspend from upower";
+    if (lockScreenOnSuspend) { LockScreen(); }
+    emit PrepareForSuspend();
 }
 
-void PowerKit::handlePrepareForSuspend(bool suspend)
+void PowerKit::handlePrepareForSuspend(bool prepare)
 {
-    emit PrepareForSuspend(suspend);
+    qDebug() << "handle prepare for suspend/resume from consolekit/logind" << prepare;
+    if (prepare) {
+        if (lockScreenOnSuspend) { LockScreen(); }
+        emit PrepareForSuspend();
+        releaseSuspendLock(); // we are ready for suspend
+    }
+    else { // resume
+        UpdateDevices();
+        if (lockScreenOnResume) { LockScreen(); }
+        if (hasWakeAlarm() &&
+             wakeAlarmDate.isValid() &&
+             CanHibernate())
+        {
+            qDebug() << "we may have a wake alarm" << wakeAlarmDate;
+            QDateTime currentDate = QDateTime::currentDateTime();
+            if (currentDate>=wakeAlarmDate && wakeAlarmDate.secsTo(currentDate)<300) {
+                qDebug() << "wake alarm is active, that means we should hibernate";
+                clearWakeAlarm();
+                Hibernate();
+                return;
+            }
+        }
+        clearWakeAlarm();
+        emit PrepareForResume();
+    }
 }
 
 void PowerKit::clearDevices()
@@ -414,6 +470,44 @@ void PowerKit::handleDelInhibitPowerManagement(quint32 cookie)
     }
 }
 
+bool PowerKit::registerSuspendLock()
+{
+    if (suspendLock) { return false; }
+    qDebug() << "register suspend lock";
+    QDBusReply<QDBusUnixFileDescriptor> reply;
+    if (HasLogind() && logind->isValid()) {
+        reply = ckit->call("Inhibit",
+                           "sleep",
+                           "powerkit",
+                           "Lock screen etc",
+                           "delay");
+    } else if (HasConsoleKit() && ckit->isValid()) {
+        reply = ckit->call("Inhibit",
+                           "sleep",
+                           "powerkit",
+                           "Lock screen etc",
+                           "delay");
+    }
+    if (reply.isValid()) {
+        suspendLock.reset(new QDBusUnixFileDescriptor(reply.value()));
+        return true;
+    } else {
+        qDebug() << reply.error();
+    }
+    return false;
+}
+
+void PowerKit::setWakeAlarmFromSettings()
+{
+    if (!CanHibernate()) { return; }
+    int wmin = OnBattery()?suspendWakeupBattery:suspendWakeupAC;
+    if (wmin>0) {
+        qDebug() << "we need to set a wake alarm" << wmin << "min from now";
+        QDateTime date = QDateTime::currentDateTime().addSecs(wmin*60);
+        setWakeAlarm(date);
+    }
+}
+
 bool PowerKit::HasConsoleKit()
 {
     return availableService(CONSOLEKIT_SERVICE,
@@ -433,6 +527,18 @@ bool PowerKit::HasUPower()
     return availableService(UPOWER_SERVICE,
                             UPOWER_PATH,
                             UPOWER_MANAGER);
+}
+
+bool PowerKit::hasPMD()
+{
+    return availableService(PMD_SERVICE,
+                            PMD_PATH,
+                            PMD_MANAGER);
+}
+
+bool PowerKit::hasWakeAlarm()
+{
+    return wakeAlarm;
 }
 
 bool PowerKit::CanRestart()
@@ -491,6 +597,7 @@ bool PowerKit::CanHybridSleep()
 
 QString PowerKit::Restart()
 {
+    qDebug() << "try to restart";
     if (HasLogind()) {
         return executeAction(PKRestartAction, PKLogind);
     } else if (HasConsoleKit()) {
@@ -501,6 +608,7 @@ QString PowerKit::Restart()
 
 QString PowerKit::PowerOff()
 {
+    qDebug() << "try to poweroff";
     if (HasLogind()) {
         return executeAction(PKPowerOffAction, PKLogind);
     } else if (HasConsoleKit()) {
@@ -511,9 +619,13 @@ QString PowerKit::PowerOff()
 
 QString PowerKit::Suspend()
 {
+    qDebug() << "try to suspend";
+    if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
+        setWakeAlarmFromSettings();
         return executeAction(PKSuspendAction, PKLogind);
     } else if (HasConsoleKit()) {
+        setWakeAlarmFromSettings();
         return executeAction(PKSuspendAction, PKConsoleKit);
     } else if (HasUPower()) {
         return executeAction(PKSuspendAction, PKUPower);
@@ -523,6 +635,8 @@ QString PowerKit::Suspend()
 
 QString PowerKit::Hibernate()
 {
+    qDebug() << "try to hibernate";
+    if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         return executeAction(PKHibernateAction, PKLogind);
     } else if (HasConsoleKit()) {
@@ -535,12 +649,37 @@ QString PowerKit::Hibernate()
 
 QString PowerKit::HybridSleep()
 {
+    qDebug() << "try to hybridsleep";
+    if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         return executeAction(PKHybridSleepAction, PKLogind);
     } else if (HasConsoleKit()) {
         return executeAction(PKHybridSleepAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
+}
+
+bool PowerKit::setWakeAlarm(const QDateTime &date)
+{
+    if (pmd && date.isValid() && CanHibernate()) {
+        if (!pmd->isValid()) { return false; }
+        QDBusMessage reply = pmd->call("setWakeAlarm",
+                                       date.toString("yyyy-MM-dd HH:mm:ss"));
+        bool alarm = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();
+        qDebug() << "WAKE OK?" << alarm;
+        wakeAlarm = alarm;
+        if (alarm) {
+            qDebug() << "wake alarm was set to" << date;
+            wakeAlarmDate = date;
+        }
+        return alarm;
+    }
+    return false;
+}
+
+void PowerKit::clearWakeAlarm()
+{
+    wakeAlarm = false;
 }
 
 bool PowerKit::IsDocked()
@@ -589,6 +728,7 @@ double PowerKit::BatteryLeft()
 
 void PowerKit::LockScreen()
 {
+    qDebug() << "lock screen";
     QProcess proc;
     proc.start(XSCREENSAVER_LOCK);
     proc.waitForFinished();
@@ -680,4 +820,39 @@ QStringList PowerKit::PowerManagementInhibitors()
         result << i.value();
     }
     return result;
+}
+
+const QDateTime PowerKit::getWakeAlarm()
+{
+    return wakeAlarmDate;
+}
+
+void PowerKit::releaseSuspendLock()
+{
+    qDebug() << "release suspend lock";
+    suspendLock.reset(NULL);
+}
+
+void PowerKit::setSuspendWakeAlarmOnBattery(int value)
+{
+    qDebug() << "set suspend wake alarm on battery" << value;
+    suspendWakeupBattery = value;
+}
+
+void PowerKit::setSuspendWakeAlarmOnAC(int value)
+{
+    qDebug() << "set suspend wake alarm on ac" << value;
+    suspendWakeupAC = value;
+}
+
+void PowerKit::setLockScreenOnSuspend(bool lock)
+{
+    qDebug() << "set lock screen on suspend" << lock;
+    lockScreenOnSuspend = lock;
+}
+
+void PowerKit::setLockScreenOnResume(bool lock)
+{
+    qDebug() << "set lock screen on resume" << lock;
+    lockScreenOnResume = lock;
 }

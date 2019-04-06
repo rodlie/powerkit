@@ -15,6 +15,8 @@
 #include <QDBusInterface>
 #include <QDBusObjectPath>
 #include <QTimer>
+#include <QDateTime>
+#include <QDBusUnixFileDescriptor>
 
 #include "device.h"
 
@@ -116,12 +118,25 @@ private:
 
     QDBusInterface *upower;
     QDBusInterface *logind;
+    QDBusInterface *ckit;
+    QDBusInterface *pmd;
 
     QTimer timer;
 
     bool wasDocked;
     bool wasLidClosed;
     bool wasOnBattery;
+
+    bool wakeAlarm;
+    QDateTime wakeAlarmDate;
+
+    QScopedPointer<QDBusUnixFileDescriptor> suspendLock;
+
+    int suspendWakeupBattery;
+    int suspendWakeupAC;
+
+    bool lockScreenOnSuspend;
+    bool lockScreenOnResume;
 
 signals:
     void Update();
@@ -130,7 +145,8 @@ signals:
     void LidOpened();
     void SwitchedToBattery();
     void SwitchedToAC();
-    void PrepareForSuspend(bool suspend);
+    void PrepareForSuspend();
+    void PrepareForResume();
     void DeviceWasRemoved(const QString &path);
     void DeviceWasAdded(const QString &path);
     void UpdatedInhibitors();
@@ -157,7 +173,7 @@ private slots:
     void handleDeviceChanged(const QString &device);
     void handleResume();
     void handleSuspend();
-    void handlePrepareForSuspend(bool suspend);
+    void handlePrepareForSuspend(bool prepare);
     void clearDevices();
     void handleNewInhibitScreenSaver(const QString &application,
                                      const QString &reason,
@@ -167,11 +183,16 @@ private slots:
                                          quint32 cookie);
     void handleDelInhibitScreenSaver(quint32 cookie);
     void handleDelInhibitPowerManagement(quint32 cookie);
+    
+    bool registerSuspendLock();
+    void setWakeAlarmFromSettings();
 
 public slots:
     bool HasConsoleKit();
     bool HasLogind();
     bool HasUPower();
+    bool hasPMD();
+    bool hasWakeAlarm();
 
     bool CanRestart();
     bool CanPowerOff();
@@ -184,6 +205,8 @@ public slots:
     QString Suspend();
     QString Hibernate();
     QString HybridSleep();
+    bool setWakeAlarm(const QDateTime &date);
+    void clearWakeAlarm();
 
     bool IsDocked();
     bool LidIsPresent();
@@ -199,6 +222,12 @@ public slots:
     void UpdateConfig();
     QStringList ScreenSaverInhibitors();
     QStringList PowerManagementInhibitors();
+    const QDateTime getWakeAlarm();
+    void releaseSuspendLock();
+    void setSuspendWakeAlarmOnBattery(int value);
+    void setSuspendWakeAlarmOnAC(int value);
+    void setLockScreenOnSuspend(bool lock);
+    void setLockScreenOnResume(bool lock);
 };
 
 #endif // POWERKIT_H
