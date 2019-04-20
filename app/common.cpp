@@ -159,13 +159,14 @@ bool Common::kernelCanResume()
     // ???
     return false;
 #endif
-    QFile cmdline("/proc/cmdline");
+    /*QFile cmdline("/proc/cmdline");
     if (cmdline.open(QIODevice::ReadOnly)) {
         QByteArray result = cmdline.readAll();
         cmdline.close();
         if (result.contains("resume=")) { return true;}
     }
-    return false;
+    return false;*/
+    return true;
 }
 
 QString Common::backlightDevice()
