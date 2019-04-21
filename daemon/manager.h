@@ -21,6 +21,7 @@ public:
 
 public slots:
     bool setWakeAlarm(const QString &alarm);
+    bool setDisplayBacklight(const QString &device, int value);
 };
 
 #endif // MANAGER_H

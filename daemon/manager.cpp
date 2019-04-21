@@ -8,6 +8,7 @@
 
 #include "manager.h"
 #include "rtc.h"
+#include "common.h"
 
 #include <QDebug>
 
@@ -21,5 +22,15 @@ bool Manager::setWakeAlarm(const QString &alarm)
     QDateTime date = QDateTime::fromString(alarm, "yyyy-MM-dd HH:mm:ss");
     if (date.isNull() || !date.isValid()) { return false; }
     return RTC::setAlarm(date);
+}
+
+bool Manager::setDisplayBacklight(const QString &device, int value)
+{
+    qDebug() << "Try to set DISPLAY backlight" << device << value;
+    if (!Common::canAdjustBacklight(device)) { return false; }
+    int light = value;
+    if (light>Common::backlightMax(device)) { light = Common::backlightMax(device); }
+    else if (light<0) { light = 0; }
+    return Common::adjustBacklight(device, light);
 }
 
