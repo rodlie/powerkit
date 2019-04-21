@@ -53,6 +53,7 @@ Dialog::Dialog(QWidget *parent)
     , backlightMouseWheel(0)
     , suspendLockScreen(0)
     , resumeLockScreen(0)
+    , bypassKernel(0)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
@@ -418,10 +419,16 @@ Dialog::Dialog(QWidget *parent)
     backlightMouseWheel->setText(tr("Adjust backlight in system tray"));
     backlightMouseWheel->setToolTip(tr("Adjust the display backlight with the mouse wheel on the system tray icon."));
 
+    bypassKernel = new QCheckBox(this);
+    bypassKernel->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
+    bypassKernel->setText(tr("Ignore kernel resume check"));
+    bypassKernel->setToolTip(tr("Don't check /proc/cmdline for a valid resume=<swap_partition> before hibernate."));
+
     daemonContainerLayout->addWidget(showSystemTray);
     daemonContainerLayout->addWidget(showNotifications);
     daemonContainerLayout->addWidget(disableLidAction);
     daemonContainerLayout->addWidget(backlightMouseWheel);
+    daemonContainerLayout->addWidget(bypassKernel);
 
     // screensaver
     QGroupBox *ssContainer = new QGroupBox(this);
@@ -880,9 +887,15 @@ void Dialog::loadSettings()
     }
     resumeLockScreen->setChecked(defaultResumeLockScreen);
 
+    bool defaultKernelBypass = false;
+    if (Common::validPowerSettings(CONF_KERNEL_BYPASS)) {
+        defaultKernelBypass = Common::loadPowerSettings(CONF_KERNEL_BYPASS).toBool();
+    }
+    bypassKernel->setChecked(defaultKernelBypass);
+
     // power actions
     bool canSuspend = man->CanSuspend();
-    bool canHibernate = man->CanHibernate() && Common::kernelCanResume();
+    bool canHibernate = man->CanHibernate() && Common::kernelCanResume(bypassKernel->isChecked());
     bool canShutdown = man->CanPowerOff();
     QString notSupported = tr("%1 is not supported. Check permissions and/or settings.");
     sleepButton->setEnabled(canSuspend);
@@ -1156,7 +1169,7 @@ void Dialog::handleHibernateButton()
                               QMessageBox::Yes,
                               QMessageBox::No) == QMessageBox::No) { return; }
     if (man->CanHibernate() &&
-        Common::kernelCanResume()) { man->Hibernate(); }
+        Common::kernelCanResume(bypassKernel->isChecked())) { man->Hibernate(); }
     else {
         QMessageBox::information(this,
                                  tr("Power Action"),
@@ -1185,7 +1198,7 @@ void Dialog::handlePoweroffButton()
 
 void Dialog::checkPerms()
 {
-    if (!Common::kernelCanResume() || !hibernateButton->isEnabled()) {
+    if (!Common::kernelCanResume(bypassKernel->isChecked()) || !hibernateButton->isEnabled()) {
         bool warnCantHibernate = false;
         if (criticalActionBattery->currentIndex() == criticalHibernate) {
             warnCantHibernate = true;

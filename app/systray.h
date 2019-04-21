@@ -123,6 +123,7 @@ private:
     bool backlightMouseWheel;
     bool lockScreenOnSuspend;
     bool lockScreenOnResume;
+    bool ignoreKernelResume;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);

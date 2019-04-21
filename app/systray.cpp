@@ -56,6 +56,7 @@ SysTray::SysTray(QObject *parent)
     , backlightMouseWheel(true)
     , lockScreenOnSuspend(true)
     , lockScreenOnResume(false)
+    , ignoreKernelResume(false)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -482,8 +483,14 @@ void SysTray::loadSettings()
         lockScreenOnResume = Common::loadPowerSettings(CONF_RESUME_LOCK_SCREEN).toBool();
     }
 
+    if (Common::validPowerSettings(CONF_KERNEL_BYPASS)) {
+        ignoreKernelResume = Common::loadPowerSettings(CONF_KERNEL_BYPASS).toBool();
+    } else {
+        ignoreKernelResume = false;
+    }
+
     // verify
-    if (!Common::kernelCanResume()) {
+    if (!Common::kernelCanResume(ignoreKernelResume)) {
         qDebug() << "hibernate is not activated in kernel (add resume=...)";
         disableHibernate();
     }

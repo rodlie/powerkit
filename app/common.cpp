@@ -153,8 +153,9 @@ QString Common::confDir()
     return config;
 }
 
-bool Common::kernelCanResume()
+bool Common::kernelCanResume(bool ignore)
 {
+    if (ignore) { return true; }
 #ifdef __FreeBSD__
     // ???
     return false;
