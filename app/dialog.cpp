@@ -694,6 +694,8 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleSuspendLockScreen(bool)));
     connect(resumeLockScreen, SIGNAL(toggled(bool)),
             this, SLOT(handleResumeLockScreen(bool)));
+    connect(bypassKernel, SIGNAL(toggled(bool)),
+            this, SLOT(handleKernelBypass(bool)));
 }
 
 Dialog::~Dialog()
@@ -1544,4 +1546,9 @@ void Dialog::handleSuspendLockScreen(bool triggered)
 void Dialog::handleResumeLockScreen(bool triggered)
 {
     Common::savePowerSettings(CONF_RESUME_LOCK_SCREEN, triggered);
+}
+
+void Dialog::handleKernelBypass(bool triggered)
+{
+    Common::savePowerSettings(CONF_KERNEL_BYPASS, triggered);
 }
