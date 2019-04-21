@@ -12,8 +12,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = powerkit
 TEMPLATE = app
 
-SOURCES += main.cpp systray.cpp dialog.cpp common.cpp
-HEADERS += systray.h dialog.h common.h
+SOURCES += main.cpp systray.cpp dialog.cpp theme.cpp
+HEADERS += systray.h dialog.h theme.h
 
 LIBS += -L../lib -lPowerKit
 INCLUDEPATH += ../lib

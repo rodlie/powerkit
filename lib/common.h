@@ -19,7 +19,7 @@ public:
     static QVariant loadPowerSettings(QString type);
     static bool validPowerSettings(QString type);
     static void saveDefaultSettings();
-    static void setIconTheme();
+    //static void setIconTheme();
     static QString confFile();
     static QString confDir();
     static bool kernelCanResume(bool ignore = false /* if ignore then always return true */);

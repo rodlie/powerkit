@@ -8,6 +8,7 @@
 
 #include "systray.h"
 #include "def.h"
+#include "theme.h"
 #include <QMessageBox>
 #include <QApplication>
 
@@ -172,7 +173,7 @@ SysTray::SysTray(QObject *parent)
     Common::checkSettings();
 
     // setup theme
-    Common::setIconTheme();
+    Theme::setIconTheme();
     if (tray->icon().isNull()) {
         tray->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
     }

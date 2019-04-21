@@ -7,6 +7,7 @@
 */
 
 #include "dialog.h"
+#include "theme.h"
 
 Dialog::Dialog(QWidget *parent)
     : QDialog(parent)
@@ -80,7 +81,7 @@ Dialog::Dialog(QWidget *parent)
     Common::checkSettings();
 
     // setup theme
-    Common::setIconTheme();
+    Theme::setIconTheme();
     setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
 
     // setup widgets

@@ -18,7 +18,8 @@ SOURCES += \
     device.cpp \
     screens.cpp \
     powerkit.cpp \
-    rtc.cpp
+    rtc.cpp \
+    common.cpp
 HEADERS += \
     powermanagement.h \
     screensaver.h \
@@ -26,7 +27,8 @@ HEADERS += \
     device.h \
     screens.h \
     powerkit.h \
-    rtc.h
+    rtc.h \
+    common.h
 
 include(../powerkit.pri)
 CONFIG(install_lib) {

@@ -9,8 +9,8 @@
 #include "common.h"
 #include <QFile>
 #include <QFileInfo>
-#include <QIcon>
-#include <QApplication>
+//#include <QIcon>
+//#include <QApplication>
 #include <QDir>
 #include <QSettings>
 #include <QDebug>
@@ -90,7 +90,7 @@ void Common::saveDefaultSettings()
                       false);
 }
 
-void Common::setIconTheme()
+/*void Common::setIconTheme()
 {
     // setup icon theme search path
     QStringList iconsPath = QIcon::themeSearchPaths();
@@ -133,7 +133,7 @@ void Common::setIconTheme()
         }
     }
 #endif
-}
+}*/
 
 QString Common::confFile()
 {
