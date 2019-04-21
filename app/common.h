@@ -22,7 +22,7 @@ public:
     static void setIconTheme();
     static QString confFile();
     static QString confDir();
-    static bool kernelCanResume();
+    static bool kernelCanResume(bool ignore = false /* if ignore then always return true */);
     static QString backlightDevice();
     static bool canAdjustBacklight(QString device);
     static int backlightMax(QString device);

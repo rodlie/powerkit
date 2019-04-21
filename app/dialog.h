@@ -112,6 +112,7 @@ private:
     QCheckBox *backlightMouseWheel;
     QCheckBox *suspendLockScreen;
     QCheckBox *resumeLockScreen;
+    QCheckBox *bypassKernel;
 
 private slots:
     void populate();

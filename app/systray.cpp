@@ -54,6 +54,7 @@ SysTray::SysTray(QObject *parent)
     , notifyOnBattery(true)
     , notifyOnAC(true)
     , backlightMouseWheel(true)
+    , ignoreKernelResume(false)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -490,8 +491,14 @@ void SysTray::loadSettings()
         man->setSuspendWakeAlarmOnAC(Common::loadPowerSettings(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
     }
 
+    if (Common::validPowerSettings(CONF_KERNEL_BYPASS)) {
+        ignoreKernelResume = Common::loadPowerSettings(CONF_KERNEL_BYPASS).toBool();
+    } else {
+        ignoreKernelResume = false;
+    }
+
     // verify
-    if (!Common::kernelCanResume()) {
+    if (!Common::kernelCanResume(ignoreKernelResume)) {
         qDebug() << "hibernate is not activated in kernel (add resume=...)";
         disableHibernate();
     }

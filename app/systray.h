@@ -121,6 +121,7 @@ private:
     bool notifyOnBattery;
     bool notifyOnAC;
     bool backlightMouseWheel;
+    bool ignoreKernelResume;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
