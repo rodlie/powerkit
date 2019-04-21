@@ -43,11 +43,7 @@ CONFIG(install_lib) {
     }
     !CONFIG(no_include_install) {
         target_inc.path = $${PREFIX}/include/powerkit
-        target_inc.files = common.h \
-                           powermanagement.h \
-                           screensaver.h \
-                           device.h \
-                           screens.h
+        target_inc.files = $${HEADERS}
         INSTALLS += target_inc
     }
     !CONFIG(no_pkgconfig_install) {
