@@ -899,10 +899,11 @@ void Dialog::loadSettings()
     bool canSuspend = man->CanSuspend();
     bool canHibernate = man->CanHibernate() && Common::kernelCanResume(bypassKernel->isChecked());
     bool canShutdown = man->CanPowerOff();
+    qDebug() << "can suspend?" << canSuspend << "can hibernate?" << canHibernate << "can shutdown?" << canShutdown;
     QString notSupported = tr("%1 is not supported. Check permissions and/or settings.");
     sleepButton->setEnabled(canSuspend);
     hibernateButton->setEnabled(canHibernate &&
-                                Common::kernelCanResume());
+                                Common::kernelCanResume(bypassKernel->isChecked()));
     poweroffButton->setEnabled(canShutdown);
     if (!canSuspend) {
         sleepButton->setToolTip(notSupported.arg(tr("Suspend")));
