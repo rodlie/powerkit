@@ -165,6 +165,7 @@ private slots:
     void handleBacklightMouseWheel(bool triggered);
     void handleSuspendLockScreen(bool triggered);
     void handleResumeLockScreen(bool triggered);
+    void handleKernelBypass(bool triggered);
 };
 
 #endif // DIALOG_H
