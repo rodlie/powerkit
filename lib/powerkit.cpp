@@ -177,6 +177,7 @@ QStringList PowerKit::find()
     }
     QList<QDBusObjectPath> objects;
     QXmlStreamReader xml(reply.value());
+    if (xml.hasError()) { return result; }
     while (!xml.atEnd()) {
         xml.readNext();
         if (xml.tokenType() == QXmlStreamReader::StartElement &&
