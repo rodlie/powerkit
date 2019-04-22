@@ -11,6 +11,7 @@
 
 #include <QVariant>
 #include <QString>
+#include <QDBusInterface>
 
 #ifdef Q_OS_LINUX
 #define LINUX_CPU_SYS "/sys/devices/system/cpu"
@@ -57,6 +58,13 @@ public:
     static bool cpuFrequencyExists(const QString &freq);
     static bool setCpuFrequency(const QString &freq, int cpu);
     static bool setCpuFrequency(const QString &freq);
+
+    static double getBatteryLeft(QDBusInterface *iface);
+    static bool hasBattery(QDBusInterface *iface);
+    static bool onBattery(QDBusInterface *iface);
+    static qlonglong timeToEmpty(QDBusInterface *iface);
+    static bool canHibernate(QDBusInterface *iface);
+    static bool canSuspend(QDBusInterface *iface);
 };
 
 #endif // COMMON_H
