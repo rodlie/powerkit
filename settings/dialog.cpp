@@ -33,7 +33,6 @@ Dialog::Dialog(QWidget *parent)
     , backlightACHigherCheck(0)
     , warnOnLowBattery(0)
     , warnOnVeryLowBattery(0)
-    , aboutButton(0)
     , lidActionACLabel(0)
     , lidActionBatteryLabel(0)
     , batteryBacklightLabel(0)
@@ -111,8 +110,6 @@ Dialog::Dialog(QWidget *parent)
             this, SLOT(handleBacklightBatteryCheckLower(bool)));
     connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightACCheckHigher(bool)));
-    connect(aboutButton, SIGNAL(released()),
-            this, SLOT(showAboutDialog()));
     connect(warnOnLowBattery, SIGNAL(toggled(bool)),
             this, SLOT(handleWarnOnLowBattery(bool)));
     connect(warnOnVeryLowBattery, SIGNAL(toggled(bool)),
@@ -143,16 +140,6 @@ void Dialog::setupWidgets()
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(5);
     layout->setSpacing(0);
-
-    /*QTabWidget *containerWidget = new QTabWidget(this);
-
-    QWidget *wrapper = new QWidget(this);
-    wrapper->setContentsMargins(0, 0, 0, 0);
-
-    QVBoxLayout *wrapperLayout = new QVBoxLayout(wrapper);
-    wrapperLayout->setMargin(0);
-    wrapperLayout->setSpacing(0);
-    wrapperLayout->addWidget(containerWidget);*/
 
     // battery
     QGroupBox *batteryContainer = new QGroupBox(this);
@@ -535,23 +522,6 @@ void Dialog::setupWidgets()
     notifyContainerLayout->addWidget(notifyOnBattery);
     notifyContainerLayout->addWidget(notifyOnAC);
 
-    // extra
-    QWidget *extraContainer = new QWidget(this);
-    QHBoxLayout *extraContainerLayout = new QHBoxLayout(extraContainer);
-
-    aboutButton = new QPushButton(this);
-    aboutButton->setIcon(QIcon::fromTheme(DEFAULT_ABOUT_ICON));
-    aboutButton->setIconSize(QSize(24, 24));
-    aboutButton->setToolTip(tr("About"));
-    if (aboutButton->icon().isNull()) {
-        aboutButton->setText(tr("About"));
-    }
-
-    extraContainerLayout->addStretch();
-    extraContainerLayout->addWidget(aboutButton);
-
-
-
     QWidget *settingsWidget = new QWidget(this);
     QVBoxLayout *settingsLayout = new QVBoxLayout(settingsWidget);
     QScrollArea *settingsContainerArea = new QScrollArea(this);
@@ -570,14 +540,7 @@ void Dialog::setupWidgets()
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
 
-
     layout->addWidget(settingsContainerArea);
-    layout->addWidget(extraContainer);
-    // add tabs
-    /*containerWidget->addTab(settingsContainerArea,
-                            QIcon::fromTheme(DEFAULT_BATTERY_ICON),
-                            tr("Settings"));*/
-
 }
 
 // populate widgets with default values
@@ -771,24 +734,24 @@ void Dialog::loadSettings()
     }
     bypassKernel->setChecked(defaultKernelBypass);
 
-
+    // check
     checkPerms();
 
     // backlight
     backlightDevice = Common::backlightDevice();
 
-        backlightSliderAC->setEnabled(true);
-        backlightSliderBattery->setEnabled(true);
+    backlightSliderAC->setEnabled(true);
+    backlightSliderBattery->setEnabled(true);
 
-        int backlightMin = 1;
-        int backlightMax = Common::backlightMax(backlightDevice);
+    int backlightMin = 1;
+    int backlightMax = Common::backlightMax(backlightDevice);
 
-        backlightSliderBattery->setMinimum(backlightMin);
-        backlightSliderBattery->setMaximum(backlightMax);
-        backlightSliderBattery->setValue(backlightSliderBattery->maximum());
-        backlightSliderAC->setMinimum(backlightMin);
-        backlightSliderAC->setMaximum(backlightMax);
-        backlightSliderAC->setValue(backlightSliderAC->maximum());
+    backlightSliderBattery->setMinimum(backlightMin);
+    backlightSliderBattery->setMaximum(backlightMax);
+    backlightSliderBattery->setValue(backlightSliderBattery->maximum());
+    backlightSliderAC->setMinimum(backlightMin);
+    backlightSliderAC->setMaximum(backlightMax);
+    backlightSliderAC->setValue(backlightSliderAC->maximum());
 
     backlightBatteryCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE)
                                       .toBool());
@@ -819,10 +782,7 @@ void Dialog::loadSettings()
     backlightMouseWheel->setChecked(defaultBacklightMouseWheel);
 
     enableBacklight(true);
-    //enableLid(man->LidIsPresent());
-
-    // check devices
-    //checkDevices();
+    enableLid(Common::lidIsPresent(dbus));
 }
 
 void Dialog::saveSettings()
@@ -1071,10 +1031,9 @@ void Dialog::handleBacklightACSlider(int value)
 
 void Dialog::hibernateWarn()
 {
-    QMessageBox::warning(this, tr("Hibernate not supported"),
-                         tr("The kernel command line does not contain resume=<swap partition/file>."
-                            "Add resume=<swap partition/file> to the boot loader configuration"
-                            " (GRUB/LILO etc) to enable hibernate."));
+    QMessageBox::warning(this, tr("Hibernate may not work"),
+                         tr("The kernel command line does not contain resume=<swap>."
+                            " Your system may not resume from hibernation."));
 }
 
 void Dialog::sleepWarn()
@@ -1104,39 +1063,6 @@ void Dialog::enableBacklight(bool enabled)
     batteryBacklightLabel->setEnabled(enabled);
     acBacklightLabel->setEnabled(enabled);
     backlightMouseWheel->setEnabled(enabled);
-}
-
-void Dialog::showAboutDialog()
-{
-    QMessageBox about;
-    about.setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
-    about.setIconPixmap(QIcon::fromTheme(DEFAULT_AC_ICON).pixmap(48, 48));
-    about.setWindowTitle(tr("About PowerKit"));
-    about.setText(QString("<h1 style=\"font-weight:normal;\">PowerKit %1</h1>"
-                          "<h3>%2</h3>"
-                          "<p>&copy;2018 Ole-Andr&eacute; Rodlie. %3<br>"
-                          "%4<br> %5"
-                          " <a href=\"https://github.com/rodlie/powerkit/blob/master/LICENSE\">LICENSE</a>"
-                          " %6</p>"
-                          "<p>%7 <a href=\"https://github.com/rodlie/powerkit\">Github</a>,"
-                          " <a href=\"https://gitlab.com/rodlie/powerkit\">Gitlab</a> %8"
-                          " <a href=\"https://sourceforge.net/p/powerkit\">SourceForge</a>.</p>")
-                  .arg(qApp->applicationVersion())
-                  .arg(tr("Desktop independent power manager"))
-                  .arg(tr("All rights reserved."))
-                  .arg(tr("Licensed under the 3-clause BSD license."))
-                  .arg(tr("See the included"))
-                  .arg(tr("file for full details."))
-                  .arg(tr("Available on"))
-                  .arg(tr("and")));
-#ifdef BUNDLE_ICONS
-    about.setDetailedText(tr("Includes icons from the GNOME project <http://www.gnome.org>.\n\n"
-                             "This work is licenced under the Creative Commons Attribution-Share Alike 3.0 "
-                             "United States License.\n\nTo view a copy of this licence, visit "
-                             "http://creativecommons.org/licenses/by-sa/3.0/ or send a letter to Creative "
-                             "Commons, 171 Second Street, Suite 300, San Francisco, California 94105, USA."));
-#endif
-    about.exec();
 }
 
 void Dialog::handleWarnOnLowBattery(bool triggered)
@@ -1187,4 +1113,3 @@ void Dialog::handleKernelBypass(bool triggered)
 {
     Common::savePowerSettings(CONF_KERNEL_BYPASS, triggered);
 }
-

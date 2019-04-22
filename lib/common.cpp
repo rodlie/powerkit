@@ -492,3 +492,13 @@ bool Common::canSuspend(QDBusInterface *iface)
     qDebug() << "we can suspend?" << ok;
     return  ok;
 }
+
+bool Common::lidIsPresent(QDBusInterface *iface)
+{
+    qDebug() << "check if we have a lid";
+    if (!iface->isValid()) { return false; }
+    QDBusMessage reply = iface->call("LidIsPresent");
+    bool ok = reply.arguments().last().toBool();
+    qDebug() << "we have a lid?" << ok;
+    return  ok;
+}

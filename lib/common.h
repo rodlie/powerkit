@@ -65,6 +65,7 @@ public:
     static qlonglong timeToEmpty(QDBusInterface *iface);
     static bool canHibernate(QDBusInterface *iface);
     static bool canSuspend(QDBusInterface *iface);
+    static bool lidIsPresent(QDBusInterface *iface);
 };
 
 #endif // COMMON_H
