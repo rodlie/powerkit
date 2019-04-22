@@ -52,8 +52,8 @@
 #undef FontChange
 #undef Expose
 
-#define DEVICE_UUID Qt::UserRole+1
-#define DEVICE_TYPE Qt::UserRole+2
+//#define DEVICE_UUID Qt::UserRole+1
+//#define DEVICE_TYPE Qt::UserRole+2
 #define MAX_WIDTH 150
 
 class Dialog : public QDialog
@@ -79,27 +79,27 @@ private:
     QCheckBox *disableLidAction;
     QComboBox *autoSleepBatteryAction;
     QComboBox *autoSleepACAction;
-    QPushButton *lockscreenButton;
-    QPushButton *sleepButton;
-    QPushButton *hibernateButton;
-    QPushButton *poweroffButton;
+    //QPushButton *lockscreenButton;
+    //QPushButton *sleepButton;
+    //QPushButton *hibernateButton;
+    //QPushButton *poweroffButton;
     QString backlightDevice;
-    bool hasBacklight;
-    QSlider *backlightSlider;
-    QFileSystemWatcher *backlightWatcher;
-    PowerKit *man;
-    QLabel *batteryIcon;
-    QLabel *batteryLabel;
-    QTreeWidget *deviceTree;
-    QMap<QString,QProgressBar*> devicesProg;
-    QLCDNumber *batteryLeftLCD;
+    //bool hasBacklight;
+    //QSlider *backlightSlider;
+    //QFileSystemWatcher *backlightWatcher;
+    //PowerKit *man;
+    //QLabel *batteryIcon;
+    //QLabel *batteryLabel;
+    //QTreeWidget *deviceTree;
+    //QMap<QString,QProgressBar*> devicesProg;
+    //QLCDNumber *batteryLeftLCD;
     QSlider *backlightSliderBattery;
     QSlider *backlightSliderAC;
     QCheckBox *backlightBatteryCheck;
     QCheckBox *backlightACCheck;
     QCheckBox *backlightBatteryLowerCheck;
     QCheckBox *backlightACHigherCheck;
-    QTreeWidget *inhibitorTree;
+    //QTreeWidget *inhibitorTree;
     QCheckBox *warnOnLowBattery;
     QCheckBox *warnOnVeryLowBattery;
     QPushButton *aboutButton;
@@ -115,6 +115,7 @@ private:
     QCheckBox *bypassKernel;
 
 private slots:
+    void setupWidgets();
     void populate();
     void loadSettings();
     void saveSettings();
@@ -134,17 +135,17 @@ private slots:
     void handleDisableLidAction(bool triggered);
     void handleAutoSleepBatteryAction(int index);
     void handleAutoSleepACAction(int index);
-    void handleLockscreenButton();
-    void handleSleepButton();
-    void handleHibernateButton();
-    void handlePoweroffButton();
+    //void handleLockscreenButton();
+    //void handleSleepButton();
+    //void handleHibernateButton();
+    //void handlePoweroffButton();
     void checkPerms();
-    void handleBacklightSlider(int value);
-    void updateBacklight(QString file);
-    void checkDevices();
-    bool deviceExists(QString uid);
-    void deviceRemove(QString uid);
-    void handleDeviceAdded(QString uid);
+    //void handleBacklightSlider(int value);
+    //void updateBacklight(QString file);
+    //void checkDevices();
+    //bool deviceExists(QString uid);
+    //void deviceRemove(QString uid);
+    //void handleDeviceAdded(QString uid);
     void handleBacklightBatteryCheck(bool triggered);
     void handleBacklightACCheck(bool triggered);
     void handleBacklightBatterySlider(int value);
@@ -153,8 +154,8 @@ private slots:
     void sleepWarn();
     void handleBacklightBatteryCheckLower(bool triggered);
     void handleBacklightACCheckHigher(bool triggered);
-    void handleUpdatedInhibitors();
-    void getInhibitors();
+    //void handleUpdatedInhibitors();
+    //void getInhibitors();
     void enableBacklight(bool enabled);
     void showAboutDialog();
     void handleWarnOnLowBattery(bool triggered);

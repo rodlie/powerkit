@@ -25,25 +25,12 @@ Dialog::Dialog(QWidget *parent)
     , disableLidAction(0)
     , autoSleepBatteryAction(0)
     , autoSleepACAction(0)
-    , lockscreenButton(0)
-    , sleepButton(0)
-    , hibernateButton(0)
-    , poweroffButton(0)
-    , hasBacklight(false)
-    , backlightSlider(0)
-    , backlightWatcher(0)
-    , man(0)
-    , batteryIcon(0)
-    , batteryLabel(0)
-    , deviceTree(0)
-    , batteryLeftLCD(0)
     , backlightSliderBattery(0)
     , backlightSliderAC(0)
     , backlightBatteryCheck(0)
     , backlightACCheck(0)
     , backlightBatteryLowerCheck(0)
     , backlightACHigherCheck(0)
-    , inhibitorTree(0)
     , warnOnLowBattery(0)
     , warnOnVeryLowBattery(0)
     , aboutButton(0)
@@ -58,7 +45,7 @@ Dialog::Dialog(QWidget *parent)
 {
     // setup dialog
     setAttribute(Qt::WA_QuitOnClose, true);
-    setWindowTitle(tr("PowerKit"));
+    setWindowTitle(tr("Power Manager"));
     setMinimumSize(QSize(390, 310));
 
     // setup dbus
@@ -67,15 +54,12 @@ Dialog::Dialog(QWidget *parent)
                               POWERKIT_PATH,
                               POWERKIT_SERVICE,
                               session, this);
-    session.connect(dbus->service(),
-                   dbus->path(),
-                   dbus->service(),
-                   "UpdatedInhibitors",
-                   this,
-                   SLOT(handleUpdatedInhibitors()));
-
-    // setup powerkit
-    man = new PowerKit(this);
+    if (!dbus->isValid()) {
+        QMessageBox::warning(this,
+                             tr("powerkit not running"),
+                             tr("powerkit is not running, please start powerkit before running settings."));
+        QTimer::singleShot(1, this, SLOT(close()));
+    }
 
     // check settings
     Common::checkSettings();
@@ -84,12 +68,83 @@ Dialog::Dialog(QWidget *parent)
     Theme::setIconTheme();
     setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
 
+    setupWidgets(); // setup widgets
+    populate(); // populate boxes
+    loadSettings(); // load settings
+
+    // connect widgets
+    connect(lidActionBattery, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleLidActionBattery(int)));
+    connect(lidActionAC, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleLidActionAC(int)));
+    connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleCriticalAction(int)));
+    connect(criticalBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleCriticalBattery(int)));
+    connect(autoSleepBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleAutoSleepBattery(int)));
+    connect(autoSleepAC, SIGNAL(valueChanged(int)),
+            this, SLOT(handleAutoSleepAC(int)));
+    connect(desktopSS, SIGNAL(toggled(bool)),
+            this, SLOT(handleDesktopSS(bool)));
+    connect(desktopPM, SIGNAL(toggled(bool)),
+            this, SLOT(handleDesktopPM(bool)));
+    connect(showNotifications, SIGNAL(toggled(bool)),
+            this, SLOT(handleShowNotifications(bool)));
+    connect(showSystemTray, SIGNAL(toggled(bool)),
+            this, SLOT(handleShowSystemTray(bool)));
+    connect(disableLidAction, SIGNAL(toggled(bool)),
+            this, SLOT(handleDisableLidAction(bool)));
+    connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleAutoSleepBatteryAction(int)));
+    connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleAutoSleepACAction(int)));
+    connect(backlightBatteryCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightBatteryCheck(bool)));
+    connect(backlightACCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightACCheck(bool)));
+    connect(backlightSliderBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightBatterySlider(int)));
+    connect(backlightSliderAC, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightACSlider(int)));
+    connect(backlightBatteryLowerCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightBatteryCheckLower(bool)));
+    connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightACCheckHigher(bool)));
+    connect(aboutButton, SIGNAL(released()),
+            this, SLOT(showAboutDialog()));
+    connect(warnOnLowBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleWarnOnLowBattery(bool)));
+    connect(warnOnVeryLowBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleWarnOnVeryLowBattery(bool)));
+    connect(notifyOnBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyBattery(bool)));
+    connect(notifyOnAC, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyAC(bool)));
+    connect(backlightMouseWheel, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightMouseWheel(bool)));
+    connect(suspendLockScreen, SIGNAL(toggled(bool)),
+            this, SLOT(handleSuspendLockScreen(bool)));
+    connect(resumeLockScreen, SIGNAL(toggled(bool)),
+            this, SLOT(handleResumeLockScreen(bool)));
+    connect(bypassKernel, SIGNAL(toggled(bool)),
+            this, SLOT(handleKernelBypass(bool)));
+}
+
+Dialog::~Dialog()
+{
+    Common::savePowerSettings(CONF_DIALOG,
+                              saveGeometry());
+}
+
+void Dialog::setupWidgets()
+{
     // setup widgets
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(5);
     layout->setSpacing(0);
 
-    QTabWidget *containerWidget = new QTabWidget(this);
+    /*QTabWidget *containerWidget = new QTabWidget(this);
 
     QWidget *wrapper = new QWidget(this);
     wrapper->setContentsMargins(0, 0, 0, 0);
@@ -97,7 +152,7 @@ Dialog::Dialog(QWidget *parent)
     QVBoxLayout *wrapperLayout = new QVBoxLayout(wrapper);
     wrapperLayout->setMargin(0);
     wrapperLayout->setSpacing(0);
-    wrapperLayout->addWidget(containerWidget);
+    wrapperLayout->addWidget(containerWidget);*/
 
     // battery
     QGroupBox *batteryContainer = new QGroupBox(this);
@@ -492,98 +547,10 @@ Dialog::Dialog(QWidget *parent)
         aboutButton->setText(tr("About"));
     }
 
-    lockscreenButton = new QPushButton(this);
-    lockscreenButton->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
-    lockscreenButton->setIconSize(QSize(24, 24));
-    lockscreenButton->setToolTip(tr("Lock the screen now."));
-    if (lockscreenButton->icon().isNull()) {
-        lockscreenButton->setText(tr("Lock screen"));
-    }
-
-    sleepButton = new QPushButton(this);
-    sleepButton->setIcon(QIcon::fromTheme(DEFAULT_SUSPEND_ICON));
-    sleepButton->setIconSize(QSize(24, 24));
-    sleepButton->setToolTip(tr("Suspend computer now."));
-    if (sleepButton->icon().isNull()) {
-        sleepButton->setText(tr("Suspend"));
-    }
-
-    hibernateButton = new QPushButton(this);
-    hibernateButton->setIcon(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON));
-    hibernateButton->setIconSize(QSize(24, 24));
-    hibernateButton->setToolTip(tr("Hibernate computer now."));
-    if (hibernateButton->icon().isNull()) {
-        hibernateButton->setText(tr("Hibernate"));
-    }
-
-    poweroffButton = new QPushButton(this);
-    poweroffButton->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
-    poweroffButton->setIconSize(QSize(24, 24));
-    poweroffButton->setToolTip(tr("Shutdown computer now."));
-    if (poweroffButton->icon().isNull()) {
-        poweroffButton->setText(tr("Shutdown"));
-    }
-
-    backlightSlider = new QSlider(this);
-    backlightSlider->setMinimumWidth(100);
-    backlightSlider->setSingleStep(1);
-    backlightSlider->setOrientation(Qt::Horizontal);
-    backlightSlider->setToolTip(tr("Adjust the current brightness."));
-    backlightWatcher = new QFileSystemWatcher(this);
-
-    QLabel *backlightLabel = new QLabel(this);
-    backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
-                              .pixmap(24, 24));
-
-    extraContainerLayout->addWidget(backlightLabel);
-    extraContainerLayout->addWidget(backlightSlider);
     extraContainerLayout->addStretch();
     extraContainerLayout->addWidget(aboutButton);
-    extraContainerLayout->addWidget(lockscreenButton);
-    extraContainerLayout->addWidget(sleepButton);
-    extraContainerLayout->addWidget(hibernateButton);
-    extraContainerLayout->addWidget(poweroffButton);
 
-    // status
-    QWidget *statusContainer = new QWidget(this);
-    QVBoxLayout *statusContainerLayout = new QVBoxLayout(statusContainer);
 
-    QGroupBox *batteryStatusBox = new QGroupBox(this);
-    batteryStatusBox->setSizePolicy(QSizePolicy::Expanding,
-                                    QSizePolicy::Fixed);
-    QHBoxLayout *batteryStatusLayout = new QHBoxLayout(batteryStatusBox);
-
-    batteryIcon = new QLabel(this);
-    batteryLabel = new QLabel(this);
-    batteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON)
-                           .pixmap(QSize(48, 48)));
-
-    batteryLeftLCD = new QLCDNumber(this);
-    batteryLeftLCD->setSizePolicy(QSizePolicy::Expanding,
-                                  QSizePolicy::Expanding);
-    batteryLeftLCD->setFrameStyle(QFrame::NoFrame);
-    batteryLeftLCD->setSegmentStyle(QLCDNumber::Flat);
-    batteryLeftLCD->display("00:00");
-
-    deviceTree = new QTreeWidget(this);
-    deviceTree->setStyleSheet("QTreeWidget,QTreeWidget::item,"
-                              "QTreeWidget::item:selected"
-                              "{background:transparent;border:0;}");
-    deviceTree->setHeaderHidden(true);
-    deviceTree->setHeaderLabels(QStringList() << "1" << "2");
-    deviceTree->setColumnWidth(0, 150);
-
-    batteryStatusLayout->addWidget(batteryIcon);
-    batteryStatusLayout->addWidget(batteryLabel);
-    batteryStatusLayout->addStretch();
-    batteryStatusLayout->addWidget(batteryLeftLCD);
-
-    statusContainerLayout->addWidget(batteryStatusBox);
-    statusContainerLayout->addWidget(deviceTree);
-    statusContainerLayout->addStretch();
-
-    layout->addWidget(wrapper);
-    layout->addWidget(extraContainer);
 
     QWidget *settingsWidget = new QWidget(this);
     QVBoxLayout *settingsLayout = new QVBoxLayout(settingsWidget);
@@ -603,106 +570,14 @@ Dialog::Dialog(QWidget *parent)
     settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
 
-    // inhibitors
-    inhibitorTree = new QTreeWidget(this);
-    inhibitorTree->setHeaderHidden(true);
-    inhibitorTree->setStyleSheet("QTreeWidget {border:0;}");
 
+    layout->addWidget(settingsContainerArea);
+    layout->addWidget(extraContainer);
     // add tabs
-    containerWidget->addTab(statusContainer,
-                            QIcon::fromTheme(DEFAULT_INFO_ICON),
-                            tr("Status"));
-    containerWidget->addTab(settingsContainerArea,
+    /*containerWidget->addTab(settingsContainerArea,
                             QIcon::fromTheme(DEFAULT_BATTERY_ICON),
-                            tr("Settings"));
-    containerWidget->addTab(inhibitorTree,
-                            QIcon::fromTheme(DEFAULT_VIDEO_ICON),
-                            tr("Inhibitors"));
+                            tr("Settings"));*/
 
-    populate(); // populate boxes
-    loadSettings(); // load settings
-
-    // connect widgets
-    connect(lockscreenButton, SIGNAL(released()),
-            this, SLOT(handleLockscreenButton()));
-    connect(sleepButton, SIGNAL(released()),
-            this, SLOT(handleSleepButton()));
-    connect(hibernateButton, SIGNAL(released()),
-            this, SLOT(handleHibernateButton()));
-    connect(poweroffButton, SIGNAL(released()),
-            this, SLOT(handlePoweroffButton()));
-    connect(lidActionBattery, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleLidActionBattery(int)));
-    connect(lidActionAC, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleLidActionAC(int)));
-    connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleCriticalAction(int)));
-    connect(criticalBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleCriticalBattery(int)));
-    connect(autoSleepBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleAutoSleepBattery(int)));
-    connect(autoSleepAC, SIGNAL(valueChanged(int)),
-            this, SLOT(handleAutoSleepAC(int)));
-    connect(desktopSS, SIGNAL(toggled(bool)),
-            this, SLOT(handleDesktopSS(bool)));
-    connect(desktopPM, SIGNAL(toggled(bool)),
-            this, SLOT(handleDesktopPM(bool)));
-    connect(showNotifications, SIGNAL(toggled(bool)),
-            this, SLOT(handleShowNotifications(bool)));
-    connect(showSystemTray, SIGNAL(toggled(bool)),
-            this, SLOT(handleShowSystemTray(bool)));
-    connect(disableLidAction, SIGNAL(toggled(bool)),
-            this, SLOT(handleDisableLidAction(bool)));
-    connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleAutoSleepBatteryAction(int)));
-    connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleAutoSleepACAction(int)));
-    connect(backlightSlider, SIGNAL(valueChanged(int)),
-            this, SLOT(handleBacklightSlider(int)));
-    connect(backlightWatcher, SIGNAL(fileChanged(QString)),
-            this, SLOT(updateBacklight(QString)));
-    connect(man, SIGNAL(UpdatedDevices()),
-            this, SLOT(checkDevices()));
-    connect(man, SIGNAL(DeviceWasRemoved(QString)),
-            this, SLOT(deviceRemove(QString)));
-    connect(man, SIGNAL(DeviceWasAdded(QString)),
-            this, SLOT(handleDeviceAdded(QString)));
-    connect(backlightBatteryCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightBatteryCheck(bool)));
-    connect(backlightACCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightACCheck(bool)));
-    connect(backlightSliderBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleBacklightBatterySlider(int)));
-    connect(backlightSliderAC, SIGNAL(valueChanged(int)),
-            this, SLOT(handleBacklightACSlider(int)));
-    connect(backlightBatteryLowerCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightBatteryCheckLower(bool)));
-    connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightACCheckHigher(bool)));
-    connect(aboutButton, SIGNAL(released()),
-            this, SLOT(showAboutDialog()));
-    connect(warnOnLowBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleWarnOnLowBattery(bool)));
-    connect(warnOnVeryLowBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleWarnOnVeryLowBattery(bool)));
-    connect(notifyOnBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleNotifyBattery(bool)));
-    connect(notifyOnAC, SIGNAL(toggled(bool)),
-            this, SLOT(handleNotifyAC(bool)));
-    connect(backlightMouseWheel, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightMouseWheel(bool)));
-    connect(suspendLockScreen, SIGNAL(toggled(bool)),
-            this, SLOT(handleSuspendLockScreen(bool)));
-    connect(resumeLockScreen, SIGNAL(toggled(bool)),
-            this, SLOT(handleResumeLockScreen(bool)));
-    connect(bypassKernel, SIGNAL(toggled(bool)),
-            this, SLOT(handleKernelBypass(bool)));
-}
-
-Dialog::~Dialog()
-{
-    Common::savePowerSettings(CONF_DIALOG,
-                              saveGeometry());
 }
 
 // populate widgets with default values
@@ -896,52 +771,25 @@ void Dialog::loadSettings()
     }
     bypassKernel->setChecked(defaultKernelBypass);
 
-    // power actions
-    bool canSuspend = man->CanSuspend();
-    bool canHibernate = man->CanHibernate() && Common::kernelCanResume(bypassKernel->isChecked());
-    bool canShutdown = man->CanPowerOff();
-    qDebug() << "can suspend?" << canSuspend << "can hibernate?" << canHibernate << "can shutdown?" << canShutdown;
-    QString notSupported = tr("%1 is not supported. Check permissions and/or settings.");
-    sleepButton->setEnabled(canSuspend);
-    hibernateButton->setEnabled(canHibernate &&
-                                Common::kernelCanResume(bypassKernel->isChecked()));
-    poweroffButton->setEnabled(canShutdown);
-    if (!canSuspend) {
-        sleepButton->setToolTip(notSupported.arg(tr("Suspend")));
-    }
-    if (!canHibernate) {
-        hibernateButton->setToolTip(notSupported.arg(tr("Hibernate")));
-    }
-    if (!canShutdown) {
-        poweroffButton->setToolTip(notSupported.arg(tr("Shutdown")));
-    }
 
     checkPerms();
 
     // backlight
     backlightDevice = Common::backlightDevice();
-    hasBacklight = Common::canAdjustBacklight(backlightDevice);
-    if (hasBacklight) {
-        backlightSlider->setMinimum(1);
-        backlightSlider->setMaximum(Common::backlightMax(backlightDevice));
-        backlightSlider->setValue(Common::backlightValue(backlightDevice));
 
-        backlightSlider->setEnabled(true);
         backlightSliderAC->setEnabled(true);
         backlightSliderBattery->setEnabled(true);
 
-        backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
-        backlightSliderBattery->setMinimum(backlightSlider->minimum());
-        backlightSliderBattery->setMaximum(backlightSlider->maximum());
+        int backlightMin = 1;
+        int backlightMax = Common::backlightMax(backlightDevice);
+
+        backlightSliderBattery->setMinimum(backlightMin);
+        backlightSliderBattery->setMaximum(backlightMax);
         backlightSliderBattery->setValue(backlightSliderBattery->maximum());
-        backlightSliderAC->setMinimum(backlightSlider->minimum());
-        backlightSliderAC->setMaximum(backlightSlider->maximum());
+        backlightSliderAC->setMinimum(backlightMin);
+        backlightSliderAC->setMaximum(backlightMax);
         backlightSliderAC->setValue(backlightSliderAC->maximum());
-    } else {
-        backlightSlider->setDisabled(true);
-        backlightSliderAC->setDisabled(true);
-        backlightSliderBattery->setDisabled(true);
-    }
+
     backlightBatteryCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE)
                                       .toBool());
     backlightACCheck->setChecked(Common::loadPowerSettings(CONF_BACKLIGHT_AC_ENABLE)
@@ -970,14 +818,11 @@ void Dialog::loadSettings()
     }
     backlightMouseWheel->setChecked(defaultBacklightMouseWheel);
 
-    enableBacklight(hasBacklight);
-    enableLid(man->LidIsPresent());
+    enableBacklight(true);
+    //enableLid(man->LidIsPresent());
 
     // check devices
-    checkDevices();
-
-    // check inhibitors
-    getInhibitors();
+    //checkDevices();
 }
 
 void Dialog::saveSettings()
@@ -1104,7 +949,7 @@ void Dialog::handleDesktopSS(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_SS, triggered);
     QMessageBox::information(this, tr("Restart required"),
-                             tr("You must restart the powerkit daemon to apply this setting"));
+                             tr("You must restart powerkit to apply this setting"));
     // TODO: add restart now?
 }
 
@@ -1112,7 +957,7 @@ void Dialog::handleDesktopPM(bool triggered)
 {
     Common::savePowerSettings(CONF_FREEDESKTOP_PM, triggered);
     QMessageBox::information(this, tr("Restart required"),
-                             tr("You must restart the powerkit daemon to apply this setting"));
+                             tr("You must restart powerkit to apply this setting"));
     // TODO: add restart now?
 }
 
@@ -1143,66 +988,9 @@ void Dialog::handleAutoSleepACAction(int index)
     Common::savePowerSettings(CONF_SUSPEND_AC_ACTION, index);
 }
 
-void Dialog::handleLockscreenButton()
-{
-    man->LockScreen();
-}
-
-void Dialog::handleSleepButton()
-{
-    if (QMessageBox::question(this,
-                              tr("Suspend computer"),
-                              tr("Are you sure you want to suspend?"),
-                              QMessageBox::Yes,
-                              QMessageBox::No) == QMessageBox::No) { return; }
-    if (man->CanSuspend()) { man->Suspend(); }
-    else {
-        QMessageBox::information(this,
-                                 tr("Power Action"),
-                                 tr("System denied power request."
-                                    " Maybe the required daemon is not running,"
-                                    " or you may not have the required permissions."));
-    }
-}
-
-void Dialog::handleHibernateButton()
-{
-    if (QMessageBox::question(this,
-                              tr("Hibernate computer"),
-                              tr("Are you sure you want to hibernate?"),
-                              QMessageBox::Yes,
-                              QMessageBox::No) == QMessageBox::No) { return; }
-    if (man->CanHibernate() &&
-        Common::kernelCanResume(bypassKernel->isChecked())) { man->Hibernate(); }
-    else {
-        QMessageBox::information(this,
-                                 tr("Power Action"),
-                                 tr("System denied power request."
-                                    " Maybe the required daemon is not running,"
-                                    " or you may not have the required permissions."));
-    }
-}
-
-void Dialog::handlePoweroffButton()
-{
-    if (QMessageBox::question(this,
-                              tr("Shutdown computer"),
-                              tr("Are you sure you want to shutdown?"),
-                              QMessageBox::Yes,
-                              QMessageBox::No) == QMessageBox::No) { return; }
-    if (man->CanPowerOff()) { man->PowerOff(); }
-    else {
-        QMessageBox::information(this,
-                                 tr("Power Action"),
-                                 tr("System denied power request."
-                                    " Maybe the required daemon is not running,"
-                                    " or you may not have the required permissions."));
-    }
-}
-
 void Dialog::checkPerms()
 {
-    if (!Common::kernelCanResume(bypassKernel->isChecked()) || !hibernateButton->isEnabled()) {
+    if (!Common::kernelCanResume(bypassKernel->isChecked()) || !Common::canHibernate(dbus)) {
         bool warnCantHibernate = false;
         if (criticalActionBattery->currentIndex() == criticalHibernate) {
             warnCantHibernate = true;
@@ -1235,7 +1023,7 @@ void Dialog::checkPerms()
         }
         if (warnCantHibernate) { hibernateWarn(); }
     }
-    if (!sleepButton->isEnabled()) {
+    if (!Common::canSuspend(dbus)) {
         bool warnCantSleep = false;
         if (lidActionAC->currentIndex() == lidSleep) {
             warnCantSleep = true;
@@ -1261,137 +1049,14 @@ void Dialog::checkPerms()
     }
 }
 
-void Dialog::handleBacklightSlider(int value)
-{
-    if (Common::backlightValue(backlightDevice) != value) {
-        Common::adjustBacklight(backlightDevice, value);
-    }
-}
-
-void Dialog::updateBacklight(QString file)
-{
-    Q_UNUSED(file);
-    if (!hasBacklight) { return; }
-    int value = Common::backlightValue(backlightDevice);
-    if (value != backlightSlider->value()) {
-        backlightSlider->setValue(value);
-    }
-}
-
-void Dialog::checkDevices()
-{
-    double left = man->BatteryLeft();
-    if (left<0) { left = 0; }
-    if (left>100) { left = 100; }
-
-    if (man->HasBattery()) {
-        batteryLeftLCD->display(QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
-                                .toUTC().toString("hh:mm"));
-        batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1%</h1>").arg(left));
-    } else {
-        batteryLeftLCD->display("00:00");
-        batteryLabel->setText(QString("<h1 style=\"font-weight:normal;\">%1</h1>").arg(tr("AC")));
-    }
-
-    QMapIterator<QString, Device*> i(man->getDevices());
-    while (i.hasNext()) {
-        i.next();
-        //qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
-        QString uid = i.value()->path;
-        if (!i.value()->isPresent) {
-            if (deviceExists(uid)) { deviceRemove(uid); }
-            continue;
-        }
-        if (!deviceExists(uid)) {
-            QTreeWidgetItem *item = new QTreeWidgetItem(deviceTree);
-            item->setText(0, i.value()->model.isEmpty()?i.value()->name:i.value()->model);
-            item->setData(0, DEVICE_UUID, uid);
-            item->setFlags(Qt::ItemIsEnabled);
-            QIcon itemIcon;
-            switch(i.value()->type) {
-            case Device::DeviceKeyboard:
-                itemIcon = QIcon::fromTheme(DEFAULT_KEYBOARD_ICON);
-                break;
-            case Device::DeviceMouse:
-                itemIcon = QIcon::fromTheme(DEFAULT_MOUSE_ICON);
-                break;
-            default:
-                itemIcon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
-            }
-            item->setIcon(0, itemIcon);
-            devicesProg[uid] = new QProgressBar(this);
-            devicesProg[uid]->setMinimum(0);
-            devicesProg[uid]->setMaximum(100);
-            devicesProg[uid]->setValue((int)i.value()->percentage);
-            deviceTree->setItemWidget(item, 1, devicesProg[uid]);
-        } else {
-            devicesProg[i.value()->path]->setValue((int)i.value()->percentage);
-        }
-    }
-
-    QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-    if (left <1 || !man->HasBattery()) {
-        batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
-        return;
-    }
-    if (left <= 10) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left <= 25) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left <= 75) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left <= 90) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
-    } else {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left > 99 && !man->OnBattery()) {
-            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-        }
-    }
-    batteryIcon->setPixmap(icon.pixmap(QSize(48, 48)));
-}
-
-bool Dialog::deviceExists(QString uid)
-{
-    for (int i=0;i<deviceTree->topLevelItemCount();++i) {
-        QTreeWidgetItem *item = deviceTree->topLevelItem(i);
-        if (!item) { continue; }
-        if (item->data(0, DEVICE_UUID) == uid) { return true; }
-    }
-    return false;
-}
-
-void Dialog::deviceRemove(QString uid)
-{
-    for (int i=0;i<deviceTree->topLevelItemCount();++i) {
-        QTreeWidgetItem *item = deviceTree->topLevelItem(i);
-        if (!item) { continue; }
-        if (item->data(0, DEVICE_UUID) == uid) {
-            delete deviceTree->takeTopLevelItem(i);
-        }
-    }
-    if (devicesProg.contains(uid)) {
-        devicesProg[uid]->deleteLater();
-        devicesProg.remove(uid);
-    }
-}
-
-void Dialog::handleDeviceAdded(QString uid)
-{
-    Q_UNUSED(uid)
-    checkDevices();
-}
-
 void Dialog::handleBacklightBatteryCheck(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_BATTERY_ENABLE, triggered);
-    handleBacklightBatterySlider(backlightSliderBattery->value());
 }
 
 void Dialog::handleBacklightACCheck(bool triggered)
 {
     Common::savePowerSettings(CONF_BACKLIGHT_AC_ENABLE, triggered);
-    handleBacklightACSlider(backlightSliderAC->value());
 }
 
 void Dialog::handleBacklightBatterySlider(int value)
@@ -1428,40 +1093,8 @@ void Dialog::handleBacklightACCheckHigher(bool triggered)
     Common::savePowerSettings(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
 }
 
-void Dialog::handleUpdatedInhibitors()
-{
-    getInhibitors();
-}
-
-void Dialog::getInhibitors()
-{
-    if (!dbus->isValid()) { return; }
-    inhibitorTree->clear();
-    QDBusMessage replySS =  dbus->call("ScreenSaverInhibitors");
-    QDBusMessage replyPM =  dbus->call("PowerManagementInhibitors");
-    QStringList ssList = replySS.arguments().last().toStringList();
-    QStringList pmList = replyPM.arguments().last().toStringList();
-    for (int i=0;i<ssList.size();++i) {
-        QString inhibitor = ssList.at(i);
-        if (inhibitor.isEmpty()) { continue; }
-        QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
-        item->setText(0, inhibitor);
-        item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    }
-    for (int i=0;i<pmList.size();++i) {
-        QString inhibitor = pmList.at(i);
-        if (inhibitor.isEmpty()) { continue; }
-        QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
-        item->setText(0, inhibitor);
-        item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    }
-}
-
 void Dialog::enableBacklight(bool enabled)
 {
-    backlightSlider->setEnabled(enabled);
     backlightSliderBattery->setEnabled(enabled);
     backlightSliderAC->setEnabled(enabled);
     backlightBatteryCheck->setEnabled(enabled);
@@ -1554,3 +1187,4 @@ void Dialog::handleKernelBypass(bool triggered)
 {
     Common::savePowerSettings(CONF_KERNEL_BYPASS, triggered);
 }
+
