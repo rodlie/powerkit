@@ -8,6 +8,7 @@
 
 TEMPLATE = subdirs
 CONFIG -= ordered
-SUBDIRS += lib app daemon
+SUBDIRS += lib app daemon settings
 app.depends += lib
 daemon.depends += lib
+settings.depends += lib
