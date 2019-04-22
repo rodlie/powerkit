@@ -8,6 +8,7 @@
 
 #include "powerkit.h"
 #include "def.h"
+#include "common.h"
 
 #include <QDBusInterface>
 #include <QDBusMessage>
@@ -301,6 +302,7 @@ void PowerKit::setup()
 
 void PowerKit::check()
 {
+    qDebug() << "PK CHECK";
     if (!QDBusConnection::systemBus().isConnected()) {
         setup();
         return;
@@ -311,6 +313,7 @@ void PowerKit::check()
 
 void PowerKit::scan()
 {
+    qDebug() << "PK SCAN";
     QStringList foundDevices = find();
     for (int i=0; i < foundDevices.size(); i++) {
         QString foundDevicePath = foundDevices.at(i);
@@ -328,11 +331,13 @@ void PowerKit::scan()
 
 void PowerKit::deviceAdded(const QDBusObjectPath &obj)
 {
+    qDebug() << "PK DEVICE ADDED" << obj.path();
     deviceAdded(obj.path());
 }
 
 void PowerKit::deviceAdded(const QString &path)
 {
+    qDebug() << "PK DEVICE ADDED" << path;
     if (!upower->isValid()) { return; }
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
     emit DeviceWasAdded(path);
@@ -341,11 +346,13 @@ void PowerKit::deviceAdded(const QString &path)
 
 void PowerKit::deviceRemoved(const QDBusObjectPath &obj)
 {
+    qDebug() << "PK DEVICE REMOVED" << obj.path();
     deviceRemoved(obj.path());
 }
 
 void PowerKit::deviceRemoved(const QString &path)
 {
+    qDebug() << "PK DEVICE REMOVED" << path;
     if (!upower->isValid()) { return; }
     bool deviceExists = devices.contains(path);
     if (path.startsWith(QString(DBUS_JOBS).arg(UPOWER_PATH))) { return; }
@@ -359,6 +366,7 @@ void PowerKit::deviceRemoved(const QString &path)
 
 void PowerKit::deviceChanged()
 {
+    qDebug() << "PK DEVICE(S) CHANGED";
     if (wasLidClosed != LidIsClosed()) {
         if (!wasLidClosed && LidIsClosed()) {
             emit LidClosed();
@@ -382,6 +390,7 @@ void PowerKit::deviceChanged()
 
 void PowerKit::handleDeviceChanged(const QString &device)
 {
+    qDebug() << "PK HANDLE DEVICE CHANGED" << device;
     if (device.isEmpty()) { return; }
     deviceChanged();
 }
@@ -442,6 +451,7 @@ void PowerKit::clearDevices()
 
 void PowerKit::handleNewInhibitScreenSaver(const QString &application, const QString &reason, quint32 cookie)
 {
+    qDebug() << "PK HANDLE NEW SCREEN SAVER INHIBITOR" << application << reason << cookie;
     Q_UNUSED(reason)
     ssInhibitors[cookie] = application;
     emit UpdatedInhibitors();
@@ -449,6 +459,7 @@ void PowerKit::handleNewInhibitScreenSaver(const QString &application, const QSt
 
 void PowerKit::handleNewInhibitPowerManagement(const QString &application, const QString &reason, quint32 cookie)
 {
+    qDebug() << "PK HANDLE NEW POWER INHIBITOR" << application << reason << cookie;
     Q_UNUSED(reason)
     pmInhibitors[cookie] = application;
     emit UpdatedInhibitors();
@@ -456,6 +467,7 @@ void PowerKit::handleNewInhibitPowerManagement(const QString &application, const
 
 void PowerKit::handleDelInhibitScreenSaver(quint32 cookie)
 {
+    qDebug() << "PK HANDLE REMOVE SCREEN SAVER COOKIE" << cookie;
     if (ssInhibitors.contains(cookie)) {
         ssInhibitors.remove(cookie);
         emit UpdatedInhibitors();
@@ -464,6 +476,7 @@ void PowerKit::handleDelInhibitScreenSaver(quint32 cookie)
 
 void PowerKit::handleDelInhibitPowerManagement(quint32 cookie)
 {
+    qDebug() << "PK HANDLE REMOVE POWER COOKIE" << cookie;
     if (pmInhibitors.contains(cookie)) {
         pmInhibitors.remove(cookie);
         emit UpdatedInhibitors();
@@ -510,6 +523,7 @@ void PowerKit::setWakeAlarmFromSettings()
 
 bool PowerKit::HasConsoleKit()
 {
+    qDebug() << "PK CHECK FOR CONSOLEKIT";
     return availableService(CONSOLEKIT_SERVICE,
                             CONSOLEKIT_PATH,
                             CONSOLEKIT_MANAGER);
@@ -517,6 +531,7 @@ bool PowerKit::HasConsoleKit()
 
 bool PowerKit::HasLogind()
 {
+    qDebug() << "PK CHECK FOR LOGIND";
     return availableService(LOGIND_SERVICE,
                             LOGIND_PATH,
                             LOGIND_MANAGER);
@@ -524,6 +539,7 @@ bool PowerKit::HasLogind()
 
 bool PowerKit::HasUPower()
 {
+    qDebug() << "PK CHECK FOR UPOWER";
     return availableService(UPOWER_SERVICE,
                             UPOWER_PATH,
                             UPOWER_MANAGER);
@@ -531,6 +547,7 @@ bool PowerKit::HasUPower()
 
 bool PowerKit::hasPMD()
 {
+    qDebug() << "PK CHECK FOR POWERKITD";
     return availableService(PMD_SERVICE,
                             PMD_PATH,
                             PMD_MANAGER);
@@ -538,11 +555,13 @@ bool PowerKit::hasPMD()
 
 bool PowerKit::hasWakeAlarm()
 {
+    qDebug() << "PK CHECK FOR WAKE ALARM";
     return wakeAlarm;
 }
 
 bool PowerKit::CanRestart()
 {
+    qDebug() << "PK CHECK FOR RESTART SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanRestart, PKLogind);
     } else if (HasConsoleKit()) {
@@ -553,6 +572,7 @@ bool PowerKit::CanRestart()
 
 bool PowerKit::CanPowerOff()
 {
+    qDebug() << "PK CHECK FOR SHUTDOWN SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanPowerOff, PKLogind);
     } else if (HasConsoleKit()) {
@@ -563,6 +583,7 @@ bool PowerKit::CanPowerOff()
 
 bool PowerKit::CanSuspend()
 {
+    qDebug() << "PK CHECK FOR SUSPEND SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanSuspend, PKLogind);
     } else if (HasConsoleKit()) {
@@ -575,6 +596,7 @@ bool PowerKit::CanSuspend()
 
 bool PowerKit::CanHibernate()
 {
+    qDebug() << "PK CHECK FOR HIBERNATE SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanHibernate, PKLogind);
     } else if (HasConsoleKit()) {
@@ -587,6 +609,7 @@ bool PowerKit::CanHibernate()
 
 bool PowerKit::CanHybridSleep()
 {
+    qDebug() << "PK CHECK FOR HYBRIDSLEEP SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanHybridSleep, PKLogind);
     } else if (HasConsoleKit()) {
@@ -661,6 +684,7 @@ QString PowerKit::HybridSleep()
 
 bool PowerKit::setWakeAlarm(const QDateTime &date)
 {
+    qDebug() << "try to set wake alarm" << date;
     if (pmd && date.isValid() && CanHibernate()) {
         if (!pmd->isValid()) { return false; }
         QDBusMessage reply = pmd->call("setWakeAlarm",
@@ -684,6 +708,7 @@ void PowerKit::clearWakeAlarm()
 
 bool PowerKit::IsDocked()
 {
+    qDebug() << "PK CHECK FOR DOCK";
     if (logind->isValid()) { return logind->property(LOGIND_DOCKED).toBool(); }
     if (upower->isValid()) { return upower->property(UPOWER_DOCKED).toBool(); }
     return false;
@@ -691,24 +716,28 @@ bool PowerKit::IsDocked()
 
 bool PowerKit::LidIsPresent()
 {
+    qDebug() << "PK CHECK FOR LID";
     if (upower->isValid()) { return upower->property(UPOWER_LID_IS_PRESENT).toBool(); }
     return false;
 }
 
 bool PowerKit::LidIsClosed()
 {
+    qDebug() << "PK CHECK LID STATUS";
     if (upower->isValid()) { return upower->property(UPOWER_LID_IS_CLOSED).toBool(); }
     return false;
 }
 
 bool PowerKit::OnBattery()
 {
+    qDebug() << "PK CHECK FOR ON BATTERY";
     if (upower->isValid()) { return upower->property(UPOWER_ON_BATTERY).toBool(); }
     return false;
 }
 
 double PowerKit::BatteryLeft()
 {
+    qDebug() << "PK CHECK FOR BATTERY LEFT";
     if (OnBattery()) { UpdateBattery(); }
     double batteryLeft = 0;
     QMapIterator<QString, Device*> device(devices);
@@ -737,6 +766,7 @@ void PowerKit::LockScreen()
 
 bool PowerKit::HasBattery()
 {
+    qDebug() << "PK CHECK IF HAS BATTERY";
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
@@ -747,6 +777,7 @@ bool PowerKit::HasBattery()
 
 qlonglong PowerKit::TimeToEmpty()
 {
+    qDebug() << "PK CHECK FOR TIME TO EMPTY";
     if (OnBattery()) { UpdateBattery(); }
     qlonglong result = 0;
     QMapIterator<QString, Device*> device(devices);
@@ -762,6 +793,7 @@ qlonglong PowerKit::TimeToEmpty()
 
 qlonglong PowerKit::TimeToFull()
 {
+    qDebug() << "PK CHECK FOR TIME TO FULL";
     if (OnBattery()) { UpdateBattery(); }
     qlonglong result = 0;
     QMapIterator<QString, Device*> device(devices);
@@ -777,6 +809,7 @@ qlonglong PowerKit::TimeToFull()
 
 void PowerKit::UpdateDevices()
 {
+    qDebug() << "PK UPDATE DEVICES";
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
@@ -786,6 +819,7 @@ void PowerKit::UpdateDevices()
 
 void PowerKit::UpdateBattery()
 {
+    qDebug() << "PK UPDATE BATTERY";
     QMapIterator<QString, Device*> device(devices);
     while (device.hasNext()) {
         device.next();
@@ -797,6 +831,7 @@ void PowerKit::UpdateBattery()
 
 void PowerKit::UpdateConfig()
 {
+    qDebug() << "PK UPDATE CONFIG";
     emit Update();
 }
 
@@ -855,4 +890,17 @@ void PowerKit::setLockScreenOnResume(bool lock)
 {
     qDebug() << "set lock screen on resume" << lock;
     lockScreenOnResume = lock;
+}
+
+bool PowerKit::setDisplayBacklight(const QString &device, int value)
+{
+    qDebug() << "PK SET DISPLAY BACKLIGHT" << device << value;
+    if (!pmd) { return false; }
+    if (!pmd->isValid()) { return false; }
+    QDBusMessage reply = pmd->call("setDisplayBacklight",
+                                   device,
+                                   value);
+    bool backlight = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();
+    qDebug() << "BACKLIGHT OK?" << backlight;
+    return backlight;
 }

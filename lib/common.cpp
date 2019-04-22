@@ -238,3 +238,197 @@ void Common::checkSettings()
 {
     confFile();
 }
+
+int Common::getCpuTotal()
+{
+#ifdef Q_OS_LINUX
+    int counter = 0;
+    while(1) {
+        if (QFile::exists(QString("%1/cpu%2")
+                          .arg(LINUX_CPU_SYS)
+                          .arg(counter))) { counter++; }
+        else { break; }
+    }
+    if (counter>0) { return counter; }
+#endif
+    return -1;
+}
+
+const QString Common::getCpuGovernor(int cpu)
+{
+    QString result;
+#ifdef Q_OS_LINUX
+    QFile gov(QString("%1/cpu%2/%3/%4")
+              .arg(LINUX_CPU_SYS)
+              .arg(cpu)
+              .arg(LINUX_CPU_DIR)
+              .arg(LINUX_CPU_GOVERNOR));
+    if (!gov.exists()) { return result; }
+    if (gov.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        result = gov.readAll().trimmed();
+        gov.close();
+    }
+#else
+    Q_UNUSED(cpu)
+#endif
+    return result;
+}
+
+const QStringList Common::getCpuGovernors()
+{
+    QStringList result;
+    for (int i=0;i<getCpuTotal();++i) {
+        QString value = getCpuGovernor(i);
+        if (!value.isEmpty()) { result << value; }
+    }
+    return result;
+}
+
+const QStringList Common::getAvailableGovernors()
+{
+    QStringList result;
+#ifdef Q_OS_LINUX
+    QFile gov(QString("%1/cpu%2/%3/%4")
+              .arg(LINUX_CPU_SYS)
+              .arg(0)
+              .arg(LINUX_CPU_DIR)
+              .arg(LINUX_CPU_GOVERNORS));
+    if (!gov.exists()) { return result; }
+    if (gov.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString value = gov.readAll().trimmed();
+        result = value.split(" ", QString::SkipEmptyParts);
+        gov.close();
+    }
+#endif
+    return result;
+}
+
+bool Common::cpuGovernorExists(const QString &gov)
+{
+    if (gov.isEmpty()) { return false; }
+    return getAvailableGovernors().contains(gov);
+}
+
+bool Common::setCpuGovernor(const QString &gov, int cpu)
+{
+#ifdef Q_OS_LINUX
+    if (!cpuGovernorExists(gov)) { return false; }
+    QFile file(QString("%1/cpu%2/%3/%4")
+              .arg(LINUX_CPU_SYS)
+              .arg(cpu)
+              .arg(LINUX_CPU_DIR)
+              .arg(LINUX_CPU_GOVERNOR));
+    if (file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QTextStream out(&file);
+        out << gov;
+        file.close();
+        if (gov == getCpuGovernor(cpu)) { return true;}
+    }
+#elif
+    Q_UNUSED(gov)
+    Q_UNUSED(cpu)
+#endif
+    return false;
+}
+
+bool Common::setCpuGovernor(const QString &gov)
+{
+    if (!cpuGovernorExists(gov)) { return false; }
+    bool failed = false;
+    for (int i=0;i<getCpuTotal();++i) {
+        if (!setCpuGovernor(gov, i)) { failed = true; }
+    }
+    if (failed) { return false; }
+    return true;
+}
+
+const QString Common::getCpuFrequency(int cpu)
+{
+    QString result;
+#ifdef Q_OS_LINUX
+    QFile freq(QString("%1/cpu%2/%3/%4")
+              .arg(LINUX_CPU_SYS)
+              .arg(cpu)
+              .arg(LINUX_CPU_DIR)
+              .arg(LINUX_CPU_FREQUENCY));
+    if (!freq.exists()) { return result; }
+    if (freq.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        result = freq.readAll().trimmed();
+        freq.close();
+    }
+#else
+    Q_UNUSED(cpu)
+#endif
+    return result;
+}
+
+const QStringList Common::getCpuFrequencies()
+{
+    QStringList result;
+    for (int i=0;i<getCpuTotal();++i) {
+        QString value = getCpuFrequency(i);
+        if (!value.isEmpty()) { result << value; }
+    }
+    return result;
+}
+
+const QStringList Common::getCpuAvailableFrequency()
+{
+    QStringList result;
+#ifdef Q_OS_LINUX
+    QFile gov(QString("%1/cpu%2/%3/%4")
+              .arg(LINUX_CPU_SYS)
+              .arg(0)
+              .arg(LINUX_CPU_DIR)
+              .arg(LINUX_CPU_FREQUENCIES));
+    if (!gov.exists()) { return result; }
+    if (gov.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString value = gov.readAll().trimmed();
+        result = value.split(" ", QString::SkipEmptyParts);
+        gov.close();
+    }
+#endif
+    return result;
+}
+
+bool Common::cpuFrequencyExists(const QString &freq)
+{
+    if (freq.isEmpty()) { return false; }
+    return getCpuAvailableFrequency().contains(freq);
+}
+
+bool Common::setCpuFrequency(const QString &freq, int cpu)
+{
+#ifdef Q_OS_LINUX
+    if (!cpuFrequencyExists(freq)) { return false; }
+    if (getCpuGovernor(cpu) != "userspace") {
+        if (!setCpuGovernor("userspace", cpu)) { return false; }
+    }
+    QFile file(QString("%1/cpu%2/%3/%4")
+              .arg(LINUX_CPU_SYS)
+              .arg(cpu)
+              .arg(LINUX_CPU_DIR)
+              .arg(LINUX_CPU_SET_SPEED));
+    if (file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QTextStream out(&file);
+        out << freq;
+        file.close();
+        if (freq == getCpuFrequency(cpu)) { return true;}
+    }
+#elif
+    Q_UNUSED(freq)
+    Q_UNUSED(cpu)
+#endif
+    return false;
+}
+
+bool Common::setCpuFrequency(const QString &freq)
+{
+    if (!cpuFrequencyExists(freq)) { return false; }
+    bool failed = false;
+    for (int i=0;i<getCpuTotal();++i) {
+        if (!setCpuFrequency(freq, i)) { failed = true; }
+    }
+    if (failed) { return false; }
+    return true;
+}

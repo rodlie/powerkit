@@ -12,6 +12,18 @@
 #include <QVariant>
 #include <QString>
 
+#ifdef Q_OS_LINUX
+#define LINUX_CPU_SYS "/sys/devices/system/cpu"
+#define LINUX_CPU_DIR "cpufreq"
+#define LINUX_CPU_FREQUENCIES "scaling_available_frequencies"
+#define LINUX_CPU_FREQUENCY "scaling_cur_freq"
+#define LINUX_CPU_FREQUENCY_MAX "scaling_max_freq"
+#define LINUX_CPU_FREQUENCY_MIN "scaling_min_freq"
+#define LINUX_CPU_GOVERNORS "scaling_available_governors"
+#define LINUX_CPU_GOVERNOR "scaling_governor"
+#define LINUX_CPU_SET_SPEED "scaling_setspeed"
+#endif
+
 class Common
 {
 public:
@@ -29,6 +41,22 @@ public:
     static int backlightValue(QString device);
     static bool adjustBacklight(QString device, int value);
     static void checkSettings();
+
+    static int getCpuTotal();
+
+    static const QString getCpuGovernor(int cpu);
+    static const QStringList getCpuGovernors();
+    static const QStringList getAvailableGovernors();
+    static bool cpuGovernorExists(const QString &gov);
+    static bool setCpuGovernor(const QString &gov, int cpu);
+    static bool setCpuGovernor(const QString &gov);
+
+    static const QString getCpuFrequency(int cpu);
+    static const QStringList getCpuFrequencies();
+    static const QStringList getCpuAvailableFrequency();
+    static bool cpuFrequencyExists(const QString &freq);
+    static bool setCpuFrequency(const QString &freq, int cpu);
+    static bool setCpuFrequency(const QString &freq);
 };
 
 #endif // COMMON_H
