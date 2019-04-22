@@ -22,6 +22,8 @@ public:
 public slots:
     bool setWakeAlarm(const QString &alarm);
     bool setDisplayBacklight(const QString &device, int value);
+    bool SetCpuGovernor(const QString &gov);
+    bool SetCpuFrequency(const QString &freq);
 };
 
 #endif // MANAGER_H

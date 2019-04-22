@@ -34,3 +34,15 @@ bool Manager::setDisplayBacklight(const QString &device, int value)
     return Common::adjustBacklight(device, light);
 }
 
+bool Manager::SetCpuGovernor(const QString &gov)
+{
+    qDebug() << "Try to set CPU governor" << gov;
+    return Common::setCpuGovernor(gov);
+}
+
+bool Manager::SetCpuFrequency(const QString &freq)
+{
+    qDebug() << "Try to set CPU frequency" << freq;
+    return  Common::setCpuFrequency(freq);
+}
+
