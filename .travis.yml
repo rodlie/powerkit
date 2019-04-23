@@ -11,17 +11,24 @@ install:
   
 script:
   - export CWD=`pwd`
-  - mkdir $CWD/qt5
-  - cd $CWD/qt5
-  - qmake -qt=qt5 CONFIG+=release CONFIG+=install_lib PREFIX=/usr ..
+  - mkdir $CWD/build-release-qt5
+  - cd $CWD/build-release-qt5
+  - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
   - make
-  - make INSTALL_ROOT=`pwd`/pkg install
+  - make DESTDIR=`pwd`/pkg install
   - tree pkg
-  - cd $CWD
-  - mkdir $CWD/qt4
-  - cd $CWD/qt4
-  - qmake -qt=qt4 CONFIG+=release CONFIG+=bundle_icons PREFIX=/usr ..
+  - mkdir $CWD/build-debug-qt5
+  - cd $CWD/build-debug-qt5
+  - cmake -DCMAKE_BUILD_TYPE=Debug ..
   - make
-  - make INSTALL_ROOT=`pwd`/pkg install
+  - mkdir $CWD/build-release-qt4
+  - cd $CWD/build-release-qt4
+  - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUSE_QT5=off ..
+  - make
+  - make DESTDIR=`pwd`/pkg install
   - tree pkg
-  - cd $CWD
+  - mkdir $CWD/build-debug-qt4
+  - cd $CWD/build-debug-qt4
+  - cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_QT5=off ..
+  - make
+
