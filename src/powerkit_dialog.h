@@ -28,30 +28,12 @@
 #include <QDateTime>
 #include <QScrollArea>
 
-#include "def.h"
-#include "common.h"
-#include "powerkit.h"
-
-// fix X11 inc
-#undef CursorShape
-#undef Bool
-#undef Status
-#undef None
-#undef KeyPress
-#undef KeyRelease
-#undef FocusIn
-#undef FocusOut
-#undef FontChange
-#undef Expose
-
-#define MAX_WIDTH 150
-
 class Dialog : public QDialog
 {
     Q_OBJECT
 
 public:
-   explicit Dialog(QWidget *parent = NULL);
+   explicit Dialog(QWidget *parent = nullptr);
    ~Dialog();
 
 private:

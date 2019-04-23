@@ -12,7 +12,7 @@
 #include <QSettings>
 #include <QDebug>
 
-#include "def.h"
+#include "powerkit_def.h"
 
 #define PK "powerkit"
 

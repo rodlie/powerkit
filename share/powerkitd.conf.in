@@ -1,0 +1,17 @@
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <!-- Only @POWERKITD_USER@ user can own the service -->
+  <policy user="@POWERKITD_USER@">
+    <allow own="@POWERKITD_SERVICE@"/>
+  </policy>
+  <!-- Allow anyone in group @POWERKITD_GROUP@ to invoke methods -->
+  <policy group="@POWERKITD_GROUP@">
+    <allow send_destination="@POWERKITD_SERVICE@"/>
+    <allow receive_sender="@POWERKITD_SERVICE@"/>
+  </policy>
+  <!-- Allow everything -->
+  <policy user="@POWERKITD_USER@">
+    <allow send_destination="@POWERKITD_SERVICE@"/>
+    <allow receive_sender="@POWERKITD_SERVICE@"/>
+  </policy>
+</busconfig>

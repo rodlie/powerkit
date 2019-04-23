@@ -7,7 +7,7 @@ before_install:
   - sudo apt-get update
 
 install:
-  - sudo apt-get install qt4-dev-tools qtbase5-dev libxss-dev qt4-qmake qt5-qmake tree libxrandr-dev
+  - sudo apt-get install tree cmake qt4-dev-tools qtbase5-dev libxss-dev libxrandr-dev
   
 script:
   - export CWD=`pwd`

@@ -9,7 +9,7 @@
 #include <QCoreApplication>
 #include <QtDBus>
 
-#include "manager.h"
+#include "powerkitd_manager.h"
 
 #define DSERVICE "org.freedesktop.powerkitd"
 #define DPATH "/powerkitd"

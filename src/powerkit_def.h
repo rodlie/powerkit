@@ -90,6 +90,10 @@ enum criticalAction
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone
 
+#define POWERKIT_SERVICE "org.freedesktop.PowerKit"
+#define POWERKIT_PATH "/PowerKit"
+#define POWERKIT_FULL_PATH "/org/freedesktop/PowerKit"
+
 #define PMD_SERVICE "org.freedesktop.powerkitd"
 #define PMD_PATH "/org/freedesktop/powerkitd"
 #define PMD_MANAGER "org.freedesktop.powerkitd.Manager"

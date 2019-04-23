@@ -7,7 +7,7 @@
 */
 
 #include <QApplication>
-#include "dialog.h"
+#include "powerkit_dialog.h"
 
 int main(int argc, char *argv[])
 {

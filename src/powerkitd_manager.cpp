@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "manager.h"
+#include "powerkitd_manager.h"
 #include "powerkit_rtc.h"
 #include "powerkit_backlight.h"
 #include "powerkit_cpu.h"
