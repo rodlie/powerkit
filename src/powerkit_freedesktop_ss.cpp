@@ -13,7 +13,7 @@
 #include <QCoreApplication>
 #include <QProcess>
 
-#include "def.h"
+#include "powerkit_def.h"
 
 ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 {

@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "screens.h"
+#include "powerkit_x11_screens.h"
 
 QMap<QString, bool> Screens::outputsDpy(Display *dpy)
 {

@@ -12,7 +12,7 @@
 #include <QCoreApplication>
 #include <QProcess>
 
-#include "def.h"
+#include "powerkit_def.h"
 
 PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
 {

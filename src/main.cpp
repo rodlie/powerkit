@@ -7,7 +7,7 @@
 */
 
 #include <QApplication>
-#include "systray.h"
+#include "powerkit_systray.h"
 #include "powerkit.h"
 
 int main(int argc, char *argv[])
@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
     QCoreApplication::setApplicationName("freedesktop");
     QCoreApplication::setOrganizationDomain("org");
-    QString version = APP_VERSION;
+    QString version = POWERKIT_VERSION;
 #ifdef APP_VERSION_EXTRA
     version.append(APP_VERSION_EXTRA);
 #endif

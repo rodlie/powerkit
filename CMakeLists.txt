@@ -35,7 +35,19 @@ else()
 endif()
 
 # x11
-find_package(X11)
+find_package(X11 REQUIRED)
+if(NOT X11_Xrandr_FOUND)
+    message(FATAL_ERROR "Xrandr library not found")
+endif()
+if(${CMAKE_VERSION} VERSION_LESS "3.14.3")
+    if(NOT X11_Xscreensaver_FOUND)
+        message(FATAL_ERROR "Xscreensaver library not found")
+    endif()
+else()
+    if(NOT X11_Xss_FOUND)
+        message(FATAL_ERROR "Xss library not found")
+    endif()
+endif()
 
 # etc
 set(DEFAULT_SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
@@ -117,7 +129,7 @@ set(POWERKIT_CONF_SOURCES
     src/${PROJECT_NAME}_theme.cpp
     src/${PROJECT_NAME}_backlight.cpp)
 set(POWERKIT_CONF_HEADERS
-    src/${PROJECT_NAME}_settings.cpp
+    src/${PROJECT_NAME}_settings.h
     src/${PROJECT_NAME}_dialog.h
     src/${PROJECT_NAME}_client.h
     src/${PROJECT_NAME}_theme.h
@@ -148,3 +160,69 @@ install(FILES
         share/powerkit-conf.desktop
         DESTINATION
         ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+
+# powerkit
+set(POWERKIT_SOURCES
+    src/main.cpp
+    src/${PROJECT_NAME}.cpp
+    src/${PROJECT_NAME}_freedesktop_pm.cpp
+    src/${PROJECT_NAME}_freedesktop_ss.cpp
+    src/${PROJECT_NAME}_power_device.cpp
+    src/${PROJECT_NAME}_x11_screens.cpp
+    src/${PROJECT_NAME}_systray.cpp
+    src/${PROJECT_NAME}_settings.cpp
+    src/${PROJECT_NAME}_theme.cpp
+    src/${PROJECT_NAME}_backlight.cpp
+    src/${PROJECT_NAME}_cpu.cpp)
+set(POWERKIT_HEADERS
+    src/${PROJECT_NAME}_def.h
+    src/${PROJECT_NAME}_freedesktop_pm.h
+    src/${PROJECT_NAME}_freedesktop_ss.h
+    src/${PROJECT_NAME}_power_device.h
+    src/${PROJECT_NAME}_x11_screens.h
+    src/${PROJECT_NAME}_systray.h
+    src/${PROJECT_NAME}_settings.h
+    src/${PROJECT_NAME}_theme.h
+    src/${PROJECT_NAME}_backlight.h
+    src/${PROJECT_NAME}_cpu.h)
+add_executable(${PROJECT_NAME}
+               ${POWERKIT_SOURCES}
+               ${POWERKIT_HEADERS})
+if(${CMAKE_VERSION} VERSION_LESS "3.14.3")
+    set(XSS_INCLUDE ${X11_Xscreensaver_INCLUDE_PATH})
+    set(XSS_LIB ${X11_Xscreensaver_LIB})
+else()
+    set(XSS_INCLUDE ${X11_Xss_INCLUDE_PATH})
+    set(XSS_LIB ${X11_Xss_LIB})
+endif()
+target_include_directories(${PROJECT_NAME}
+                           PUBLIC
+                           src
+                           ${X11_X11_INCLUDE_PATH}
+                           ${X11_Xrandr_INCLUDE_PATH}
+                           ${XSS_INCLUDE})
+target_link_libraries(${PROJECT_NAME}
+                      ${X11_LIBRARIES}
+                      ${X11_Xrandr_LIB}
+                      ${XSS_LIB})
+if(USE_QT5)
+    target_link_libraries(${PROJECT_NAME}
+                          Qt5::Core
+                          Qt5::DBus
+                          Qt5::Gui
+                          Qt5::Widgets)
+else()
+    target_link_libraries(${PROJECT_NAME}
+                          Qt4::QtCore
+                          Qt4::QtDBus
+                          Qt4::QtXml
+                          Qt4::QtGui)
+endif()
+install(TARGETS
+        ${PROJECT_NAME}
+        DESTINATION
+        ${CMAKE_INSTALL_BINDIR})
+install(FILES
+        share/${PROJECT_NAME}.desktop
+        DESTINATION
+        ${DEFAULT_SYSCONFDIR}/xdg/autostart)

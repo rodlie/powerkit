@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "device.h"
+#include "powerkit_power_device.h"
 
 #include <QDBusConnection>
 #include <QStringList>

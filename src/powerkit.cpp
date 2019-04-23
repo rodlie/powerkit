@@ -7,8 +7,8 @@
 */
 
 #include "powerkit.h"
-#include "def.h"
-#include "common.h"
+#include "powerkit_def.h"
+//#include "common.h"
 
 #include <QDBusInterface>
 #include <QDBusMessage>
