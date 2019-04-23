@@ -12,6 +12,7 @@ QT -= gui
 
 TARGET = PowerKit
 TEMPLATE = lib
+
 SOURCES += \
     powermanagement.cpp \
     screensaver.cpp \
@@ -19,7 +20,9 @@ SOURCES += \
     screens.cpp \
     powerkit.cpp \
     rtc.cpp \
-    common.cpp
+    common.cpp \
+    hotplug.cpp
+
 HEADERS += \
     powermanagement.h \
     screensaver.h \
@@ -28,7 +31,11 @@ HEADERS += \
     screens.h \
     powerkit.h \
     rtc.h \
-    common.h
+    common.h \
+    hotplug.h
+
+HEADERS += powerkit_backlight.h powerkit_cpu.h powerkit_settings.h powerkit_client.h
+SOURCES += powerkit_backlight.cpp powerkit_cpu.cpp powerkit_settings.cpp powerkit_client.cpp
 
 include(../powerkit.pri)
 CONFIG(install_lib) {

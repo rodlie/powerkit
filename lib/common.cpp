@@ -493,6 +493,26 @@ bool Common::canSuspend(QDBusInterface *iface)
     return  ok;
 }
 
+bool Common::canRestart(QDBusInterface *iface)
+{
+    qDebug() << "check if we can restart";
+    if (!iface->isValid()) { return false; }
+    QDBusMessage reply = iface->call("CanRestart");
+    bool ok = reply.arguments().last().toBool();
+    qDebug() << "we can restart?" << ok;
+    return  ok;
+}
+
+bool Common::canPowerOff(QDBusInterface *iface)
+{
+    qDebug() << "check if we can poweroff";
+    if (!iface->isValid()) { return false; }
+    QDBusMessage reply = iface->call("CanPowerOff");
+    bool ok = reply.arguments().last().toBool();
+    qDebug() << "we can poweroff?" << ok;
+    return  ok;
+}
+
 bool Common::lidIsPresent(QDBusInterface *iface)
 {
     qDebug() << "check if we have a lid";
@@ -501,4 +521,13 @@ bool Common::lidIsPresent(QDBusInterface *iface)
     bool ok = reply.arguments().last().toBool();
     qDebug() << "we have a lid?" << ok;
     return  ok;
+}
+
+void Common::lockScreen(QDBusInterface *iface)
+{
+    qDebug() << "lock screen";
+    if (!iface->isValid()) { return; }
+    QDBusMessage reply = iface->call("LockScreen");
+    bool ok = reply.errorMessage().isEmpty();
+    qDebug() << "locked screen?" << ok;
 }

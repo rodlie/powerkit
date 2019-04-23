@@ -49,7 +49,7 @@ enum criticalAction
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
 #define TURN_ON_MONITOR "xrandr --output %1 --auto "
 #define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
-#define DRACO_XCONFIG "draco-xconfig --reset-monitors"
+#define DRACO_XCONFIG "draco-settings-x11 --reset-monitors"
 
 #define LID_BATTERY_DEFAULT lidSleep
 #define LID_AC_DEFAULT lidLock

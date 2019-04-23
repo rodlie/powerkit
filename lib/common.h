@@ -65,7 +65,10 @@ public:
     static qlonglong timeToEmpty(QDBusInterface *iface);
     static bool canHibernate(QDBusInterface *iface);
     static bool canSuspend(QDBusInterface *iface);
+    static bool canRestart(QDBusInterface *iface);
+    static bool canPowerOff(QDBusInterface *iface);
     static bool lidIsPresent(QDBusInterface *iface);
+    static void lockScreen(QDBusInterface *iface);
 };
 
 #endif // COMMON_H
