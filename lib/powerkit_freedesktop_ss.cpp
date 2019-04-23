@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "screensaver.h"
+#include "powerkit_freedesktop_ss.h"
 #include <QMapIterator>
 #include <QDBusConnection>
 #include <QDBusInterface>

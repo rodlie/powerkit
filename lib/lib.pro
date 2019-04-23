@@ -14,8 +14,6 @@ TARGET = PowerKit
 TEMPLATE = lib
 
 SOURCES += \
-    powermanagement.cpp \
-    screensaver.cpp \
     device.cpp \
     screens.cpp \
     powerkit.cpp \
@@ -24,8 +22,6 @@ SOURCES += \
     hotplug.cpp
 
 HEADERS += \
-    powermanagement.h \
-    screensaver.h \
     def.h \
     device.h \
     screens.h \
@@ -34,8 +30,20 @@ HEADERS += \
     common.h \
     hotplug.h
 
-HEADERS += powerkit_backlight.h powerkit_cpu.h powerkit_settings.h powerkit_client.h
-SOURCES += powerkit_backlight.cpp powerkit_cpu.cpp powerkit_settings.cpp powerkit_client.cpp
+HEADERS += \
+    powerkit_backlight.h \
+    powerkit_cpu.h \
+    powerkit_settings.h \
+    powerkit_client.h \
+    powerkit_freedesktop_pm.h \
+    powerkit_freedesktop_ss.h
+SOURCES += \
+    powerkit_backlight.cpp \
+    powerkit_cpu.cpp \
+    powerkit_settings.cpp \
+    powerkit_client.cpp \
+    powerkit_freedesktop_pm.cpp \
+    powerkit_freedesktop_ss.cpp
 
 include(../powerkit.pri)
 CONFIG(install_lib) {
