@@ -16,9 +16,10 @@ SOURCES += main.cpp manager.cpp
 HEADERS += manager.h
 OTHER_FILES += $${TARGET}.conf.in
 
+include(../powerkit.pri)
 LIBS += -L../lib -lPowerKit
 INCLUDEPATH += ../lib
-include(../powerkit.pri)
+!CONFIG(staticlib): QMAKE_RPATHDIR += $ORIGIN/../lib$${LIBSUFFIX}
 
 target.path = $${PREFIX}/sbin
 target_dbus_conf.path = $${DBUS_CONF}/dbus-1/system.d

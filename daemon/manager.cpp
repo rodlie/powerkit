@@ -7,8 +7,9 @@
 */
 
 #include "manager.h"
-#include "rtc.h"
-#include "common.h"
+#include "powerkit_rtc.h"
+#include "powerkit_backlight.h"
+#include "powerkit_cpu.h"
 
 #include <QDebug>
 
@@ -16,33 +17,33 @@ Manager::Manager(QObject *parent) : QObject(parent)
 {
 }
 
-bool Manager::setWakeAlarm(const QString &alarm)
+bool Manager::SetWakeAlarm(const QString &alarm)
 {
     qDebug() << "Try to set RTC wake alarm" << alarm;
     QDateTime date = QDateTime::fromString(alarm, "yyyy-MM-dd HH:mm:ss");
     if (date.isNull() || !date.isValid()) { return false; }
-    return RTC::setAlarm(date);
+    return PowerRtc::setAlarm(date);
 }
 
-bool Manager::setDisplayBacklight(const QString &device, int value)
+bool Manager::SetDisplayBacklight(const QString &device, int value)
 {
     qDebug() << "Try to set DISPLAY backlight" << device << value;
-    if (!Common::canAdjustBacklight(device)) { return false; }
+    if (!PowerBacklight::canAdjustBrightness(device)) { return false; }
     int light = value;
-    if (light>Common::backlightMax(device)) { light = Common::backlightMax(device); }
+    if (light>PowerBacklight::getMaxBrightness(device)) { light = PowerBacklight::getMaxBrightness(device); }
     else if (light<0) { light = 0; }
-    return Common::adjustBacklight(device, light);
+    return PowerBacklight::setCurrentBrightness(device, light);
 }
 
 bool Manager::SetCpuGovernor(const QString &gov)
 {
     qDebug() << "Try to set CPU governor" << gov;
-    return Common::setCpuGovernor(gov);
+    return PowerCpu::setGovernor(gov);
 }
 
 bool Manager::SetCpuFrequency(const QString &freq)
 {
     qDebug() << "Try to set CPU frequency" << freq;
-    return  Common::setCpuFrequency(freq);
+    return  PowerCpu::setFrequency(freq);
 }
 
