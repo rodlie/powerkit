@@ -25,11 +25,19 @@
 #include <QFileSystemWatcher>
 #include <QEvent>
 #include <QWheelEvent>
+#include <QMenu>
+#include <QLabel>
+#include <QFrame>
+#include <QWidgetAction>
+#include <QSlider>
+#include <QTreeWidget>
+#include <QProgressBar>
+#include <QTabWidget>
 
-#include "common.h"
-#include "powermanagement.h"
-#include "screensaver.h"
-#include "screens.h"
+//#include "common.h"
+#include "powerkit_freedesktop_pm.h"
+#include "powerkit_freedesktop_ss.h"
+#include "powerkit_x11_screens.h"
 #include "powerkit.h"
 
 #include <X11/extensions/scrnsaver.h>
@@ -47,6 +55,10 @@
 #undef Unsorted
 
 #define XSCREENSAVER_RUN "xscreensaver -no-splash"
+
+#define DEVICE_UUID Qt::UserRole+1
+#define DEVICE_TYPE Qt::UserRole+2
+#define MAX_WIDTH 150
 
 class TrayIcon : public QSystemTrayIcon
 {
@@ -123,6 +135,25 @@ private:
     bool backlightMouseWheel;
     bool ignoreKernelResume;
 
+    QMenu *powerMenu;
+    QAction *actSettings;
+    QAction *actPowerOff;
+    QAction *actRestart;
+    QAction *actSuspend;
+    QAction *actHibernate;
+    QLabel *labelBatteryStatus;
+    QLabel *labelBatteryIcon;
+    //QLabel *labelBatteryLeft;
+    QFrame *menuFrame;
+    QWidgetAction *menuHeader;
+    QSlider *backlightSlider;
+    QLabel *backlightLabel;
+    QFileSystemWatcher *backlightWatcher;
+    QTreeWidget *deviceTree;
+    QMap<QString,QProgressBar*> devicesProg;
+    QTreeWidget *inhibitorTree;
+    QTabWidget *powerTab;
+
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
     void checkDevices();
@@ -165,6 +196,14 @@ private slots:
     void handleDeviceChanged(const QString &path);
     void handleConfigDialogFinished(int result);
     void showConfigDialog();
+    void populateMenu();
+    void updateMenu();
+    void updateBacklight(QString file);
+    void handleBacklightSlider(int value);
+    void updatePowerDevices();
+    bool powerDeviceExists(QString uid);
+    void powerDeviceRemove(QString uid);
+    void getInhibitors();
 };
 
 #endif // SYSTRAY_H
