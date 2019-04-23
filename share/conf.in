@@ -1,0 +1,17 @@
+<!DOCTYPE busconfig PUBLIC "-//freedesktop//DTD D-BUS Bus Configuration 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/busconfig.dtd">
+<busconfig>
+  <!-- Only @SERVICE_USER@ user can own the service -->
+  <policy user="@SERVICE_USER@">
+    <allow own="@SERVICE_NAME@"/>
+  </policy>
+  <!-- Allow anyone in group @SERVICE_GROUP@ to invoke methods -->
+  <policy group="@SERVICE_GROUP@">
+    <allow send_destination="@SERVICE_NAME@"/>
+    <allow receive_sender="@SERVICE_NAME@"/>
+  </policy>
+  <!-- Allow everything -->
+  <policy user="@SERVICE_USER@">
+    <allow send_destination="@SERVICE_NAME@"/>
+    <allow receive_sender="@SERVICE_NAME@"/>
+  </policy>
+</busconfig>

@@ -94,9 +94,9 @@ enum criticalAction
 #define POWERKIT_PATH "/PowerKit"
 #define POWERKIT_FULL_PATH "/org/freedesktop/PowerKit"
 
-#define PMD_SERVICE "org.freedesktop.powerkitd"
-#define PMD_PATH "/org/freedesktop/powerkitd"
-#define PMD_MANAGER "org.freedesktop.powerkitd.Manager"
+#define PMD_SERVICE "org.freedesktop.PowerKit"
+#define PMD_PATH "/org/freedesktop/PowerKit"
+#define PMD_MANAGER "org.freedesktop.PowerKit.Manager"
 
 #define PM_SERVICE "org.freedesktop.PowerManagement"
 #define PM_PATH "/PowerManagement"

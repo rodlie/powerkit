@@ -13,7 +13,7 @@
 #include <QThread>
 #include <QMap>
 
-#include "screens.h"
+#include "powerkit_x11_screens.h"
 #include <X11/extensions/Xrandr.h>
 
 #undef Bool // fix X11 inc

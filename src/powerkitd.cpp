@@ -11,15 +11,15 @@
 
 #include "powerkitd_manager.h"
 
-#define DSERVICE "org.freedesktop.powerkitd"
-#define DPATH "/powerkitd"
-#define DFULL_PATH "/org/freedesktop/powerkitd"
+#define DSERVICE "org.freedesktop.PowerKit"
+#define DPATH "/PowerKit"
+#define DFULL_PATH "/org/freedesktop/PowerKit"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     QCoreApplication::setOrganizationDomain("org");
-    QCoreApplication::setApplicationName("freedesktop.powerkitd");
+    QCoreApplication::setApplicationName("freedesktop.PowerKit");
 
     if (!QDBusConnection::systemBus().isConnected()) {
         qWarning("Cannot connect to the D-Bus system bus.");

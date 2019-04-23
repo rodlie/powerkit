@@ -2,7 +2,7 @@
 Name=Power Manager
 Comment=Power Manager
 Icon=ac-adapter
-Exec=powerkit-conf
+Exec=powerkit --config
 Terminal=false
 Type=Application
 Categories=Settings;

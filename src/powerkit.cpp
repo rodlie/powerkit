@@ -20,10 +20,10 @@
 #include <QDBusReply>
 
 PowerKit::PowerKit(QObject *parent) : QObject(parent)
-  , upower(0)
-  , logind(0)
-  , ckit(0)
-  , pmd(0)
+  , upower(nullptr)
+  , logind(nullptr)
+  , ckit(nullptr)
+  , pmd(nullptr)
   , wasDocked(false)
   , wasLidClosed(false)
   , wasOnBattery(false)
@@ -901,6 +901,6 @@ bool PowerKit::setDisplayBacklight(const QString &device, int value)
                                    device,
                                    value);
     bool backlight = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();
-    qDebug() << "BACKLIGHT OK?" << backlight;
+    qDebug() << "BACKLIGHT OK?" << backlight << reply.errorMessage();
     return backlight;
 }

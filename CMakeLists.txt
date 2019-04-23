@@ -5,18 +5,16 @@
 # See the LICENSE file for full details
 
 cmake_minimum_required(VERSION 3.0)
-
-project(powerkit VERSION 1.9.0)
-
 include(GNUInstallDirs)
 
+project(powerkit VERSION 2.0.0)
 set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
 
 # set version
+set(PROJECT_VERSION_EXTRA "beta1")
 add_definitions(-DPOWERKIT_VERSION="${PROJECT_VERSION}")
+add_definitions(-DPOWERKIT_VERSION_EXTRA="${PROJECT_VERSION_EXTRA}")
 
 # no debug output on release
 if(CMAKE_BUILD_TYPE MATCHES RELEASE)
@@ -55,139 +53,46 @@ if(CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     set(DEFAULT_SYSCONFDIR "/etc")
 endif()
 
-# docs
-install(FILES
-        docs/LICENSE
-        docs/ChangeLog
-        docs/README.md
-        DESTINATION
-        ${CMAKE_INSTALL_DOCDIR}-${PROJECT_VERSION})
-
-# powerkitd
-set(POWERKITD_SERVICE
-    org.freedesktop.${PROJECT_NAME}d)
-set(POWERKITD_USER
+# service
+set(SERVICE_NAME
+    org.freedesktop.PowerKit)
+set(SERVICE_USER
     "root"
     CACHE
     STRING
-    "${PROJECT_NAME}d D-Bus user with access to /sys.")
-set(POWERKITD_GROUP
+    "D-Bus service user with access to /sys.")
+set(SERVICE_GROUP
     "users"
     CACHE
     STRING
-    "group that have access to ${PROJECT_NAME}d D-Bus service, this should be any desktop user.")
-set(POWERKITD_SOURCES
+    "group that have access to D-Bus service, this should be any desktop user.")
+
+# exe
+set(SOURCES
     src/${PROJECT_NAME}d.cpp
     src/${PROJECT_NAME}d_manager.cpp
     src/${PROJECT_NAME}_backlight.cpp
     src/${PROJECT_NAME}_cpu.cpp
     src/${PROJECT_NAME}_rtc.cpp)
-set(POWERKITD_HEADERS
+set(HEADERS
     src/${PROJECT_NAME}d_manager.h
     src/${PROJECT_NAME}_backlight.h
     src/${PROJECT_NAME}_cpu.h
     src/${PROJECT_NAME}_rtc.h)
 add_executable(${PROJECT_NAME}d
-               ${POWERKITD_SOURCES}
-               ${POWERKITD_HEADERS})
-target_include_directories(${PROJECT_NAME}d PUBLIC src)
-if(USE_QT5)
-    target_link_libraries(${PROJECT_NAME}d
-                          Qt5::Core
-                          Qt5::DBus)
-else()
-    target_link_libraries(${PROJECT_NAME}d
-                          Qt4::QtCore
-                          Qt4::QtDBus
-                          Qt4::QtXml)
-endif()
-configure_file(share/${PROJECT_NAME}d.conf.in
-               ${CMAKE_BINARY_DIR}/${POWERKITD_SERVICE}.conf
-               @ONLY)
-configure_file(share/${PROJECT_NAME}d.service.in
-              ${CMAKE_BINARY_DIR}/${POWERKITD_SERVICE}.service
-              @ONLY)
-install(TARGETS
-        ${PROJECT_NAME}d
-        DESTINATION
-        ${CMAKE_INSTALL_SBINDIR})
-install(FILES
-        ${CMAKE_BINARY_DIR}/${POWERKITD_SERVICE}.conf
-        DESTINATION
-        ${DEFAULT_SYSCONFDIR}/dbus-1/system.d)
-install(FILES
-        ${CMAKE_BINARY_DIR}/${POWERKITD_SERVICE}.service
-        DESTINATION
-        ${CMAKE_INSTALL_DATAROOTDIR}/dbus-1/system-services)
-
-# powerkit-conf
-set(POWERKIT_CONF_SOURCES
-    src/${PROJECT_NAME}-conf.cpp
-    src/${PROJECT_NAME}_settings.cpp
-    src/${PROJECT_NAME}_dialog.cpp
-    src/${PROJECT_NAME}_client.cpp
-    src/${PROJECT_NAME}_theme.cpp
-    src/${PROJECT_NAME}_backlight.cpp)
-set(POWERKIT_CONF_HEADERS
-    src/${PROJECT_NAME}_settings.h
-    src/${PROJECT_NAME}_dialog.h
-    src/${PROJECT_NAME}_client.h
-    src/${PROJECT_NAME}_theme.h
-    src/${PROJECT_NAME}_def.h
-    src/${PROJECT_NAME}_backlight.h)
-add_executable(${PROJECT_NAME}-conf
-               ${POWERKIT_CONF_SOURCES}
-               ${POWERKIT_CONF_HEADERS})
-target_include_directories(${PROJECT_NAME}-conf PUBLIC src)
-if(USE_QT5)
-    target_link_libraries(${PROJECT_NAME}-conf
-                          Qt5::Core
-                          Qt5::DBus
-                          Qt5::Gui
-                          Qt5::Widgets)
-else()
-    target_link_libraries(${PROJECT_NAME}-conf
-                          Qt4::QtCore
-                          Qt4::QtDBus
-                          Qt4::QtXml
-                          Qt4::QtGui)
-endif()
-install(TARGETS
-        ${PROJECT_NAME}-conf
-        DESTINATION
-        ${CMAKE_INSTALL_BINDIR})
-install(FILES
-        share/powerkit-conf.desktop
-        DESTINATION
-        ${CMAKE_INSTALL_DATAROOTDIR}/applications)
-
-# powerkit
-set(POWERKIT_SOURCES
-    src/main.cpp
-    src/${PROJECT_NAME}.cpp
-    src/${PROJECT_NAME}_freedesktop_pm.cpp
-    src/${PROJECT_NAME}_freedesktop_ss.cpp
-    src/${PROJECT_NAME}_power_device.cpp
-    src/${PROJECT_NAME}_x11_screens.cpp
-    src/${PROJECT_NAME}_systray.cpp
-    src/${PROJECT_NAME}_settings.cpp
-    src/${PROJECT_NAME}_theme.cpp
-    src/${PROJECT_NAME}_backlight.cpp
-    src/${PROJECT_NAME}_cpu.cpp)
-set(POWERKIT_HEADERS
-    src/${PROJECT_NAME}_def.h
-    src/${PROJECT_NAME}_freedesktop_pm.h
-    src/${PROJECT_NAME}_freedesktop_ss.h
-    src/${PROJECT_NAME}_power_device.h
-    src/${PROJECT_NAME}_x11_screens.h
-    src/${PROJECT_NAME}_systray.h
-    src/${PROJECT_NAME}_settings.h
-    src/${PROJECT_NAME}_theme.h
-    src/${PROJECT_NAME}_backlight.h
-    src/${PROJECT_NAME}_cpu.h)
+               ${SOURCES}
+               ${HEADERS})
+file(GLOB
+     POWERKIT_SRC
+     "src/main.cpp"
+     "src/${PROJECT_NAME}.h"
+     "src/${PROJECT_NAME}.cpp"
+     "src/${PROJECT_NAME}_*.h"
+     "src/${PROJECT_NAME}_*.cpp")
 add_executable(${PROJECT_NAME}
-               ${POWERKIT_SOURCES}
-               ${POWERKIT_HEADERS})
+               ${POWERKIT_SRC})
+
+# link
 if(${CMAKE_VERSION} VERSION_LESS "3.14.3")
     set(XSS_INCLUDE ${X11_Xscreensaver_INCLUDE_PATH})
     set(XSS_LIB ${X11_Xscreensaver_LIB})
@@ -195,6 +100,7 @@ else()
     set(XSS_INCLUDE ${X11_Xss_INCLUDE_PATH})
     set(XSS_LIB ${X11_Xss_LIB})
 endif()
+target_include_directories(${PROJECT_NAME}d PUBLIC src)
 target_include_directories(${PROJECT_NAME}
                            PUBLIC
                            src
@@ -206,23 +112,70 @@ target_link_libraries(${PROJECT_NAME}
                       ${X11_Xrandr_LIB}
                       ${XSS_LIB})
 if(USE_QT5)
+    target_link_libraries(${PROJECT_NAME}d
+                          Qt5::Core
+                          Qt5::DBus)
     target_link_libraries(${PROJECT_NAME}
                           Qt5::Core
                           Qt5::DBus
                           Qt5::Gui
                           Qt5::Widgets)
 else()
+    target_link_libraries(${PROJECT_NAME}d
+                          Qt4::QtCore
+                          Qt4::QtDBus
+                          Qt4::QtXml)
     target_link_libraries(${PROJECT_NAME}
                           Qt4::QtCore
                           Qt4::QtDBus
                           Qt4::QtXml
                           Qt4::QtGui)
 endif()
+
+# conf
+configure_file(share/conf.in
+               ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.conf
+               @ONLY)
+configure_file(share/service.in
+              ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
+              @ONLY)
+
+# install
+install(TARGETS
+        ${PROJECT_NAME}d
+        DESTINATION
+        ${CMAKE_INSTALL_LIBEXECDIR})
 install(TARGETS
         ${PROJECT_NAME}
         DESTINATION
         ${CMAKE_INSTALL_BINDIR})
 install(FILES
+        ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.conf
+        DESTINATION
+        ${DEFAULT_SYSCONFDIR}/dbus-1/system.d)
+install(FILES
+        ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
+        DESTINATION
+        ${CMAKE_INSTALL_DATAROOTDIR}/dbus-1/system-services)
+install(FILES
+        share/${PROJECT_NAME}.1
+        DESTINATION
+        ${CMAKE_INSTALL_MANDIR}/man1)
+install(FILES
+        share/${PROJECT_NAME}d.8
+        DESTINATION
+        ${CMAKE_INSTALL_MANDIR}/man8)
+install(FILES
+        share/${PROJECT_NAME}-settings.desktop
+        DESTINATION
+        ${CMAKE_INSTALL_DATAROOTDIR}/applications)
+install(FILES
         share/${PROJECT_NAME}.desktop
         DESTINATION
         ${DEFAULT_SYSCONFDIR}/xdg/autostart)
+install(FILES
+        docs/LICENSE
+        docs/ChangeLog
+        docs/README.md
+        DESTINATION
+        ${CMAKE_INSTALL_DOCDIR}/${PROJECT_NAME}-${PROJECT_VERSION}${PROJECT_VERSION_EXTRA})

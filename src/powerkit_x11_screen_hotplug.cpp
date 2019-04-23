@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "hotplug.h"
+#include "powerkit_x11_screen_hotplug.h"
 
 HotPlug::HotPlug(QObject *parent) :
     QObject(parent)

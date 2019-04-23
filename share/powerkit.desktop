@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=PowerKit
+Name=Power Manager
 Comment=Power Manager
 Icon=ac-adapter
 Exec=powerkit
 Terminal=false
 Type=Application
-NotShowIn=GNOME;KDE;MATE;TDE;Unity;XFCE;Cinnamon;
+OnlyShowIn=Lumina;Draco
 StartupNotify=false

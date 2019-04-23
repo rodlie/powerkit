@@ -8,6 +8,7 @@
 
 #include <QApplication>
 #include "powerkit_systray.h"
+#include "powerkit_dialog.h"
 #include "powerkit.h"
 
 int main(int argc, char *argv[])
@@ -16,10 +17,22 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("freedesktop");
     QCoreApplication::setOrganizationDomain("org");
     QString version = POWERKIT_VERSION;
-#ifdef APP_VERSION_EXTRA
-    version.append(APP_VERSION_EXTRA);
+#ifdef POWERKIT_VERSION_EXTRA
+     if (!QString(POWERKIT_VERSION_EXTRA).isEmpty()) { version.append(POWERKIT_VERSION_EXTRA); }
 #endif
     QCoreApplication::setApplicationVersion(version);
+
+    // check args
+    bool startConfig = false;
+    for (int i=1; i<argc; i++) {if (QString::fromLocal8Bit(argv[i]) == "--config") {
+            startConfig = true;
+        }
+    }
+     if (startConfig) { // show config dialog
+        Dialog dialog;
+        dialog.show();
+        return a.exec();
+    }
 
     // check if a powerkit session is already running
     QDBusInterface session(POWERKIT_SERVICE,
@@ -31,7 +44,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // start systray
+    // start powerkit systray
     SysTray tray(a.parent());
     return a.exec();
 }
