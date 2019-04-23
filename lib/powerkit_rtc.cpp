@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "rtc.h"
+#include "powerkit_rtc.h"
 
 #ifdef Q_OS_LINUX
 #include <linux/rtc.h>
@@ -18,7 +18,7 @@
 #define RTC_DEV "/dev/rtc"
 #endif
 
-bool RTC::setAlarm(const QDateTime &date)
+bool PowerRtc::setAlarm(const QDateTime &date)
 {
 #ifdef Q_OS_LINUX
     if (!date.isValid() || date.isNull()) { return false; }

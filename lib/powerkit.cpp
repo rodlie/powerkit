@@ -687,7 +687,7 @@ bool PowerKit::setWakeAlarm(const QDateTime &date)
     qDebug() << "try to set wake alarm" << date;
     if (pmd && date.isValid() && CanHibernate()) {
         if (!pmd->isValid()) { return false; }
-        QDBusMessage reply = pmd->call("setWakeAlarm",
+        QDBusMessage reply = pmd->call("SetWakeAlarm",
                                        date.toString("yyyy-MM-dd HH:mm:ss"));
         bool alarm = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();
         qDebug() << "WAKE OK?" << alarm;
@@ -897,7 +897,7 @@ bool PowerKit::setDisplayBacklight(const QString &device, int value)
     qDebug() << "PK SET DISPLAY BACKLIGHT" << device << value;
     if (!pmd) { return false; }
     if (!pmd->isValid()) { return false; }
-    QDBusMessage reply = pmd->call("setDisplayBacklight",
+    QDBusMessage reply = pmd->call("SetDisplayBacklight",
                                    device,
                                    value);
     bool backlight = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();

@@ -6,15 +6,15 @@
 # See the LICENSE file for full details
 */
 
-#ifndef RTC_H
-#define RTC_H
+#ifndef POWER_RTC_H
+#define POWER_RTC_H
 
 #include <QDateTime>
 
-class RTC
+class PowerRtc
 {
 public:
     static bool setAlarm(const QDateTime &date);
 };
 
-#endif // RTC_H
+#endif // POWER_RTC_H

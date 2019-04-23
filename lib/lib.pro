@@ -15,20 +15,14 @@ TEMPLATE = lib
 
 SOURCES += \
     device.cpp \
-    screens.cpp \
     powerkit.cpp \
-    rtc.cpp \
-    common.cpp \
-    hotplug.cpp
+    common.cpp
 
 HEADERS += \
     def.h \
     device.h \
-    screens.h \
     powerkit.h \
-    rtc.h \
-    common.h \
-    hotplug.h
+    common.h
 
 HEADERS += \
     powerkit_backlight.h \
@@ -36,14 +30,18 @@ HEADERS += \
     powerkit_settings.h \
     powerkit_client.h \
     powerkit_freedesktop_pm.h \
-    powerkit_freedesktop_ss.h
+    powerkit_freedesktop_ss.h \
+    powerkit_rtc.h
 SOURCES += \
     powerkit_backlight.cpp \
     powerkit_cpu.cpp \
     powerkit_settings.cpp \
     powerkit_client.cpp \
     powerkit_freedesktop_pm.cpp \
-    powerkit_freedesktop_ss.cpp
+    powerkit_freedesktop_ss.cpp \
+    powerkit_rtc.cpp
+
+#LIBS += -lX11 -lXss -lXrandr
 
 include(../powerkit.pri)
 CONFIG(install_lib) {
