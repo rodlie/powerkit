@@ -24,6 +24,9 @@ public slots:
     bool SetDisplayBacklight(const QString &device, int value);
     bool SetCpuGovernor(const QString &gov);
     bool SetCpuFrequency(const QString &freq);
+    bool SetPStateTurbo(bool enable);
+    bool SetPStateMax(int value);
+    bool SetPStateMin(int value);
 };
 
 #endif // MANAGER_H

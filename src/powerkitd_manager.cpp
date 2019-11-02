@@ -47,3 +47,20 @@ bool Manager::SetCpuFrequency(const QString &freq)
     return  PowerCpu::setFrequency(freq);
 }
 
+bool Manager::SetPStateTurbo(bool enable)
+{
+    qDebug() << "Try to set Intel Turbo Boost" << enable;
+    return PowerCpu::setPStateTurbo(enable);
+}
+
+bool Manager::SetPStateMax(int value)
+{
+    qDebug() << "Try to set Intel pstate max" << value;
+    return PowerCpu::setPStateMax(value);
+}
+
+bool Manager::SetPStateMin(int value)
+{
+    qDebug() << "Try to set Intel pstate min" << value;
+    return PowerCpu::setPStateMin(value);
+}
