@@ -24,6 +24,10 @@ public:
     static bool canPowerOff(QDBusInterface *iface);
     static bool lidIsPresent(QDBusInterface *iface);
     static void lockScreen(QDBusInterface *iface);
+    static void hibernate(QDBusInterface *iface);
+    static void suspend(QDBusInterface *iface);
+    static bool restart(QDBusInterface *iface);
+    static bool poweroff(QDBusInterface *iface);
 };
 
 #endif // POWER_CLIENT_H
