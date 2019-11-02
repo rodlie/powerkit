@@ -44,8 +44,8 @@ Device::Device(const QString block, QObject *parent)
     , energyFullDesign(0)
     , energyFull(0)
     , energyEmpty(0)
-    , dbus(0)
-    , dbusp(0)
+    , dbus(nullptr)
+    , dbusp(nullptr)
 {
     QDBusConnection system = QDBusConnection::systemBus();
     dbus = new QDBusInterface(UPOWER_SERVICE,

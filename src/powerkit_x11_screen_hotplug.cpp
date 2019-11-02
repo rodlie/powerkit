@@ -34,7 +34,7 @@ void HotPlug::scan()
     _scanning = true;
 
     Display *dpy;
-    if ((dpy = XOpenDisplay(NULL)) == NULL) { return; }
+    if ((dpy = XOpenDisplay(nullptr)) == nullptr) { return; }
 
     XRRScreenResources *sr;
     XRROutputInfo *info;
@@ -47,9 +47,9 @@ void HotPlug::scan()
     while(_scanning) {
         if (!XNextEvent(dpy, &ev)) {
             sr = XRRGetScreenResources(OCNE(&ev)->display, OCNE(&ev)->window);
-            if (sr == NULL) { continue; }
+            if (sr == nullptr) { continue; }
             info = XRRGetOutputInfo(OCNE(&ev)->display, sr, OCNE(&ev)->output);
-            if (info == NULL) {
+            if (info == nullptr) {
                 XRRFreeScreenResources(sr);
                 continue;
             }
@@ -71,7 +71,7 @@ void HotPlug::requestSetScan(bool scanning)
 
 void HotPlug::getScreens(Display *dpy)
 {
-    if (dpy == NULL) { return; }
+    if (dpy == nullptr) { return; }
     QMap<QString,bool> result = Screens::outputsDpy(dpy);
     emit found(result);
 }
