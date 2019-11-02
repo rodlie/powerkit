@@ -179,3 +179,112 @@ bool PowerCpu::setFrequency(const QString &freq)
     if (failed) { return false; }
     return true;
 }
+
+bool PowerCpu::hasPState()
+{
+    return QFile::exists(QString("%1/%2")
+                         .arg(LINUX_CPU_SYS)
+                         .arg(LINUX_CPU_PSTATE));
+}
+
+bool PowerCpu::hasPStateTurbo()
+{
+    bool result = false;
+    if (!hasPState()) { return result; }
+    QFile file(QString("%1/%2/%3")
+                .arg(LINUX_CPU_SYS)
+                .arg(LINUX_CPU_PSTATE)
+                .arg(LINUX_CPU_PSTATE_NOTURBO));
+    if (!file.exists()) { return result; }
+    if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        QString value = file.readAll().trimmed();
+        file.close();
+        if (value=="1") { result = false; }
+        else if (value=="0") { result = true; }
+    }
+    return result;
+}
+
+bool PowerCpu::setPStateTurbo(bool turbo)
+{
+    if (!hasPState()) { return false; }
+    QFile file(QString("%1/%2/%3")
+              .arg(LINUX_CPU_SYS)
+              .arg(LINUX_CPU_PSTATE)
+              .arg(LINUX_CPU_PSTATE_NOTURBO));
+    if (!file.exists()) { return false; }
+    if (file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QTextStream out(&file);
+        if (turbo) { out << "0"; }
+        else { out << "1"; }
+        file.close();
+        if (turbo == hasPStateTurbo()) { return true; }
+    }
+    return false;
+}
+
+int PowerCpu::getPStateMax()
+{
+    int value = -1;
+    if (!hasPState()) { return value; }
+    QFile file(QString("%1/%2/%3")
+                .arg(LINUX_CPU_SYS)
+                .arg(LINUX_CPU_PSTATE)
+                .arg(LINUX_CPU_PSTATE_MAX_PERF));
+    if (!file.exists()) { return value; }
+    if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        value = file.readAll().trimmed().toInt();
+        file.close();
+    }
+    return value;
+}
+
+int PowerCpu::getPStateMin()
+{
+    int value = -1;
+    if (!hasPState()) { return value; }
+    QFile file(QString("%1/%2/%3")
+                .arg(LINUX_CPU_SYS)
+                .arg(LINUX_CPU_PSTATE)
+                .arg(LINUX_CPU_PSTATE_MIN_PERF));
+    if (!file.exists()) { return value; }
+    if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        value = file.readAll().trimmed().toInt();
+        file.close();
+    }
+    return value;
+}
+
+bool PowerCpu::setPStateMax(int maxState)
+{
+    if (!hasPState()) { return false; }
+    QFile file(QString("%1/%2/%3")
+              .arg(LINUX_CPU_SYS)
+              .arg(LINUX_CPU_PSTATE)
+              .arg(LINUX_CPU_PSTATE_MAX_PERF));
+    if (!file.exists()) { return false; }
+    if (file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QTextStream out(&file);
+        out << QString::number(maxState);
+        file.close();
+        return true;
+    }
+    return false;
+}
+
+bool PowerCpu::setPStateMin(int minState)
+{
+    if (!hasPState()) { return false; }
+    QFile file(QString("%1/%2/%3")
+              .arg(LINUX_CPU_SYS)
+              .arg(LINUX_CPU_PSTATE)
+              .arg(LINUX_CPU_PSTATE_MIN_PERF));
+    if (!file.exists()) { return false; }
+    if (file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
+        QTextStream out(&file);
+        out << QString::number(minState);
+        file.close();
+        return true;
+    }
+    return false;
+}

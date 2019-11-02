@@ -21,6 +21,11 @@
 #define LINUX_CPU_GOVERNORS "scaling_available_governors"
 #define LINUX_CPU_GOVERNOR "scaling_governor"
 #define LINUX_CPU_SET_SPEED "scaling_setspeed"
+#define LINUX_CPU_PSTATE "intel_pstate"
+#define LINUX_CPU_PSTATE_STATUS "status"
+#define LINUX_CPU_PSTATE_NOTURBO "no_turbo"
+#define LINUX_CPU_PSTATE_MAX_PERF "max_perf_pct"
+#define LINUX_CPU_PSTATE_MIN_PERF "min_perf_pct"
 
 class PowerCpu
 {
@@ -40,6 +45,14 @@ public:
     static bool frequencyExists(const QString &freq);
     static bool setFrequency(const QString &freq, int cpu);
     static bool setFrequency(const QString &freq);
+
+    static bool hasPState();
+    static bool hasPStateTurbo();
+    static bool setPStateTurbo(bool turbo);
+    static int getPStateMax();
+    static int getPStateMin();
+    static bool setPStateMax(int maxState);
+    static bool setPStateMin(int minState);
 };
 
 #endif // POWER_CPU_H
