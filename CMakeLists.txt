@@ -174,8 +174,8 @@ install(FILES
         DESTINATION
         ${DEFAULT_SYSCONFDIR}/xdg/autostart)
 install(FILES
-        docs/LICENSE
-        docs/ChangeLog
+        LICENSE
+        docs/ChangeLog.md
         docs/README.md
         DESTINATION
         ${CMAKE_INSTALL_DOCDIR}/${PROJECT_NAME}-${PROJECT_VERSION}${PROJECT_VERSION_EXTRA})
