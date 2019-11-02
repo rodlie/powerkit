@@ -11,14 +11,14 @@
 QMap<QString, bool> Screens::outputsDpy(Display *dpy)
 {
     QMap<QString,bool> result;
-    if (dpy == NULL) { return result; }
+    if (dpy == nullptr) { return result; }
     XRRScreenResources *sr;
     XRROutputInfo *info;
     sr = XRRGetScreenResourcesCurrent(dpy, DefaultRootWindow(dpy));
     if (sr) {
         for (int i = 0; i< sr->noutput;++i) {
             info = XRRGetOutputInfo(dpy, sr, sr->outputs[i]);
-            if (info == NULL) {
+            if (info == nullptr) {
                 XRRFreeOutputInfo(info);
                 continue;
             }
@@ -37,7 +37,7 @@ QMap<QString, bool> Screens::outputs()
 {
     QMap<QString, bool> result;
     Display *dpy;
-    if ((dpy = XOpenDisplay(NULL)) == NULL) { return result; }
+    if ((dpy = XOpenDisplay(nullptr)) == nullptr) { return result; }
     result = outputsDpy(dpy);
     XCloseDisplay(dpy);
     return result;
@@ -46,7 +46,7 @@ QMap<QString, bool> Screens::outputs()
 QString Screens::internalDpy(Display *dpy)
 {
     QString result;
-    if (dpy == NULL) { return result; }
+    if (dpy == nullptr) { return result; }
     XRRScreenResources *sr;
     sr = XRRGetScreenResourcesCurrent(dpy, DefaultRootWindow(dpy));
     if (sr) {
@@ -62,7 +62,7 @@ QString Screens::internal()
 {
     QString result;
     Display *dpy;
-    if ((dpy = XOpenDisplay(NULL)) == NULL) { return result; }
+    if ((dpy = XOpenDisplay(nullptr)) == nullptr) { return result; }
     result = internalDpy(dpy);
     XCloseDisplay(dpy);
     return result;
