@@ -1,9 +1,9 @@
 [Desktop Entry]
-Name=Power Manager
+Name=PowerKit
 Comment=Power Manager
 Icon=ac-adapter
-Exec=powerkit
+Exec=@PROJECT_NAME@
 Terminal=false
 Type=Application
-OnlyShowIn=Lumina;Draco
+OnlyShowIn=Lumina;Draco;
 StartupNotify=false

@@ -86,6 +86,10 @@ enum criticalAction
 #define DEFAULT_KEYBOARD_ICON "input-keyboard"
 #define DEFAULT_MOUSE_ICON "input-mouse"
 #define DEFAULT_ABOUT_ICON "dialog-question"
+#define DEFAULT_SETTINGS_ICON "preferences-system"
+#define DEFAULT_HELP_ICON "system-help"
+#define DEFAULT_INHIBITOR_ICON "preferences-desktop-screensaver"
+#define DEFAULT_APP_ICON "applications-system"
 
 #define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
 #define DEFAULT_SUSPEND_AC_ACTION suspendNone

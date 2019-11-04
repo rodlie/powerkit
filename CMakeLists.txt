@@ -12,13 +12,14 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_AUTOMOC ON)
 
 # set version
-set(PROJECT_VERSION_EXTRA "beta1")
 add_definitions(-DPOWERKIT_VERSION="${PROJECT_VERSION}")
-add_definitions(-DPOWERKIT_VERSION_EXTRA="${PROJECT_VERSION_EXTRA}")
 
-# no debug output on release
-if(CMAKE_BUILD_TYPE MATCHES RELEASE)
+# debug/release
+add_compile_options(-Wall -Wextra)
+if(CMAKE_BUILD_TYPE MATCHES "^(release|Release|RELEASE)$")
     add_definitions(-DQT_NO_DEBUG_OUTPUT)
+else()
+    add_definitions(-DQT_MESSAGELOGCONTEXT)
 endif()
 
 # qt
@@ -140,6 +141,14 @@ configure_file(share/service.in
               ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
               @ONLY)
 
+# desktop
+configure_file(share/autostart.desktop.in
+               ${CMAKE_BINARY_DIR}/autostart/${PROJECT_NAME}.desktop
+               @ONLY)
+configure_file(share/settings.desktop.in
+              ${CMAKE_BINARY_DIR}/settings/${PROJECT_NAME}.desktop
+              @ONLY)
+
 # install
 install(TARGETS
         ${PROJECT_NAME}d
@@ -166,16 +175,15 @@ install(FILES
         DESTINATION
         ${CMAKE_INSTALL_MANDIR}/man8)
 install(FILES
-        share/${PROJECT_NAME}-settings.desktop
+        ${CMAKE_BINARY_DIR}/settings/${PROJECT_NAME}.desktop
         DESTINATION
         ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 install(FILES
-        share/${PROJECT_NAME}.desktop
+        ${CMAKE_BINARY_DIR}/autostart/${PROJECT_NAME}.desktop
         DESTINATION
         ${DEFAULT_SYSCONFDIR}/xdg/autostart)
 install(FILES
         LICENSE
-        docs/ChangeLog.md
         docs/README.md
         DESTINATION
-        ${CMAKE_INSTALL_DOCDIR}/${PROJECT_NAME}-${PROJECT_VERSION}${PROJECT_VERSION_EXTRA})
+        ${CMAKE_INSTALL_DOCDIR}/${PROJECT_NAME}-${PROJECT_VERSION})

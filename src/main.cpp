@@ -18,9 +18,6 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("org");
 #ifdef POWERKIT_VERSION
     QString version = POWERKIT_VERSION;
-#ifdef POWERKIT_VERSION_EXTRA
-    if (!QString(POWERKIT_VERSION_EXTRA).isEmpty()) { version.append(POWERKIT_VERSION_EXTRA); }
-#endif
 #else
     QString version = "devel";
 #endif

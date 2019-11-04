@@ -11,11 +11,13 @@
 #include "powerkit_theme.h"
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"
+#include "powerkit_cpu.h"
 
 #include <QMessageBox>
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
+#include <QProcess>
 
 SysTray::SysTray(QObject *parent)
     : QObject(parent)
@@ -54,7 +56,6 @@ SysTray::SysTray(QObject *parent)
     , backlightACValue(0)
     , backlightBatteryDisableIfLower(false)
     , backlightACDisableIfHigher(false)
-    , configDialog(nullptr)
     , warnOnLowBattery(true)
     , warnOnVeryLowBattery(true)
     , notifyOnBattery(true)
@@ -62,23 +63,51 @@ SysTray::SysTray(QObject *parent)
     , backlightMouseWheel(true)
     , ignoreKernelResume(false)
     , powerMenu(nullptr)
+    , inhibitorsMenu(nullptr)
+    , inhibitorsGroup(nullptr)
     , actSettings(nullptr)
     , actPowerOff(nullptr)
     , actRestart(nullptr)
     , actSuspend(nullptr)
     , actHibernate(nullptr)
+    , actAbout(nullptr)
+    , actQuit(nullptr)
     , labelBatteryStatus(nullptr)
     , labelBatteryIcon(nullptr)
-    //, labelBatteryLeft(0)
     , menuFrame(nullptr)
     , menuHeader(nullptr)
     , backlightSlider(nullptr)
     , backlightLabel(nullptr)
     , backlightWatcher(nullptr)
-    , deviceTree(nullptr)
-    , inhibitorTree(nullptr)
-    , powerTab(nullptr)
+    , cpuFreqLabel(nullptr)
+    , pstateMinSlider(nullptr)
+    , pstateMaxSlider(nullptr)
+    , pstateTurboCheckbox(nullptr)
 {
+#if QT_VERSION >= 0x050000
+    qApp->setStyle("Fusion");
+#else
+    qApp->setStyle("Clearlooks");
+#endif
+    // set (dark) colors
+    QPalette palette;
+    palette.setColor(QPalette::Window, QColor(53,53,53));
+    palette.setColor(QPalette::WindowText, Qt::white);
+    palette.setColor(QPalette::Base, QColor(15,15,15));
+    palette.setColor(QPalette::AlternateBase, QColor(53,53,53));
+    palette.setColor(QPalette::Link, Qt::white);
+    palette.setColor(QPalette::LinkVisited, Qt::white);
+    palette.setColor(QPalette::ToolTipText, Qt::black);
+    palette.setColor(QPalette::Text, Qt::white);
+    palette.setColor(QPalette::Button, QColor(53,53,53));
+    palette.setColor(QPalette::ButtonText, Qt::white);
+    palette.setColor(QPalette::BrightText, Qt::red);
+    palette.setColor(QPalette::Highlight, QColor(196,110,33));
+    palette.setColor(QPalette::HighlightedText, Qt::white);
+    palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
+    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
+    qApp->setPalette(palette);
+
     // setup tray
     tray = new TrayIcon(this);
     connect(tray,
@@ -228,18 +257,7 @@ SysTray::SysTray(QObject *parent)
                        SLOT(setInternalMonitor()));
 
     // menu
-    powerMenu  = new QMenu(NULL);
-    tray->setContextMenu(powerMenu);
-    /*QTimer::singleShot(1000,
-                       this,
-                       SLOT(*/populateMenu()/*))*/;
-
-    // config dialog
-    configDialog = new QProcess(this);
-    connect(configDialog,
-            SIGNAL(finished(int)),
-            this,
-            SLOT(handleConfigDialogFinished(int)));
+    populateMenu();
 
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -271,9 +289,9 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
     case QSystemTrayIcon::Context:
     case QSystemTrayIcon::DoubleClick:
     case QSystemTrayIcon::MiddleClick:
+    default:
         powerMenu->exec(QCursor::pos());
         break;
-    default:;
     }
 }
 
@@ -290,7 +308,7 @@ void SysTray::checkDevices()
     updateMenu();
 
     // update power devices
-    updatePowerDevices();
+    //updatePowerDevices();
 
     // get battery left and add tooltip
     double batteryLeft = man->BatteryLeft();
@@ -317,28 +335,6 @@ void SysTray::checkDevices()
             tray->setToolTip(tray->toolTip().append(QString(" (%1)").arg(tr("Charging"))));
         }
     } else { tray->setToolTip(tr("On AC")); }
-
-    // inhibitors tooltip
-    /*if (ssInhibitors.size()>0) {
-        QString tooltip = "\n\n";
-        tooltip.append(QString("%1:\n").arg(tr("Screen Saver Inhibitors")));
-        QMapIterator<quint32, QString> i(ssInhibitors);
-        while (i.hasNext()) {
-            i.next();
-            tooltip.append(QString(" * %1\n").arg(i.value()));
-        }
-        tray->setToolTip(tray->toolTip().append(tooltip));
-    }
-    if (pmInhibitors.size()>0) {
-        QString tooltip = "\n\n";
-        tooltip.append(QString("%1:\n").arg(tr("Power Manager Inhibitors")));
-        QMapIterator<quint32, QString> i(pmInhibitors);
-        while (i.hasNext()) {
-            i.next();
-            tooltip.append(QString(" * %1\n").arg(i.value()));
-        }
-        tray->setToolTip(tray->toolTip().append(tooltip));
-    }*/
 
     // draw battery systray
     drawBattery(batteryLeft);
@@ -567,11 +563,11 @@ void SysTray::loadSettings()
         disableHibernate();
     }*/
     if (!man->CanHibernate()) {
-        qDebug() << "hibernate is not supported";
+        qWarning() << "hibernate is not supported";
         disableHibernate();
     }
     if (!man->CanSuspend()) {
-        qDebug() << "suspend not supported";
+        qWarning() << "suspend not supported";
         disableSuspend();
     }
 
@@ -597,14 +593,14 @@ void SysTray::registerService()
             return;
         }
         if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
-                                                              pm,
-                                                              QDBusConnection::ExportAllSlots)) {
+                                                          pm,
+                                                          QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
             return;
         }
         if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH,
-                                                              pm,
-                                                              QDBusConnection::ExportAllSlots)) {
+                                                          pm,
+                                                          QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
             return;
         }
@@ -633,12 +629,14 @@ void SysTray::registerService()
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-    if (!QDBusConnection::sessionBus().registerObject(POWERKIT_PATH, man,
+    if (!QDBusConnection::sessionBus().registerObject(POWERKIT_PATH,
+                                                      man,
                                                       QDBusConnection::ExportAllContents)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
     }
-    if (!QDBusConnection::sessionBus().registerObject(POWERKIT_FULL_PATH, man,
+    if (!QDBusConnection::sessionBus().registerObject(POWERKIT_FULL_PATH,
+                                                      man,
                                                       QDBusConnection::ExportAllContents)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         return;
@@ -750,7 +748,7 @@ void SysTray::timeout()
 
     int uIdle = xIdle();
 
-    qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit() << pmInhibitors << ssInhibitors;
+    qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit() << man->GetInhibitors();
 
     int autoSuspend = 0;
     int autoSuspendAction = suspendNone;
@@ -856,9 +854,11 @@ void SysTray::handleNewInhibitScreenSaver(const QString &application,
                                           quint32 cookie)
 {
     qDebug() << "new screensaver inhibit" << application << reason << cookie;
+    Q_UNUSED(application)
     Q_UNUSED(reason)
-    ssInhibitors[cookie] = application;
+    Q_UNUSED(cookie)
     checkDevices();
+    getInhibitors();
 }
 
 void SysTray::handleNewInhibitPowerManagement(const QString &application,
@@ -866,27 +866,25 @@ void SysTray::handleNewInhibitPowerManagement(const QString &application,
                                               quint32 cookie)
 {
     qDebug() << "new powermanagement inhibit" << application << reason << cookie;
+    Q_UNUSED(application)
     Q_UNUSED(reason)
-    pmInhibitors[cookie] = application;
+    Q_UNUSED(cookie)
     checkDevices();
+    getInhibitors();
 }
 
 void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
 {
-    if (ssInhibitors.contains(cookie)) {
-        qDebug() << "removed screensaver inhibitor" << ssInhibitors[cookie];
-        ssInhibitors.remove(cookie);
-        checkDevices();
-    }
+    qDebug() << "SS INHIBITOR REMOVED" << cookie;
+    checkDevices();
+    getInhibitors();
 }
 
 void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
 {
-    if (pmInhibitors.contains(cookie)) {
-        qDebug() << "removed powermanagement inhibitor" << pmInhibitors[cookie];
-        pmInhibitors.remove(cookie);
-        checkDevices();
-    }
+    qDebug() << "PM INHIBITOR REMOVED" << cookie;
+    checkDevices();
+    getInhibitors();
 }
 
 // what to do when xscreensaver ends
@@ -915,6 +913,7 @@ void SysTray::showMessage(const QString &title,
 void SysTray::handleConfChanged(const QString &file)
 {
     Q_UNUSED(file)
+    qDebug() << "CONFIG CHANGED" << file;
     loadSettings();
 }
 
@@ -1015,25 +1014,15 @@ void SysTray::switchInternalMonitor(bool toggle)
 // adjust backlight on wheel event (on systray)
 void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 {
-    if (/*!hasBacklight ||*/ !backlightMouseWheel) { return; }
+    if (!backlightMouseWheel) { return; }
     switch (action) {
     case TrayIcon::WheelUp:
-        /*if (hasBacklight) {
-            Common::adjustBacklight(backlightDevice,
-                                    Common::backlightValue(backlightDevice)+BACKLIGHT_MOVE_VALUE);
-        } else {*/
             man->setDisplayBacklight(backlightDevice,
                                      PowerBacklight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
-        //}
         break;
     case TrayIcon::WheelDown:
-        /*if (hasBacklight) {
-            Common::adjustBacklight(backlightDevice,
-                                    Common::backlightValue(backlightDevice)-BACKLIGHT_MOVE_VALUE);
-        } else {*/
             man->setDisplayBacklight(backlightDevice,
                                      PowerBacklight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
-        //}
         break;
     default:;
     }
@@ -1043,39 +1032,47 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 void SysTray::handleDeviceChanged(const QString &path)
 {
     Q_UNUSED(path)
+    qDebug() << "DEVICE CHANGED" << path;
     checkDevices();
-}
-
-// close dialog proc if open
-void SysTray::handleConfigDialogFinished(int result)
-{
-    Q_UNUSED(result)
-    if (configDialog->isOpen()) { configDialog->close(); }
-}
-
-// start dialog proc
-void SysTray::showConfigDialog()
-{
-    if (configDialog->isOpen()) { return; }
-    configDialog->start(QString("%1 --config")
-                        .arg(qApp->applicationFilePath()));
 }
 
 void SysTray::populateMenu()
 {
     qDebug() << "populate menu";
 
+    powerMenu  = new QMenu(NULL);
+#if QT_VERSION >= 0x050000
+    powerMenu->setStyleSheet(QString("QMenu::separator { background-color: rgb(25, 25, 25); }"));
+#endif
+    tray->setContextMenu(powerMenu);
+
     menuFrame = new QFrame(NULL);
 
-    menuFrame->setMaximumWidth(200);
-    //menuFrame->setMaximumHeight(500);
 
+    inhibitorsMenu = new QMenu(powerMenu);
+    inhibitorsMenu->setTitle(tr("Inhibitors"));
+    inhibitorsMenu->setToolTip(tr("List of active applications that inhibits screen and/or power."));
+    inhibitorsGroup = new QActionGroup(this);
+
+
+    QWidget *cpuWidget = new QWidget(menuFrame);
+    QWidget *cpuHeaderWidget = new QWidget(menuFrame);
     QWidget *batteryWidget = new QWidget(menuFrame);
     QWidget *backlightWidget = new QWidget(menuFrame);
 
+    QVBoxLayout *cpuContainerLayout = new QVBoxLayout(cpuWidget);
+    QHBoxLayout *cpuHeaderLayout = new QHBoxLayout(cpuHeaderWidget);
     QVBoxLayout *menuContainerLayout = new QVBoxLayout(menuFrame);
     QHBoxLayout *batteryContainerLayout = new QHBoxLayout(batteryWidget);
     QHBoxLayout *backlightContainerLayout = new QHBoxLayout(backlightWidget);
+
+    cpuWidget->setContentsMargins(0,0,0,0);
+    cpuContainerLayout->setContentsMargins(0,0,0,0);
+    cpuContainerLayout->setSpacing(0);
+
+    cpuHeaderWidget->setContentsMargins(0,0,0,0);
+    cpuHeaderLayout->setContentsMargins(0,0,0,0);
+    cpuHeaderLayout->setSpacing(0);
 
     batteryWidget->setContentsMargins(0,0,0,0);
     batteryContainerLayout->setContentsMargins(0,0,0,0);
@@ -1085,12 +1082,22 @@ void SysTray::populateMenu()
     backlightContainerLayout->setContentsMargins(0,0,0,0);
     backlightContainerLayout->setSpacing(0);
 
+    QLabel *cpuFreqIcon = new QLabel(cpuHeaderWidget);
+    cpuFreqIcon->setPixmap(QIcon::fromTheme(DEFAULT_APP_ICON)
+                           .pixmap(32, 32));
+
+    cpuFreqLabel = new QLabel(cpuHeaderWidget);
+    cpuFreqLabel->setText(tr("N/A"));
+
     labelBatteryIcon = new QLabel(batteryWidget);
+    //labelBatteryIcon->setMinimumSize(32, 32);
+    //labelBatteryIcon->setMaximumSize(32, 32);
     labelBatteryStatus = new QLabel(batteryWidget);
+
 
     QLabel *backlightLabel = new QLabel(menuFrame);
     backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
-                              .pixmap(24, 24));
+                              .pixmap(32, 32));
 
     backlightSlider = new QSlider(menuFrame);
     backlightSlider->setMinimumWidth(100);
@@ -1102,60 +1109,84 @@ void SysTray::populateMenu()
     connect(backlightSlider, SIGNAL(valueChanged(int)),
                 this, SLOT(handleBacklightSlider(int)));
 
-    powerTab = new QTabWidget(menuFrame);
+    cpuContainerLayout->addWidget(cpuHeaderWidget);
+    cpuHeaderLayout->addWidget(cpuFreqIcon);
+    cpuHeaderLayout->addWidget(cpuFreqLabel);
 
-    deviceTree = new QTreeWidget(menuFrame);
-    deviceTree->setStyleSheet("QTreeWidget, QTreeWidget::item,"
-                              "QTreeWidget::item:selected"
-                              "{ /*background:transparent;*/ border:0; }");
-    deviceTree->setHeaderHidden(true);
-    //deviceTree->setHeaderLabels(QStringList() << "1" /*<< "2"*/);
-    //deviceTree->setColumnWidth(0, 50);
-    //deviceTree->setMaximumHeight(30*3);
-    //deviceTree->setMinimumHeight(0);
-    deviceTree->setRootIsDecorated(false);
-    //deviceTree->setMaximumWidth(100);
 
-    inhibitorTree = new QTreeWidget(menuFrame);
-    inhibitorTree->setHeaderHidden(true);
-    //inhibitorTree->setMaximumHeight(30*3);
-    inhibitorTree->setStyleSheet("QTreeWidget {border:0;}");
-    inhibitorTree->setRootIsDecorated(false);
-    inhibitorTree->hide();
+    if (PowerCpu::hasPState()) {
+        pstateMinSlider = new QSlider(menuFrame);
+        pstateMaxSlider = new QSlider(menuFrame);
+        pstateMinSlider->setRange(0, 100);
+        pstateMaxSlider->setRange(0,100);
+        pstateMinSlider->setOrientation(Qt::Horizontal);
+        pstateMaxSlider->setOrientation(Qt::Horizontal);
+        pstateMinSlider->setValue(PowerCpu::getPStateMin());
+        pstateMaxSlider->setValue(PowerCpu::getPStateMax());
 
-    powerTab->addTab(deviceTree, tr("Batteries"));
-    //powerTab->addTab(inhibitorTree, tr("Inhibitors"));
-    powerTab->setMaximumHeight(30*4);
-    powerTab->setTabPosition(QTabWidget::South);
-    //powerTab->hide();
+        pstateTurboCheckbox = new QCheckBox(menuFrame);
+        pstateTurboCheckbox->setText(tr("Turbo Boost"));
+        pstateTurboCheckbox->setCheckable(true);
+        pstateTurboCheckbox->setChecked(PowerCpu::hasPStateTurbo());
+
+        QLabel *pstateMinLabel = new QLabel(menuFrame);
+        QLabel *pstateMaxLabel = new QLabel(menuFrame);
+        pstateMinLabel->setText(tr("Min"));
+        pstateMaxLabel->setText(tr("Max"));
+
+        QWidget *pstateMinWidget = new QWidget(menuFrame);
+        QWidget *pstateMaxWidget = new QWidget(menuFrame);
+
+        QHBoxLayout *pstateMinLayout = new QHBoxLayout(pstateMinWidget);
+        QHBoxLayout *pstateMaxLayout = new QHBoxLayout(pstateMaxWidget);
+
+        pstateMinLayout->addWidget(pstateMinLabel);
+        pstateMinLayout->addWidget(pstateMinSlider);
+
+        pstateMaxLayout->addWidget(pstateMaxLabel);
+        pstateMaxLayout->addWidget(pstateMaxSlider);
+
+        cpuContainerLayout->addWidget(pstateMinWidget);
+        cpuContainerLayout->addWidget(pstateMaxWidget);
+        cpuContainerLayout->addWidget(pstateTurboCheckbox);
+    }
+
+
 
     batteryContainerLayout->addWidget(labelBatteryIcon);
-    batteryContainerLayout->addStretch();
     batteryContainerLayout->addWidget(labelBatteryStatus);
     backlightContainerLayout->addWidget(backlightLabel);
     backlightContainerLayout->addWidget(backlightSlider);
+
     menuContainerLayout->addWidget(batteryWidget);
-    //menuContainerLayout->addWidget(deviceTree);
-    //menuContainerLayout->addWidget(inhibitorTree);
-    menuContainerLayout->addWidget(powerTab);
+    menuContainerLayout->addSpacing(2);
+    menuContainerLayout->addSpacing(2);
     menuContainerLayout->addWidget(backlightWidget);
+    menuContainerLayout->addSpacing(2);
+    menuContainerLayout->addWidget(cpuWidget);
+
 
     menuHeader = new QWidgetAction(NULL);
     menuHeader->setDefaultWidget(menuFrame);
 
     powerMenu->addAction(menuHeader);
+    powerMenu->addSeparator();
 
-    /*actRestart = new QAction(this);
+    actRestart = new QAction(this);
     actSuspend = new QAction(this);
     actPowerOff = new QAction(this);
     actSettings = new QAction(this);
     actHibernate = new QAction(this);
+    actAbout = new QAction(this);
 
     actRestart->setText(tr("Restart"));
     actSuspend->setText(tr("Suspend"));
     actPowerOff->setText(tr("Shutdown"));
     actSettings->setText(tr("Settings"));
     actHibernate->setText(tr("Hibernate"));
+    actAbout->setText(tr("About"));
+
+    connect(actSettings, SIGNAL(triggered(bool)), this, SLOT(openSettings()));
 
     actRestart->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
     actSuspend->setIcon(QIcon::fromTheme(DEFAULT_SUSPEND_ICON));
@@ -1163,6 +1194,10 @@ void SysTray::populateMenu()
     actSettings->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
     actHibernate->setIcon(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON));
 
+    inhibitorsMenu->setIcon(QIcon::fromTheme(DEFAULT_INHIBITOR_ICON));
+    actAbout->setIcon(QIcon::fromTheme(DEFAULT_HELP_ICON));
+
+    powerMenu->addMenu(inhibitorsMenu);
     powerMenu->addSeparator();
     powerMenu->addAction(actSuspend);
     powerMenu->addAction(actHibernate);
@@ -1170,7 +1205,9 @@ void SysTray::populateMenu()
     powerMenu->addAction(actRestart);
     powerMenu->addAction(actPowerOff);
     powerMenu->addSeparator();
-    powerMenu->addAction(actSettings);*/
+    powerMenu->addAction(actSettings);
+    powerMenu->addSeparator();
+    powerMenu->addAction(actAbout);
 
     updateBacklight(QString());
     updateMenu();
@@ -1178,7 +1215,7 @@ void SysTray::populateMenu()
 
 void SysTray::updateMenu()
 {
-    qDebug() << "update menu";
+    //qDebug() << "update menu";
     double left = man->BatteryLeft();
     if (left<0) { left = 0; }
     if (left>100) { left = 100; }
@@ -1186,9 +1223,9 @@ void SysTray::updateMenu()
     if (man->HasBattery()) {
         QString leftString = QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
                                 .toUTC().toString("hh:mm");
-        labelBatteryStatus->setText(QString("<h2 style=\"font-weight:normal;\">%1% (%2)</h2>").arg(left).arg(leftString));
+        labelBatteryStatus->setText(QString("<h2 style=\"font-weight:normal;margin-left:5;\">%1% (%2)</h2>").arg(left).arg(leftString));
     } else {
-        labelBatteryStatus->setText(QString("<h2 style=\"font-weight:normal;\">%1 (00:00)</h2>").arg(tr("AC")));
+        labelBatteryStatus->setText(QString("<h2 style=\"font-weight:normal;margin-left:5;\">%1 (00:00)</h2>").arg(tr("AC")));
     }
 
     QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
@@ -1211,6 +1248,19 @@ void SysTray::updateMenu()
         }
     }
     labelBatteryIcon->setPixmap(icon.pixmap(QSize(32, 32)));
+
+    inhibitorsMenu->setEnabled(man->GetInhibitors().size()>0);
+
+    /*qDebug() << "has pstate?" << PowerCpu::hasPState();
+    qDebug() << "pstate turbo?" << PowerCpu::hasPStateTurbo();
+    qDebug() << "pstate min?" << PowerCpu::getPStateMin();
+    qDebug() << "pstate max?" << PowerCpu::getPStateMax();
+    qDebug() << "cpu freq?" << PowerCpu::getFrequencies();
+    qDebug() << "cpu freq avail?" << PowerCpu::getAvailableFrequency();
+    qDebug() << "cpu total?" << PowerCpu::getTotal();
+    qDebug() << "cpu gov?" << PowerCpu::getGovernors();*/
+
+    getCpuFreq();
 }
 
 void SysTray::updateBacklight(QString file)
@@ -1232,117 +1282,78 @@ void SysTray::handleBacklightSlider(int value)
     }
 }
 
-void SysTray::updatePowerDevices()
-{
-    QMapIterator<QString, Device*> i(man->getDevices());
-    while (i.hasNext()) {
-        i.next();
-        //qDebug() << i.value()->name << i.value()->model << i.value()->type  << i.value()->isPresent << i.value()->objectName() << i.value()->percentage;
-        QString uid = i.value()->path;
-        if (!i.value()->isPresent) {
-            if (powerDeviceExists(uid)) { powerDeviceRemove(uid); }
-            continue;
-        }
-        if (!powerDeviceExists(uid)) {
-            qDebug() << "NEW POWER DEVICE" << i.value()->name << i.value()->model << i.value()->type;
-            QTreeWidgetItem *item = new QTreeWidgetItem(deviceTree);
-            item->setToolTip(0, i.value()->model.isEmpty()?i.value()->name:i.value()->model);
-            item->setData(0, DEVICE_UUID, uid);
-            item->setFlags(Qt::ItemIsEnabled);
-            QIcon itemIcon;
-            switch(i.value()->type) {
-            case Device::DeviceKeyboard:
-                itemIcon = QIcon::fromTheme(DEFAULT_KEYBOARD_ICON);
-                break;
-            case Device::DeviceMouse:
-                itemIcon = QIcon::fromTheme(DEFAULT_MOUSE_ICON);
-                break;
-            default:
-                itemIcon = QIcon::fromTheme(DEFAULT_BATTERY_ICON);
-            }
-            item->setIcon(0, itemIcon);
-            devicesProg[uid] = new QProgressBar(menuFrame);
-            devicesProg[uid]->setMinimum(0);
-            devicesProg[uid]->setMaximum(100);
-            devicesProg[uid]->setValue((int)i.value()->percentage);
-            deviceTree->setItemWidget(item, 0, devicesProg[uid]);
-        } else {
-            qDebug() << "UPDATE POWER DEVICE PERCENTAGE" << i.value()->percentage;
-            devicesProg[i.value()->path]->setValue((int)i.value()->percentage);
-        }
-    }
-}
-
-bool SysTray::powerDeviceExists(QString uid)
-{
-    qDebug() << "CONFIG DEVICE EXISTS" << uid;
-    for (int i=0;i<deviceTree->topLevelItemCount();++i) {
-        QTreeWidgetItem *item = deviceTree->topLevelItem(i);
-        if (!item) { continue; }
-        if (item->data(0, DEVICE_UUID) == uid) { return true; }
-    }
-    return false;
-}
-
-void SysTray::powerDeviceRemove(QString uid)
-{
-    qDebug() << "CONFIG DEVICE REMOVE" << uid;
-    for (int i=0;i<deviceTree->topLevelItemCount();++i) {
-        QTreeWidgetItem *item = deviceTree->topLevelItem(i);
-        if (!item) { continue; }
-        if (item->data(0, DEVICE_UUID) == uid) {
-            delete deviceTree->takeTopLevelItem(i);
-        }
-    }
-    if (devicesProg.contains(uid)) {
-        devicesProg[uid]->deleteLater();
-        devicesProg.remove(uid);
-    }
-}
-
 void SysTray::getInhibitors()
 {
-    inhibitorTree->clear();
-    QStringList ssList = man->ScreenSaverInhibitors();
-    QStringList pmList = man->PowerManagementInhibitors();
-    for (int i=0;i<ssList.size();++i) {
-        QString inhibitor = ssList.at(i);
-        if (inhibitor.isEmpty()) { continue; }
-        QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
-        item->setText(0, inhibitor);
-        item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
+    qDebug() << "GET INHIBITORS" << man->GetInhibitors();
+
+    inhibitorsMenu->setEnabled(man->GetInhibitors().size()>0);
+    if (inhibitorsMenu->actions().size()>0) {
+        inhibitorsMenu->clear();
     }
-    for (int i=0;i<pmList.size();++i) {
-        QString inhibitor = pmList.at(i);
-        if (inhibitor.isEmpty()) { continue; }
-        QTreeWidgetItem *item = new QTreeWidgetItem(inhibitorTree);
-        item->setText(0, inhibitor);
-        item->setFlags(Qt::ItemIsEnabled);
-        item->setIcon(0, QIcon::fromTheme(DEFAULT_TRAY_ICON));
+
+    QMapIterator<quint32, QString> i(man->GetInhibitors());
+    while (i.hasNext()) {
+        i.next();
+        inhibitorsGroup->actions();
+        bool hasAction = false;
+        for (int y=0;y<inhibitorsGroup->actions().size();++y) {
+            QAction *action = inhibitorsGroup->actions().at(y);
+            if (!action) { continue; }
+            if (action->data().toFloat() == i.key()) {
+                qDebug() << "FOUND INHIBITOR!" << i.key() << i.value();
+                hasAction = true;
+                continue;
+            }
+        }
+        if (hasAction) { continue; }
+        qDebug() << "ADD INHIBIT ACT" << i.key() << i.value();
+        QAction *action = new QAction(inhibitorsGroup);
+        action->setText(i.value());
+        action->setData(i.key());
+        action->setIcon(QIcon::fromTheme(DEFAULT_APP_ICON));
+        inhibitorsGroup->addAction(action);
     }
-    if (inhibitorTree->topLevelItemCount()==0) {
-        if (!inhibitorTree->isHidden()) {
-            inhibitorTree->hide();
-        }
-        int index = powerTab->indexOf(inhibitorTree);
-        if (index>=0) {
-            powerTab->removeTab(index);
-        }
-        if (powerTab->count()==0 && !powerTab->isHidden()) {
-            powerTab->hide();
-        }
-    } else {
-        if (inhibitorTree->isHidden()) {
-            inhibitorTree->show();
-        }
-        if (powerTab->count()>0 && powerTab->isHidden()) {
-            powerTab->show();
-        }
-        if (powerTab->indexOf(inhibitorTree)==-1) {
-            powerTab->addTab(inhibitorTree, tr("Inhibitors"));
+    for (int y=0;y<inhibitorsGroup->actions().size();++y) {
+        QAction *action = inhibitorsGroup->actions().at(y);
+        if (!action) { continue; }
+        if (!man->GetInhibitors().contains(action->data().toFloat())) {
+            qDebug() << "REMOVE ACTION, INHIBIT IS GONE";// << i.key() << i.value();
+            //inhibitorsGroup->removeAction(action);
+            action->deleteLater();
         }
     }
+
+    if (inhibitorsMenu->isEnabled()) {
+        inhibitorsMenu->addActions(inhibitorsGroup->actions());
+    }
+
+    //updateMenu();
+}
+
+void SysTray::openSettings()
+{
+    QProcess proc;
+    proc.startDetached(QString("%1 --config").arg(qApp->applicationFilePath()));
+}
+
+void SysTray::getCpuFreq()
+{
+    QStringList freqs = PowerCpu::getFrequencies();
+    double currentCpuFreq = 0.0;
+    for (int i=0;i<freqs.size();++i) {
+        double freq = freqs.at(i).toDouble();
+        if (freq>currentCpuFreq) { currentCpuFreq = freq; }
+    }
+
+    QString temp;
+    if (PowerCpu::hasCoreTemp()) {
+        double coretemp = PowerCpu::getCoreTemp();
+        if (coretemp>0) {
+            temp = QString(" (%1&#8451;)")
+                   .arg(QString::number(coretemp/1000, 'f', 0));
+        }
+    }
+    cpuFreqLabel->setText(QString("<h2 style=\"font-weight:normal;margin-left:5;\">%1 GHz%2</h2>").arg(QString::number(currentCpuFreq/1000000, 'f', 2)).arg(temp));
 }
 
 // catch wheel events

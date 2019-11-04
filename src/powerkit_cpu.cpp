@@ -9,6 +9,7 @@
 #include "powerkit_cpu.h"
 #include <QFile>
 #include <QTextStream>
+#include <QDebug>
 
 int PowerCpu::getTotal()
 {
@@ -287,4 +288,34 @@ bool PowerCpu::setPStateMin(int minState)
         return true;
     }
     return false;
+}
+
+bool PowerCpu::hasCoreTemp()
+{
+    return QFile::exists(QString(LINUX_CORETEMP));
+}
+
+int PowerCpu::getCoreTemp()
+{
+    double temp = 0.0;
+    if (!hasCoreTemp()) { return temp; }
+    int count = 1;
+    while (QFile::exists(QString("%1/%2")
+                         .arg(LINUX_CORETEMP)
+                         .arg(QString(LINUX_CORETEMP_INPUT)
+                              .arg(count))))
+    {
+        QFile file(QString("%1/%2")
+                   .arg(LINUX_CORETEMP)
+                   .arg(QString(LINUX_CORETEMP_INPUT)
+                        .arg(count)));
+        if (file.open(QIODevice::ReadOnly)) {
+            double ctemp = file.readAll().trimmed().toDouble();
+            if (ctemp>temp) { temp = ctemp; }
+            qDebug() << "CORE TEMP" << count << ctemp;
+            file.close();
+        }
+        count++;
+    }
+    return temp;
 }

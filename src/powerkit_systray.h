@@ -30,9 +30,7 @@
 #include <QFrame>
 #include <QWidgetAction>
 #include <QSlider>
-#include <QTreeWidget>
-#include <QProgressBar>
-#include <QTabWidget>
+#include <QCheckBox>
 
 //#include "common.h"
 #include "powerkit_freedesktop_pm.h"
@@ -56,8 +54,8 @@
 
 #define XSCREENSAVER_RUN "xscreensaver -no-splash"
 
-#define DEVICE_UUID Qt::UserRole+1
-#define DEVICE_TYPE Qt::UserRole+2
+//#define DEVICE_UUID Qt::UserRole+1
+//#define DEVICE_TYPE Qt::UserRole+2
 #define MAX_WIDTH 150
 
 class TrayIcon : public QSystemTrayIcon
@@ -113,8 +111,6 @@ private:
     int autoSuspendACAction;
     QProcess *xscreensaver;
     bool startupScreensaver;
-    QMap<quint32,QString> ssInhibitors;
-    QMap<quint32,QString> pmInhibitors;
     QString internalMonitor;
     QFileSystemWatcher *watcher;
     bool lidXrandr;
@@ -127,7 +123,6 @@ private:
     int backlightACValue;
     bool backlightBatteryDisableIfLower;
     bool backlightACDisableIfHigher;
-    QProcess *configDialog;
     bool warnOnLowBattery;
     bool warnOnVeryLowBattery;
     bool notifyOnBattery;
@@ -136,23 +131,27 @@ private:
     bool ignoreKernelResume;
 
     QMenu *powerMenu;
+    QMenu *inhibitorsMenu;
+    QActionGroup *inhibitorsGroup;
     QAction *actSettings;
     QAction *actPowerOff;
     QAction *actRestart;
     QAction *actSuspend;
     QAction *actHibernate;
+    QAction *actAbout;
+    QAction *actQuit;
     QLabel *labelBatteryStatus;
     QLabel *labelBatteryIcon;
-    //QLabel *labelBatteryLeft;
     QFrame *menuFrame;
     QWidgetAction *menuHeader;
     QSlider *backlightSlider;
     QLabel *backlightLabel;
     QFileSystemWatcher *backlightWatcher;
-    QTreeWidget *deviceTree;
-    QMap<QString,QProgressBar*> devicesProg;
-    QTreeWidget *inhibitorTree;
-    QTabWidget *powerTab;
+
+    QLabel *cpuFreqLabel;
+    QSlider *pstateMinSlider;
+    QSlider *pstateMaxSlider;
+    QCheckBox *pstateTurboCheckbox;
 
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
@@ -194,16 +193,13 @@ private slots:
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
     void handleDeviceChanged(const QString &path);
-    void handleConfigDialogFinished(int result);
-    void showConfigDialog();
     void populateMenu();
     void updateMenu();
     void updateBacklight(QString file);
     void handleBacklightSlider(int value);
-    void updatePowerDevices();
-    bool powerDeviceExists(QString uid);
-    void powerDeviceRemove(QString uid);
     void getInhibitors();
+    void openSettings();
+    void getCpuFreq();
 };
 
 #endif // SYSTRAY_H

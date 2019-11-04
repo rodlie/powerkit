@@ -27,6 +27,12 @@
 #define LINUX_CPU_PSTATE_MAX_PERF "max_perf_pct"
 #define LINUX_CPU_PSTATE_MIN_PERF "min_perf_pct"
 
+#define LINUX_CORETEMP "/sys/class/hwmon/hwmon0"
+#define LINUX_CORETEMP_CRIT "temp%1_crit"
+#define LINUX_CORETEMP_INPUT "temp%1_input"
+#define LINUX_CORETEMP_LABEL "temp%1_label"
+#define LINUX_CORETEMP_MAX "temp%1_max"
+
 class PowerCpu
 {
 public:
@@ -53,6 +59,9 @@ public:
     static int getPStateMin();
     static bool setPStateMax(int maxState);
     static bool setPStateMin(int minState);
+
+    static bool hasCoreTemp();
+    static int getCoreTemp();
 };
 
 #endif // POWER_CPU_H

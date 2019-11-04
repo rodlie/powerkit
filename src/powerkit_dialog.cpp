@@ -17,7 +17,8 @@
 
 #define MAX_WIDTH 150
 
-Dialog::Dialog(QWidget *parent)
+Dialog::Dialog(QWidget *parent,
+               bool quitOnClose)
     : QDialog(parent)
     , dbus(nullptr)
     , lidActionBattery(nullptr)
@@ -50,8 +51,15 @@ Dialog::Dialog(QWidget *parent)
     , resumeLockScreen(nullptr)
     , bypassKernel(nullptr)
 {
+
+#if QT_VERSION >= 0x050000
+    qApp->setStyle("Fusion");
+#else
+    qApp->setStyle("Clearlooks");
+#endif
+
     // setup dialog
-    setAttribute(Qt::WA_QuitOnClose, true);
+    if (quitOnClose) { setAttribute(Qt::WA_QuitOnClose, true); }
     setWindowTitle(tr("Power Manager"));
     setMinimumSize(QSize(390, 310));
 
