@@ -12,6 +12,7 @@
 #include <QBuffer>
 #include <QProcess>
 #include <QFile>
+#include <QTimer>
 
 #include <sys/un.h>
 #include <sys/ioctl.h>
@@ -39,8 +40,16 @@ enum udev_monitor_netlink_group {
 PowerKitUDEV::PowerKitUDEV(QObject *parent) : QObject(parent)
   , socket_notifier(nullptr)
   , netlink_socket(-1)
+  , lidTimer(nullptr)
 {
     qDebug("started udev");
+
+
+    lidTimer = new QTimer(this);
+    connect(lidTimer, SIGNAL(timeout()),
+            this, SLOT(parseLidState()));
+    lidTimer->start(1000);
+
     if (!init()) {
         qWarning("failed to init!");
     }
@@ -109,6 +118,9 @@ bool PowerKitUDEV::init()
     socket_notifier->setEnabled(true);
 
 
+    lidState = getLidState();
+    emit lidStateChanged(lidState);
+
     QStringList devices;
     devices << getDevices(UDEV_POWER_SUPPLY_CMD) << getDevices(UDEV_BACKLIGHT_CMD);
     for (int i=0;i<devices.size();++i) {
@@ -158,6 +170,20 @@ QStringList PowerKitUDEV::getDeviceInfo(const QString &path)
     return result;
 }
 
+const QString PowerKitUDEV::getLidState()
+{
+    QString state;
+    if (QFile::exists(ACPI_LID_STATE)) {
+        QFile file(ACPI_LID_STATE);
+        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+            QString txt = file.readAll().replace("state:", "").trimmed();
+            state = txt;
+            file.close();
+        }
+    }
+    return state;
+}
+
 void PowerKitUDEV::parseDeviceInfo()
 {
     qDebug("parse device info");
@@ -178,4 +204,14 @@ void PowerKitUDEV::parseDeviceInfo()
 
     emit deviceInfo(result);
     qDebug() << result;
+}
+
+void PowerKitUDEV::parseLidState()
+{
+    QString state = getLidState();
+    if (state != lidState) {
+        qDebug() << "lid state changed" << state;
+        lidState = state;
+        emit lidStateChanged(lidState);
+    }
 }
