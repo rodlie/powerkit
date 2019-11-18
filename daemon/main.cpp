@@ -9,10 +9,12 @@
 #include <QCoreApplication>
 
 #include "powerkitd.h"
+#include "powerkit_udev.h"
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     PowerKitD powerkitd;
+    PowerKitUDEV powerkit_udev;
     return a.exec();
 }

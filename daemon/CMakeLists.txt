@@ -43,7 +43,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 # exe
-add_executable(${PROJECT_NAME}d main.cpp ${PROJECT_NAME}d.cpp)
+add_executable(${PROJECT_NAME}d main.cpp ${PROJECT_NAME}d.cpp powerkit_udev.cpp)
 add_executable(${PROJECT_NAME}-test test.cpp)
 
 # link
