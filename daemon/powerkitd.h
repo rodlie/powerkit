@@ -18,6 +18,7 @@
 #define ETC_GROUP "/etc/group"
 #define POWERKITD_HOST "powerkitd"
 #define POWERKITD_GROUP "power"
+#define POWER_STATE "/sys/class/power/state"
 
 class PowerKitD : public QObject
 {
@@ -55,6 +56,7 @@ private slots:
     void readNewConnection();
 
 public slots:
+
 };
 
 #endif // POWERKITD_H
