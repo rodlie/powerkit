@@ -10,6 +10,8 @@
 
 #include <QDebug>
 #include <QBuffer>
+#include <QProcess>
+#include <QFile>
 
 #include <sys/un.h>
 #include <sys/ioctl.h>
@@ -106,7 +108,54 @@ bool PowerKitUDEV::init()
             this, SLOT(parseDeviceInfo()));
     socket_notifier->setEnabled(true);
 
+
+    QStringList devices;
+    devices << getDevices(UDEV_POWER_SUPPLY_CMD) << getDevices(UDEV_BACKLIGHT_CMD);
+    for (int i=0;i<devices.size();++i) {
+        emit deviceInfo(getDeviceInfo(devices.at(i)));
+    }
+
     return true;
+}
+
+QStringList PowerKitUDEV::getDevices(const QString &cmd)
+{
+    qDebug() << "get devices" << cmd;
+    QStringList result;
+    QProcess proc;
+    proc.start(cmd);
+    proc.waitForFinished();
+    QString output = proc.readAllStandardOutput();
+    QStringList devices = output.split("\n", QString::SkipEmptyParts);
+    for (int i=0;i<devices.size();++i) {
+        result.append(QString(devices.at(i)).trimmed());
+    }
+    return result;
+}
+
+QStringList PowerKitUDEV::getDeviceInfo(const QString &path)
+{
+    qDebug() << "get device info" << path;
+    QStringList result;
+    if (!QFile::exists(path)) { return result; }
+
+    QString upath = path;
+    upath = upath.replace("/sys", "");
+    result.append(QString("add@%1").arg(upath));
+    result.append("ACTION=add");
+    result.append(QString("DEVPATH=%1").arg(upath));
+
+    QFile file(QString("%1/uevent").arg(path));
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QString txt = file.readAll();
+        QStringList lines = txt.split("\n", QString::SkipEmptyParts);
+        for (int i=0;i<lines.size();++i) {
+            result.append(QString(lines.at(i)).trimmed());
+        }
+        file.close();
+    }
+    qDebug() << result;
+    return result;
 }
 
 void PowerKitUDEV::parseDeviceInfo()

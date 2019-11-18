@@ -12,6 +12,12 @@
 #include <QObject>
 #include <QByteArray>
 #include <QSocketNotifier>
+#include <QStringList>
+
+#define UDEV_POWER_SUPPLY_CMD "udevadm trigger --verbose --dry-run --type=devices --subsystem-match=power_supply"
+#define UDEV_BACKLIGHT_CMD "udevadm trigger --verbose --dry-run --type=devices --subsystem-match=backlight"
+
+
 
 class PowerKitUDEV : public QObject
 {
@@ -25,6 +31,8 @@ private:
     QSocketNotifier *socket_notifier;
     int netlink_socket;
     bool init();
+    QStringList getDevices(const QString &cmd);
+    QStringList getDeviceInfo(const QString &path);
 
 signals:
     void deviceInfo(const QStringList &info);
