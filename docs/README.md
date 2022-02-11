@@ -75,7 +75,7 @@ You can override the icon theme in the *`~/.config/powerkit/powerkit.conf`* file
 
 ## Slackware-only?
 
-No, powerkit should work on any Linux system. However, powerkit is developed on/for Slackware and sees minimal testing on other systems (feedback and/or bugs reports for other systems are welcome).
+No, powerkit should work on any Linux system. However, powerkit is developed on/for Slackware and sees minimal testing on other systems (feedback and/or bug reports for other systems are welcome).
 
 ## How does an application inhibit the screen saver?
 
@@ -104,7 +104,6 @@ export XDG_CURRENT_DESKTOP=xfce
 
 powerkit requires the following dependencies:
 
- * *[CMake](https://cmake.org)* 3.0+
  * *[X11](https://www.x.org)*
  * *[Xss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)*
  * *[Xrandr](https://www.x.org/wiki/libraries/libxrandr/)*
@@ -199,7 +198,7 @@ See **https://github.com/rodlie/powerkit/issues**.
 # COPYRIGHT
 
 ```
-Copyright (c) 2018, Ole-André Rodlie <ole.andre.rodlie@gmail.com>
+Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
