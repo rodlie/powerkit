@@ -20,6 +20,8 @@ const QString PowerBacklight::getDevice()
         QString foundDir = it.next();
         if (foundDir.startsWith(QString("%1/radeon").arg(path))) {
             return foundDir;
+        } else if (foundDir.startsWith(QString("%1/amdgpu").arg(path))) {
+            return foundDir;
         } else if (foundDir.startsWith(QString("%1/intel").arg(path))) {
             return foundDir;
         } else if (foundDir.startsWith(QString("%1/acpi").arg(path))) {
