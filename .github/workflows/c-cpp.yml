@@ -5,12 +5,15 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Dependencies
-      run: sudo apt-get install tree cmake qt4-dev-tools qtbase5-dev libxss-dev libxrandr-dev
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo add-apt-repository -y ppa:ubuntuhandbook1/ppa
+        sudo apt-get update
+        sudo apt-get install -y tree cmake qt4-dev-tools qtbase5-dev libxss-dev libxrandr-dev
     - name: Build
       run: |
         export CWD=`pwd`
