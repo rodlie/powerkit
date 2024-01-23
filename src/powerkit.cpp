@@ -488,13 +488,13 @@ bool PowerKit::registerSuspendLock()
     if (suspendLock) { return false; }
     qDebug() << "register suspend lock";
     QDBusReply<QDBusUnixFileDescriptor> reply;
-    if (HasLogind() && logind->isValid()) {
-        reply = ckit->call("Inhibit",
-                           "sleep",
-                           "powerkit",
-                           "Lock screen etc",
-                           "delay");
-    } else if (HasConsoleKit() && ckit->isValid()) {
+    if (HasLogind() && logind && logind->isValid()) {
+        reply = logind->call("Inhibit",
+                             "sleep",
+                             "powerkit",
+                             "Lock screen etc",
+                             "delay");
+    } else if (HasConsoleKit() && ckit && ckit->isValid()) {
         reply = ckit->call("Inhibit",
                            "sleep",
                            "powerkit",
