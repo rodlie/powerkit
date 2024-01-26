@@ -23,10 +23,11 @@ void PowerSettings::setValue(const QString &type, const QVariant &value)
     settings.sync();
 }
 
-const QVariant PowerSettings::getValue(const QString &type)
+const QVariant PowerSettings::getValue(const QString &type,
+                                       const QVariant &fallback)
 {
     QSettings settings(PK, PK);
-    return settings.value(type);
+    return settings.value(type, fallback);
 }
 
 bool PowerSettings::isValid(const QString &type)

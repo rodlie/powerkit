@@ -16,7 +16,8 @@ class PowerSettings
 {
 public:
     static void setValue(const QString &type, const QVariant &value);
-    static const QVariant getValue(const QString &type);
+    static const QVariant getValue(const QString &type,
+                                   const QVariant &fallback = QVariant());
     static bool isValid(const QString &type);
     static void saveDefault();
     static const QString getConf();
