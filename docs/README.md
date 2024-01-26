@@ -8,7 +8,7 @@ powerkit *`[--config]`*
 
 # DESCRIPTION
 
-powerkit is an desktop independent full featured power manager for Linux, originally created for *[Slackware](http://www.slackware.com/)* for use with alternative X11 desktop environments and window managers, like  *[Fluxbox](http://fluxbox.org/)*, *[Blackbox](https://en.wikipedia.org/wiki/Blackbox)*, *[FVWM](http://www.fvwm.org/)*, *[WindowMaker](https://www.windowmaker.org/)*, *[Openbox](http://openbox.org/wiki/Main_Page)*, *[Lumina](https://lumina-desktop.org/)*, *[Draco](https://dracolinux.org/)* and others.
+powerkit is an desktop independent full featured power manager for Linux, originally created for *[Slackware](http://www.slackware.com/)* for use with alternative X11 desktop environments and window managers.
 
  * Implements *[org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html)* service
  * Implements *[org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/)* service
@@ -16,7 +16,7 @@ powerkit is an desktop independent full featured power manager for Linux, origin
  * Automatically lock screen on idle
  * Automatically hibernate or shutdown on critical battery
  * Inhibit actions if external monitor(s) is connected
- * Screen locking support (Through XScreenSaver)
+ * Screen locking support (using XScreenSaver)
  * Screen backlight support
  * Screen hotplug support
  * RTC wake alarm support
@@ -25,7 +25,7 @@ powerkit is an desktop independent full featured power manager for Linux, origin
 
 # USAGE
 
-powerkit should be started during the X11 user session. An *XDG autostart* file is available, else consult the documentation for your desktop environment or window manager for launching startup applications.
+powerkit should be started during the X11 user session. Consult the documentation for your desktop environment or window manager for launching startup applications.
 
  * In *Fluxbox* add *``powerkit &``* to the *``~/.fluxbox/startup``* file
  * In *Openbox* add *``powerkit &``* to the *``~/.config/openbox/autostart``* file.
@@ -73,15 +73,9 @@ You can override the icon theme in the *`~/.config/powerkit/powerkit.conf`* file
 
 # FAQ
 
-## Slackware-only?
-
-No, powerkit should work on any Linux system. However, powerkit is developed on/for Slackware and sees minimal testing on other systems (feedback and/or bug reports for other systems are welcome).
-
 ## How does an application inhibit the screen saver?
 
 The preferred way to inhibit the screen saver from an application is to use the *org.freedesktop.ScreenSaver* specification. Any application that uses *org.freedesktop.ScreenSaver* will work with powerkit.
-
-*Note that powerkit also includes ``SimulateUserActivity`` for backwards compatibility*.
 
 Popular applications that uses this feature is Mozilla Firefox, Google Chrome, VideoLAN VLC and many more.
 
@@ -93,7 +87,7 @@ Common use cases are audio playback, downloading and more.
 
 ## Google Chrome/Chromium does not inhibit the screen saver!?
 
-*[Chrome](https://chrome.google.com)* does not use *org.freedesktop.ScreenSaver* until it detects a supported desktop environment *(KDE/Xfce)*. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a desktop environment:
+*[Chrome](https://chrome.google.com)* does not use *org.freedesktop.ScreenSaver* or *org.freedesktop.PowerManagement* until it detects a supported desktop environment *(KDE/Xfce)*. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a desktop environment:
 
 ```
 export DESKTOP_SESSION=xfce
@@ -107,14 +101,11 @@ powerkit requires the following dependencies:
  * *[X11](https://www.x.org)*
  * *[Xss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)*
  * *[Xrandr](https://www.x.org/wiki/libraries/libxrandr/)*
- * *[QtDBus](https://qt.io)* 4.8+
- * *[QtGui](https://qt.io)* 4.8+
- * *[QtCore](https://qt.io)* 4.8+
+ * *[Qt5](https://qt.io)*
  * *[D-Bus](https://www.freedesktop.org/wiki/Software/dbus/)*
- * *[ConsoleKit](https://www.freedesktop.org/wiki/Software/ConsoleKit/)* or *[logind](https://www.freedesktop.org/wiki/Software/systemd/logind/)* *(will work without, but with limited functions)*
- * *[UPower](https://upower.freedesktop.org/)* 0.9.23+
+ * *[logind](https://www.freedesktop.org/wiki/Software/systemd/logind/)*
+ * *[UPower](https://upower.freedesktop.org/)*
  * *[XScreenSaver](https://www.jwz.org/xscreensaver/)*
- * *[adwaita-icon-theme](https://github.com/GNOME/adwaita-icon-theme)* *(or similar)*
 
 # BUILD
 
@@ -122,7 +113,6 @@ First make sure you have the required dependencies installed, then review the mo
 
  * *``CMAKE_INSTALL_PREFIX=</usr/local>``* - Install target. *``/usr``* recommended.
  * *``CMAKE_BUILD_TYPE=<Release/Debug>``* - Build type. *``Release``* recommended
- * *``USE_QT5=<ON/OFF>``* - Build against Qt5 (*``OFF``* if you want use Qt4).
  * *``SERVICE_USER=<root>``* - powerkitd owner, needs write access to /sys. Usually the *``root``* user.
  * *``SERVICE_GROUP=<power>``* - Group that can access the powerkitd service, this should be any desktop user that can change screen brightness, CPU performance and RTC wake alarm. Usually the *``power``* group.
 
@@ -198,7 +188,7 @@ See **https://github.com/rodlie/powerkit/issues**.
 # COPYRIGHT
 
 ```
-Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com>
+Copyright (c) Ole-André Rodlie <https://github.com/rodlie>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
