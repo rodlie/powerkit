@@ -1,11 +1,12 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
 */
 
+#include "InhibitAdaptor.h"
 #include "powerkit_systray.h"
 #include "powerkit_def.h"
 #include "powerkit_theme.h"
@@ -84,11 +85,8 @@ SysTray::SysTray(QObject *parent)
     , pstateMaxSlider(nullptr)
     , pstateTurboCheckbox(nullptr)
 {
-#if QT_VERSION >= 0x050000
+    // TODO: we should not force theme
     qApp->setStyle("Fusion");
-#else
-    qApp->setStyle("Clearlooks");
-#endif
     // set (dark) colors
     QPalette palette;
     palette.setColor(QPalette::Window, QColor(53,53,53));
@@ -239,7 +237,10 @@ SysTray::SysTray(QObject *parent)
 
     // start xscreensaver
     if (desktopSS) {
-        xscreensaver->start(XSCREENSAVER_RUN);
+        QString cmd = PowerSettings::getValue("screensaver_run_cmd",
+                                              XSCREENSAVER_RUN).toString();
+        QStringList args = cmd.trimmed().split(" ");
+        xscreensaver->start((args.count() > 0 ? args.takeFirst() : cmd), args);
     }
 
     // setup backlight
@@ -587,62 +588,80 @@ void SysTray::registerService()
         qWarning("Cannot connect to D-Bus.");
         return;
     }
+    hasService = true;
+
+    bool hasDesktopPM = true;
     if (desktopPM) {
         if (!QDBusConnection::sessionBus().registerService(PM_SERVICE)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
-            return;
+            hasDesktopPM = false;
         }
         if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
                                                           pm,
                                                           QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
-            return;
+            hasDesktopPM = false;
         }
         if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH,
                                                           pm,
                                                           QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
-            return;
+            hasDesktopPM = false;
         }
-        qDebug() << "Enabled org.freedesktop.PowerManagement";
+
+        new InhibitAdaptor(pm);
+        if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH_INHIBIT, pm)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            hasDesktopPM = false;
+        }
+        if (!QDBusConnection::sessionBus().registerService(PM_SERVICE_INHIBIT)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            hasDesktopPM = false;
+        }
+        qWarning() << "Enabled org.freedesktop.PowerManagement" << hasDesktopPM;
     }
+
+    bool hasDesktopSS = true;
     if (desktopSS) {
         if (!QDBusConnection::sessionBus().registerService(SS_SERVICE)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
-            return;
+            hasDesktopSS = false;
         }
         if (!QDBusConnection::sessionBus().registerObject(SS_PATH,
                                                           ss,
                                                           QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
-            return;
+            hasDesktopSS = false;
         }
         if (!QDBusConnection::sessionBus().registerObject(SS_FULL_PATH,
                                                           ss,
                                                           QDBusConnection::ExportAllSlots)) {
             qWarning() << QDBusConnection::sessionBus().lastError().message();
-            return;
+            hasDesktopSS = false;
         }
-        qDebug() << "Enabled org.freedesktop.ScreenSaver";
+        qWarning() << "Enabled org.freedesktop.ScreenSaver" << hasDesktopSS;
     }
+
+    bool hasDesktopPK = true;
     if (!QDBusConnection::sessionBus().registerService(POWERKIT_SERVICE)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
-        return;
+        hasDesktopPK = false;
     }
     if (!QDBusConnection::sessionBus().registerObject(POWERKIT_PATH,
                                                       man,
                                                       QDBusConnection::ExportAllContents)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
-        return;
+        hasDesktopPK = false;
     }
     if (!QDBusConnection::sessionBus().registerObject(POWERKIT_FULL_PATH,
                                                       man,
                                                       QDBusConnection::ExportAllContents)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
-        return;
+        hasDesktopPK = false;
     }
-    qDebug() << "Enabled org.freedesktop.PowerKit";
-    hasService = true;
+    qWarning() << "Enabled org.freedesktop.PowerKit" << hasDesktopPK;
+
+    if (!hasDesktopPK || (desktopPM && !hasDesktopPM) || (desktopSS && !hasDesktopSS)) { hasService = false; }
 }
 
 // dbus session inhibit status handler
@@ -1041,19 +1060,14 @@ void SysTray::populateMenu()
     qDebug() << "populate menu";
 
     powerMenu  = new QMenu(NULL);
-#if QT_VERSION >= 0x050000
-    powerMenu->setStyleSheet(QString("QMenu::separator { background-color: rgb(25, 25, 25); }"));
-#endif
     tray->setContextMenu(powerMenu);
 
     menuFrame = new QFrame(NULL);
-
 
     inhibitorsMenu = new QMenu(powerMenu);
     inhibitorsMenu->setTitle(tr("Inhibitors"));
     inhibitorsMenu->setToolTip(tr("List of active applications that inhibits screen and/or power."));
     inhibitorsGroup = new QActionGroup(this);
-
 
     QWidget *cpuWidget = new QWidget(menuFrame);
     QWidget *cpuHeaderWidget = new QWidget(menuFrame);
@@ -1113,7 +1127,6 @@ void SysTray::populateMenu()
     cpuHeaderLayout->addWidget(cpuFreqIcon);
     cpuHeaderLayout->addWidget(cpuFreqLabel);
 
-
     if (PowerCpu::hasPState()) {
         pstateMinSlider = new QSlider(menuFrame);
         pstateMaxSlider = new QSlider(menuFrame);
@@ -1151,8 +1164,6 @@ void SysTray::populateMenu()
         cpuContainerLayout->addWidget(pstateTurboCheckbox);
     }
 
-
-
     batteryContainerLayout->addWidget(labelBatteryIcon);
     batteryContainerLayout->addWidget(labelBatteryStatus);
     backlightContainerLayout->addWidget(backlightLabel);
@@ -1165,8 +1176,7 @@ void SysTray::populateMenu()
     menuContainerLayout->addSpacing(2);
     menuContainerLayout->addWidget(cpuWidget);
 
-
-    menuHeader = new QWidgetAction(NULL);
+    menuHeader = new QWidgetAction(this);
     menuHeader->setDefaultWidget(menuFrame);
 
     powerMenu->addAction(menuHeader);
@@ -1215,7 +1225,7 @@ void SysTray::populateMenu()
 
 void SysTray::updateMenu()
 {
-    //qDebug() << "update menu";
+    qDebug() << "update menu";
     double left = man->BatteryLeft();
     if (left<0) { left = 0; }
     if (left>100) { left = 100; }
@@ -1333,7 +1343,8 @@ void SysTray::getInhibitors()
 void SysTray::openSettings()
 {
     QProcess proc;
-    proc.startDetached(QString("%1 --config").arg(qApp->applicationFilePath()));
+    proc.startDetached(qApp->applicationFilePath(),
+                       QStringList() << "--config");
 }
 
 void SysTray::getCpuFreq()
