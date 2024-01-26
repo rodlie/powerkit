@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -14,6 +14,7 @@
 #include <QProcess>
 
 #include "powerkit_def.h"
+#include "powerkit_settings.h"
 
 ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 {
@@ -79,7 +80,10 @@ void ScreenSaver::pingPM()
 void ScreenSaver::SimulateUserActivity()
 {
     QProcess proc;
-    proc.start(XSCREENSAVER);
+    QString cmd = PowerSettings::getValue("screensaver_simulate_activity_cmd",
+                                          XSCREENSAVER_SIMULATE).toString();
+    QStringList args = cmd.trimmed().split(" ");
+    proc.start((args.count() > 0 ? args.takeFirst() : cmd), args);
     proc.waitForFinished();
     proc.close();
     pingPM();
