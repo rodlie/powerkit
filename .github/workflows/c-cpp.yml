@@ -5,12 +5,12 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v2
     - name: Dependencies
-      run: sudo apt-get install tree cmake qt4-dev-tools qtbase5-dev libxss-dev libxrandr-dev
+      run: sudo apt-get install tree cmake qtbase5-dev libxss-dev libxrandr-dev
     - name: Build
       run: |
         export CWD=`pwd`
@@ -23,14 +23,4 @@ jobs:
         mkdir $CWD/build-debug-qt5
         cd $CWD/build-debug-qt5
         cmake -DCMAKE_BUILD_TYPE=Debug ..
-        make
-        mkdir $CWD/build-release-qt4
-        cd $CWD/build-release-qt4
-        cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DUSE_QT5=off ..
-        make
-        make DESTDIR=`pwd`/pkg install
-        tree pkg
-        mkdir $CWD/build-debug-qt4
-        cd $CWD/build-debug-qt4
-        cmake -DCMAKE_BUILD_TYPE=Debug -DUSE_QT5=off ..
         make
