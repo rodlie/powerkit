@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -8,7 +8,7 @@
 
 #include "powerkit.h"
 #include "powerkit_def.h"
-//#include "common.h"
+#include "powerkit_settings.h"
 
 #include <QDBusInterface>
 #include <QDBusMessage>
@@ -22,7 +22,6 @@
 PowerKit::PowerKit(QObject *parent) : QObject(parent)
   , upower(nullptr)
   , logind(nullptr)
-  , ckit(nullptr)
   , pmd(nullptr)
   , wasDocked(false)
   , wasLidClosed(false)
@@ -261,18 +260,13 @@ void PowerKit::setup()
                        PK_PREPARE_FOR_SUSPEND,
                        this,
                        SLOT(handlePrepareForSuspend(bool)));
-        system.connect(CONSOLEKIT_SERVICE,
-                       CONSOLEKIT_PATH,
-                       CONSOLEKIT_MANAGER,
-                       PK_PREPARE_FOR_SLEEP,
-                       this,
-                       SLOT(handlePrepareForSuspend(bool)));
         if (upower == NULL) {
             upower = new QDBusInterface(UPOWER_SERVICE,
                                         UPOWER_PATH,
                                         UPOWER_MANAGER,
                                         system,
                                         this);
+            qDebug() << "upower" << upower->isValid();
         }
         if (logind == NULL) {
             logind = new QDBusInterface(LOGIND_SERVICE,
@@ -280,13 +274,7 @@ void PowerKit::setup()
                                         LOGIND_MANAGER,
                                         system,
                                         this);
-        }
-        if (ckit == NULL) {
-            ckit = new QDBusInterface(CONSOLEKIT_SERVICE,
-                                      CONSOLEKIT_PATH,
-                                      CONSOLEKIT_MANAGER,
-                                      system,
-                                      this);
+            qDebug() << "logind" << logind->isValid();
         }
         if (pmd == NULL) {
             pmd = new QDBusInterface(PMD_SERVICE,
@@ -294,10 +282,11 @@ void PowerKit::setup()
                                      PMD_MANAGER,
                                      system,
                                      this);
+            qDebug() << "powerkitd" << pmd->isValid();
         }
         if (!suspendLock) { registerSuspendLock(); }
         scan();
-    }
+    } else { qWarning() << "Failed to connect to system bus"; }
 }
 
 void PowerKit::check()
@@ -397,14 +386,14 @@ void PowerKit::handleDeviceChanged(const QString &device)
 
 void PowerKit::handleResume()
 {
-    if (HasLogind() || HasConsoleKit()) { return; }
+    if (HasLogind()) { return; }
     qDebug() << "handle resume from upower";
     handlePrepareForSuspend(false);
 }
 
 void PowerKit::handleSuspend()
 {
-    if (HasLogind() || HasConsoleKit()) { return; }
+    if (HasLogind()) { return; }
     qDebug() << "handle suspend from upower";
     if (lockScreenOnSuspend) { LockScreen(); }
     emit PrepareForSuspend();
@@ -494,12 +483,6 @@ bool PowerKit::registerSuspendLock()
                              "powerkit",
                              "Lock screen etc",
                              "delay");
-    } else if (HasConsoleKit() && ckit && ckit->isValid()) {
-        reply = ckit->call("Inhibit",
-                           "sleep",
-                           "powerkit",
-                           "Lock screen etc",
-                           "delay");
     }
     if (reply.isValid()) {
         suspendLock.reset(new QDBusUnixFileDescriptor(reply.value()));
@@ -519,14 +502,6 @@ void PowerKit::setWakeAlarmFromSettings()
         QDateTime date = QDateTime::currentDateTime().addSecs(wmin*60);
         setWakeAlarm(date);
     }
-}
-
-bool PowerKit::HasConsoleKit()
-{
-    //qDebug() << "PK CHECK FOR CONSOLEKIT";
-    return availableService(CONSOLEKIT_SERVICE,
-                            CONSOLEKIT_PATH,
-                            CONSOLEKIT_MANAGER);
 }
 
 bool PowerKit::HasLogind()
@@ -564,8 +539,6 @@ bool PowerKit::CanRestart()
     //qDebug() << "PK CHECK FOR RESTART SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanRestart, PKLogind);
-    } else if (HasConsoleKit()) {
-        return availableAction(PKCanRestart, PKConsoleKit);
     }
     return false;
 }
@@ -575,8 +548,6 @@ bool PowerKit::CanPowerOff()
     //qDebug() << "PK CHECK FOR SHUTDOWN SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanPowerOff, PKLogind);
-    } else if (HasConsoleKit()) {
-        return availableAction(PKCanPowerOff, PKConsoleKit);
     }
     return false;
 }
@@ -586,8 +557,6 @@ bool PowerKit::CanSuspend()
     //qDebug() << "PK CHECK FOR SUSPEND SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanSuspend, PKLogind);
-    } else if (HasConsoleKit()) {
-        return availableAction(PKCanSuspend, PKConsoleKit);
     } else if (HasUPower()) {
         return availableAction(PKSuspendAllowed, PKUPower);
     }
@@ -599,8 +568,6 @@ bool PowerKit::CanHibernate()
     //qDebug() << "PK CHECK FOR HIBERNATE SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanHibernate, PKLogind);
-    } else if (HasConsoleKit()) {
-        return availableAction(PKCanHibernate, PKConsoleKit);
     } else if (HasUPower()) {
         return availableAction(PKHibernateAllowed, PKUPower);
     }
@@ -612,8 +579,6 @@ bool PowerKit::CanHybridSleep()
     //qDebug() << "PK CHECK FOR HYBRIDSLEEP SUPPORT";
     if (HasLogind()) {
         return availableAction(PKCanHybridSleep, PKLogind);
-    } else if (HasConsoleKit()) {
-        return availableAction(PKCanHybridSleep, PKConsoleKit);
     }
     return false;
 }
@@ -623,8 +588,6 @@ QString PowerKit::Restart()
     qDebug() << "try to restart";
     if (HasLogind()) {
         return executeAction(PKRestartAction, PKLogind);
-    } else if (HasConsoleKit()) {
-        return executeAction(PKRestartAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
@@ -634,8 +597,6 @@ QString PowerKit::PowerOff()
     qDebug() << "try to poweroff";
     if (HasLogind()) {
         return executeAction(PKPowerOffAction, PKLogind);
-    } else if (HasConsoleKit()) {
-        return executeAction(PKPowerOffAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
@@ -647,9 +608,6 @@ QString PowerKit::Suspend()
     if (HasLogind()) {
         setWakeAlarmFromSettings();
         return executeAction(PKSuspendAction, PKLogind);
-    } else if (HasConsoleKit()) {
-        setWakeAlarmFromSettings();
-        return executeAction(PKSuspendAction, PKConsoleKit);
     } else if (HasUPower()) {
         return executeAction(PKSuspendAction, PKUPower);
     }
@@ -662,8 +620,6 @@ QString PowerKit::Hibernate()
     if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         return executeAction(PKHibernateAction, PKLogind);
-    } else if (HasConsoleKit()) {
-        return executeAction(PKHibernateAction, PKConsoleKit);
     } else if (HasUPower()) {
         return executeAction(PKHibernateAction, PKUPower);
     }
@@ -676,8 +632,6 @@ QString PowerKit::HybridSleep()
     if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         return executeAction(PKHybridSleepAction, PKLogind);
-    } else if (HasConsoleKit()) {
-        return executeAction(PKHybridSleepAction, PKConsoleKit);
     }
     return QObject::tr(PK_NO_BACKEND);
 }
@@ -759,7 +713,10 @@ void PowerKit::LockScreen()
 {
     qDebug() << "lock screen";
     QProcess proc;
-    proc.start(XSCREENSAVER_LOCK);
+    QString cmd = PowerSettings::getValue("screensaver_lock_cmd",
+                                          XSCREENSAVER_LOCK).toString();
+    QStringList args = cmd.trimmed().split(" ");
+    proc.start((args.count() > 0 ? args.takeFirst() : cmd), args);
     proc.waitForFinished();
     proc.close();
 }

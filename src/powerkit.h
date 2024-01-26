@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -70,9 +70,6 @@
 #define DBUS_DEVICE_REMOVED "DeviceRemoved"
 #define DBUS_DEVICE_CHANGED "DeviceChanged"
 
-#define XSCREENSAVER "xscreensaver-command -deactivate"
-#define XSCREENSAVER_LOCK "xscreensaver-command -lock"
-
 #define TIMEOUT_CHECK 60000
 
 class PowerKit : public QObject
@@ -118,7 +115,6 @@ private:
 
     QDBusInterface *upower;
     QDBusInterface *logind;
-    QDBusInterface *ckit;
     QDBusInterface *pmd;
 
     QTimer timer;
@@ -188,7 +184,6 @@ private slots:
     void setWakeAlarmFromSettings();
 
 public slots:
-    bool HasConsoleKit();
     bool HasLogind();
     bool HasUPower();
     bool hasPMD();
