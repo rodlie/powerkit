@@ -23,13 +23,9 @@ int main(int argc, char *argv[])
 #endif
     QCoreApplication::setApplicationVersion(version);
 
-    // check args
-    bool startConfig = false;
-    for (int i=1; i<argc; i++) {if (QString::fromLocal8Bit(argv[i]) == "--config") {
-            startConfig = true;
-        }
-    }
-     if (startConfig) { // show config dialog
+    // launch config?
+    QStringList args = QApplication::arguments();
+    if (args.contains("--config")) {
         Dialog dialog;
         dialog.show();
         return a.exec();
