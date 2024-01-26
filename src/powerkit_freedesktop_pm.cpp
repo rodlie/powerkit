@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -11,6 +11,7 @@
 #include <QDBusConnection>
 #include <QCoreApplication>
 #include <QProcess>
+#include <QDebug>
 
 #include "powerkit_def.h"
 
@@ -67,12 +68,14 @@ void PowerManagement::timeOut()
 
 void PowerManagement::SimulateUserActivity()
 {
+    qDebug() << "SimulateUserActivity";
     emit HasInhibitChanged(true);
 }
 
 quint32 PowerManagement::Inhibit(const QString &application,
                                  const QString &reason)
 {
+    qDebug() << "Inhibit" << application << reason;
     quint32 cookie = genCookie();
     timeOut();
     emit newInhibit(application, reason, cookie);
@@ -82,6 +85,7 @@ quint32 PowerManagement::Inhibit(const QString &application,
 
 void PowerManagement::UnInhibit(quint32 cookie)
 {
+    qDebug() << "UnInhibit" << cookie;
     if (clients.contains(cookie)) { clients.remove(cookie); }
     timeOut();
     emit removedInhibit(cookie);
