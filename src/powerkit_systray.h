@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -51,8 +51,6 @@
 #undef Expose
 #undef FrameFeature
 #undef Unsorted
-
-#define XSCREENSAVER_RUN "xscreensaver -no-splash"
 
 //#define DEVICE_UUID Qt::UserRole+1
 //#define DEVICE_TYPE Qt::UserRole+2
