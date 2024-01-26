@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -27,7 +27,7 @@ private:
     QMap<quint32, QTime> clients;
 
 signals:
-    void HasInhibitChanged(bool has_inhibit);
+    void HasInhibitChanged(bool has_inhibit_changed);
     void newInhibit(const QString &application,
                     const QString &reason,
                     quint32 cookie);
