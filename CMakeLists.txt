@@ -1,5 +1,5 @@
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -10,6 +10,7 @@ include(GNUInstallDirs)
 project(powerkit VERSION 2.0.0)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_AUTOMOC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # set version
 add_definitions(-DPOWERKIT_VERSION="${PROJECT_VERSION}")
@@ -23,15 +24,16 @@ else()
 endif()
 
 # qt
-option(USE_QT5 "Use Qt 5" ON)
-if(USE_QT5)
-    find_package(Qt5Core REQUIRED)
-    find_package(Qt5DBus REQUIRED)
-    find_package(Qt5Gui REQUIRED)
-    find_package(Qt5Widgets REQUIRED)
-else()
-    find_package(Qt4 REQUIRED QtCore QtDBus QtXml QtGui)
-endif()
+find_package(QT NAMES Qt5 COMPONENTS Core REQUIRED)
+find_package(
+    Qt${QT_VERSION_MAJOR}
+    5.6
+    COMPONENTS
+    Gui
+    Widgets
+    DBus
+    REQUIRED
+)
 
 # x11
 find_package(X11 REQUIRED)
@@ -68,6 +70,16 @@ set(SERVICE_GROUP
     STRING
     "group that have access to D-Bus service, this should be any desktop user.")
 
+# org.freedesktop.PowerManagement.Inhibit
+set(ADAPTERS)
+qt_add_dbus_adaptor(
+    ADAPTERS
+    share/org.freedesktop.PowerManagement.Inhibit.xml
+    powerkit_freedesktop_pm.h
+    PowerManagement
+    InhibitAdaptor
+)
+
 # exe
 set(SOURCES
     src/${PROJECT_NAME}d.cpp
@@ -91,7 +103,8 @@ file(GLOB
      "src/${PROJECT_NAME}_*.h"
      "src/${PROJECT_NAME}_*.cpp")
 add_executable(${PROJECT_NAME}
-               ${POWERKIT_SRC})
+               ${POWERKIT_SRC}
+               ${ADAPTERS})
 
 # link
 if(${CMAKE_VERSION} VERSION_LESS "3.14.3")
@@ -112,42 +125,31 @@ target_link_libraries(${PROJECT_NAME}
                       ${X11_LIBRARIES}
                       ${X11_Xrandr_LIB}
                       ${XSS_LIB})
-if(USE_QT5)
-    target_link_libraries(${PROJECT_NAME}d
-                          Qt5::Core
-                          Qt5::DBus)
-    target_link_libraries(${PROJECT_NAME}
-                          Qt5::Core
-                          Qt5::DBus
-                          Qt5::Gui
-                          Qt5::Widgets)
-else()
-    target_link_libraries(${PROJECT_NAME}d
-                          Qt4::QtCore
-                          Qt4::QtDBus
-                          Qt4::QtXml)
-    target_link_libraries(${PROJECT_NAME}
-                          Qt4::QtCore
-                          Qt4::QtDBus
-                          Qt4::QtXml
-                          Qt4::QtGui)
-endif()
+target_link_libraries(${PROJECT_NAME}d
+                      Qt${QT_VERSION_MAJOR}::Core
+                      Qt${QT_VERSION_MAJOR}::DBus)
+target_link_libraries(${PROJECT_NAME}
+                      Qt${QT_VERSION_MAJOR}::Core
+                      Qt${QT_VERSION_MAJOR}::DBus
+                      Qt${QT_VERSION_MAJOR}::Gui
+                      Qt${QT_VERSION_MAJOR}::Widgets)
+
 
 # conf
 configure_file(share/conf.in
                ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.conf
                @ONLY)
 configure_file(share/service.in
-              ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
-              @ONLY)
+               ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
+               @ONLY)
 
 # desktop
 configure_file(share/autostart.desktop.in
                ${CMAKE_BINARY_DIR}/autostart/${PROJECT_NAME}.desktop
                @ONLY)
 configure_file(share/settings.desktop.in
-              ${CMAKE_BINARY_DIR}/settings/${PROJECT_NAME}.desktop
-              @ONLY)
+               ${CMAKE_BINARY_DIR}/settings/${PROJECT_NAME}.desktop
+               @ONLY)
 
 # install
 install(TARGETS
