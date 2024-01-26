@@ -1,6 +1,6 @@
 /*
 # PowerKit <https://github.com/rodlie/powerkit>
-# Copyright (c) 2018-2022 Ole-André Rodlie <ole.andre.rodlie@gmail.com> All rights reserved.
+# Copyright (c) Ole-André Rodlie <https://github.com/rodlie> All rights reserved.
 #
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
@@ -108,6 +108,9 @@ enum criticalAction
 #define PM_TIMEOUT 60000
 #define PM_MAX_INHIBIT 18000
 
+#define PM_SERVICE_INHIBIT "org.freedesktop.PowerManagement.Inhibit"
+#define PM_FULL_PATH_INHIBIT "/org/freedesktop/PowerManagement/Inhibit"
+
 #define SS_SERVICE "org.freedesktop.ScreenSaver"
 #define SS_PATH "/ScreenSaver"
 #define SS_FULL_PATH "/org/freedesktop/ScreenSaver"
@@ -115,8 +118,9 @@ enum criticalAction
 #define SS_MAX_INHIBIT 18000
 #define SS_SIMULATE "SimulateUserActivity"
 
-#define XSCREENSAVER "xscreensaver-command -deactivate"
+#define XSCREENSAVER_SIMULATE "xscreensaver-command -deactivate"
 #define XSCREENSAVER_LOCK "xscreensaver-command -lock"
+#define XSCREENSAVER_RUN "xscreensaver -no-splash"
 
 #define CONF_DIALOG_GEOMETRY "dialog_geometry"
 #define CONF_SUSPEND_BATTERY_TIMEOUT "suspend_battery_timeout"
