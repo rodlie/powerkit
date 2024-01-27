@@ -114,8 +114,9 @@ bool PowerKit::availableAction(const PowerKit::PKMethod &method,
                          QDBusConnection::systemBus());
     if (!iface.isValid()) { return false; }
     QDBusMessage reply = iface.call(cmd);
-    if (reply.arguments().first().toString() == DBUS_OK_REPLY) { return true; }
-    bool result = reply.arguments().first().toBool();
+    const auto args = reply.arguments();
+    if (args.first().toString() == DBUS_OK_REPLY) { return true; }
+    bool result = args.first().toBool();
     if (!reply.errorMessage().isEmpty()) { result = false; }
     return result;
 }
@@ -211,25 +212,25 @@ void PowerKit::setup()
                        UPOWER_SERVICE,
                        DBUS_DEVICE_ADDED,
                        this,
-                       SLOT(deviceAdded(const QDBusObjectPath&)));
+                       SLOT(deviceAdded(QDBusObjectPath)));
         system.connect(UPOWER_SERVICE,
                        UPOWER_PATH,
                        UPOWER_SERVICE,
                        DBUS_DEVICE_ADDED,
                        this,
-                       SLOT(deviceAdded(const QString&)));
+                       SLOT(deviceAdded(QString)));
         system.connect(UPOWER_SERVICE,
                        UPOWER_PATH,
                        UPOWER_SERVICE,
                        DBUS_DEVICE_REMOVED,
                        this,
-                       SLOT(deviceRemoved(const QDBusObjectPath&)));
+                       SLOT(deviceRemoved(QDBusObjectPath)));
         system.connect(UPOWER_SERVICE,
                        UPOWER_PATH,
                        UPOWER_SERVICE,
                        DBUS_DEVICE_REMOVED,
                        this,
-                       SLOT(deviceRemoved(const QString&)));
+                       SLOT(deviceRemoved(QString)));
         system.connect(UPOWER_SERVICE,
                        UPOWER_PATH,
                        UPOWER_SERVICE,
@@ -643,7 +644,8 @@ bool PowerKit::setWakeAlarm(const QDateTime &date)
         if (!pmd->isValid()) { return false; }
         QDBusMessage reply = pmd->call("SetWakeAlarm",
                                        date.toString("yyyy-MM-dd HH:mm:ss"));
-        bool alarm = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();
+        const auto args = reply.arguments();
+        bool alarm = args.first().toBool() && reply.errorMessage().isEmpty();
         qDebug() << "WAKE OK?" << alarm;
         wakeAlarm = alarm;
         if (alarm) {
@@ -873,7 +875,8 @@ bool PowerKit::setDisplayBacklight(const QString &device, int value)
     QDBusMessage reply = pmd->call("SetDisplayBacklight",
                                    device,
                                    value);
-    bool backlight = reply.arguments().first().toBool() && reply.errorMessage().isEmpty();
+    const auto args = reply.arguments();
+    bool backlight = args.first().toBool() && reply.errorMessage().isEmpty();
     qDebug() << "BACKLIGHT OK?" << backlight << reply.errorMessage();
     return backlight;
 }

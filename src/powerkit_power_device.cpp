@@ -50,12 +50,12 @@ Device::Device(const QString block, QObject *parent)
     QDBusConnection system = QDBusConnection::systemBus();
     dbus = new QDBusInterface(UPOWER_SERVICE,
                               path,
-                              QString("%1.%2").arg(UPOWER_SERVICE).arg(DBUS_DEVICE),
+                              QString("%1.%2").arg(UPOWER_SERVICE, DBUS_DEVICE),
                               system,
                               parent);
     system.connect(dbus->service(),
                    dbus->path(),
-                   QString("%1.%2").arg(UPOWER_SERVICE).arg(DBUS_DEVICE),
+                   QString("%1.%2").arg(UPOWER_SERVICE, DBUS_DEVICE),
                    DBUS_CHANGED,
                    this,
                    SLOT(updateDeviceProperties()));
