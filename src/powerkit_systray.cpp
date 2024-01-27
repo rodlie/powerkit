@@ -85,27 +85,6 @@ SysTray::SysTray(QObject *parent)
     , pstateMaxSlider(nullptr)
     , pstateTurboCheckbox(nullptr)
 {
-    // TODO: we should not force theme
-    qApp->setStyle("Fusion");
-    // set (dark) colors
-    QPalette palette;
-    palette.setColor(QPalette::Window, QColor(53,53,53));
-    palette.setColor(QPalette::WindowText, Qt::white);
-    palette.setColor(QPalette::Base, QColor(15,15,15));
-    palette.setColor(QPalette::AlternateBase, QColor(53,53,53));
-    palette.setColor(QPalette::Link, Qt::white);
-    palette.setColor(QPalette::LinkVisited, Qt::white);
-    palette.setColor(QPalette::ToolTipText, Qt::black);
-    palette.setColor(QPalette::Text, Qt::white);
-    palette.setColor(QPalette::Button, QColor(53,53,53));
-    palette.setColor(QPalette::ButtonText, Qt::white);
-    palette.setColor(QPalette::BrightText, Qt::red);
-    palette.setColor(QPalette::Highlight, QColor(196,110,33));
-    palette.setColor(QPalette::HighlightedText, Qt::white);
-    palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
-    palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
-    qApp->setPalette(palette);
-
     // setup tray
     tray = new TrayIcon(this);
     connect(tray,
@@ -226,6 +205,7 @@ SysTray::SysTray(QObject *parent)
     PowerSettings::getConf();
 
     // setup theme
+    Theme::setAppTheme();
     Theme::setIconTheme();
     if (tray->icon().isNull()) {
         tray->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));

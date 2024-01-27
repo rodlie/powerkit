@@ -12,6 +12,7 @@
 class Theme
 {
 public:
+    static void setAppTheme();
     static void setIconTheme();
 };
 

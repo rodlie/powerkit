@@ -51,13 +51,6 @@ Dialog::Dialog(QWidget *parent,
     , resumeLockScreen(nullptr)
     , bypassKernel(nullptr)
 {
-
-#if QT_VERSION >= 0x050000
-    qApp->setStyle("Fusion");
-#else
-    qApp->setStyle("Clearlooks");
-#endif
-
     // setup dialog
     if (quitOnClose) { setAttribute(Qt::WA_QuitOnClose, true); }
     setWindowTitle(tr("Power Manager"));
@@ -81,6 +74,7 @@ Dialog::Dialog(QWidget *parent,
     PowerSettings::getConf();
 
     // setup theme
+    Theme::setAppTheme();
     Theme::setIconTheme();
     setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
 
