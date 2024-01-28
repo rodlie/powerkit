@@ -127,6 +127,7 @@ const QStringList PowerCpu::getFrequencies()
     return result;
 }
 
+// Legacy, remove?
 const QStringList PowerCpu::getAvailableFrequency()
 {
     QStringList result;
@@ -144,6 +145,40 @@ const QStringList PowerCpu::getAvailableFrequency()
     return result;
 }
 
+int PowerCpu::getMinFrequency()
+{
+    return getScalingFrequency(0, 0);
+}
+
+int PowerCpu::getMaxFrequency()
+{
+    return getScalingFrequency(0, 1);
+}
+
+int PowerCpu::getScalingFrequency(int cpu, int scale)
+{
+    int result = 0;
+    QString type;
+    switch (scale) {
+    case 0:
+        type = LINUX_CPU_FREQUENCY_MIN;
+        break;
+    case 1:
+        type = LINUX_CPU_FREQUENCY_MAX;
+        break;
+    }
+    QFile freq(QString("%1/cpu%2/%3/%4").arg(LINUX_CPU_SYS,
+                                             QString::number(cpu),
+                                             LINUX_CPU_DIR,
+                                             type));
+    if (freq.open(QIODevice::ReadOnly|QIODevice::Text)) {
+        result = freq.readAll().trimmed().toInt();
+        freq.close();
+    }
+    return result;
+}
+
+// Legacy, remove?
 bool PowerCpu::frequencyExists(const QString &freq)
 {
     if (freq.isEmpty()) { return false; }
@@ -152,10 +187,15 @@ bool PowerCpu::frequencyExists(const QString &freq)
 
 bool PowerCpu::setFrequency(const QString &freq, int cpu)
 {
-    if (!frequencyExists(freq)) { return false; }
+    /*if (!frequencyExists(freq)) { return false; }
     if (getGovernor(cpu) != "userspace") {
         if (!setGovernor("userspace", cpu)) { return false; }
-    }
+    }*/
+    QString val = freq;
+    int freqMin = getMinFrequency();
+    int freqMax = getMaxFrequency();
+    if (freq.toInt() > freqMax) { val = QString::number(freqMax); }
+    else if (freq.toInt() < freqMin) { val = QString::number(freqMin); }
     QFile file(QString("%1/cpu%2/%3/%4")
               .arg(LINUX_CPU_SYS)
               .arg(cpu)
@@ -172,7 +212,7 @@ bool PowerCpu::setFrequency(const QString &freq, int cpu)
 
 bool PowerCpu::setFrequency(const QString &freq)
 {
-    if (!frequencyExists(freq)) { return false; }
+    //if (!frequencyExists(freq)) { return false; }
     bool failed = false;
     for (int i=0;i<getTotal();++i) {
         if (!setFrequency(freq, i)) { failed = true; }

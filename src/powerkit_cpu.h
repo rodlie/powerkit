@@ -48,6 +48,9 @@ public:
     static const QString getFrequency(int cpu);
     static const QStringList getFrequencies();
     static const QStringList getAvailableFrequency();
+    static int getMinFrequency();
+    static int getMaxFrequency();
+    static int getScalingFrequency(int cpu, int scale);
     static bool frequencyExists(const QString &freq);
     static bool setFrequency(const QString &freq, int cpu);
     static bool setFrequency(const QString &freq);
