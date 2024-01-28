@@ -64,3 +64,9 @@ bool Manager::SetPStateMin(int value)
     qDebug() << "Try to set Intel pstate min" << value;
     return PowerCpu::setPStateMin(value);
 }
+
+bool Manager::SetPState(int min, int max)
+{
+    qDebug() << "Try to set Intel pstate min max" << min << max;
+    return PowerCpu::setPState(min, max);
+}

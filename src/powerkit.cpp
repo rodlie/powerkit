@@ -880,3 +880,41 @@ bool PowerKit::setDisplayBacklight(const QString &device, int value)
     qDebug() << "BACKLIGHT OK?" << backlight << reply.errorMessage();
     return backlight;
 }
+
+bool PowerKit::SetPState(int min, int max)
+{
+    qDebug() << "PK SET PSTATE" << min << max;
+    if (!pmd) { return false; }
+    if (!pmd->isValid()) { return false; }
+    QDBusMessage reply = pmd->call("SetPState",
+                                   min,
+                                   max);
+    const auto args = reply.arguments();
+    bool pstate = args.first().toBool() && reply.errorMessage().isEmpty();
+    qDebug() << "PSTATE OK?" << pstate << reply.errorMessage();
+    return pstate;
+}
+
+bool PowerKit::SetPStateMin(int value)
+{
+    qDebug() << "PK SET PSTATE" << value;
+    if (!pmd) { return false; }
+    if (!pmd->isValid()) { return false; }
+    QDBusMessage reply = pmd->call("SetPStateMin", value);
+    const auto args = reply.arguments();
+    bool pstate = args.first().toBool() && reply.errorMessage().isEmpty();
+    qDebug() << "PSTATE OK?" << pstate << reply.errorMessage();
+    return pstate;
+}
+
+bool PowerKit::SetPStateMax(int value)
+{
+    qDebug() << "PK SET PSTATE" << value;
+    if (!pmd) { return false; }
+    if (!pmd->isValid()) { return false; }
+    QDBusMessage reply = pmd->call("SetPStateMax", value);
+    const auto args = reply.arguments();
+    bool pstate = args.first().toBool() && reply.errorMessage().isEmpty();
+    qDebug() << "PSTATE OK?" << pstate << reply.errorMessage();
+    return pstate;
+}

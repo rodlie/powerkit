@@ -329,6 +329,11 @@ bool PowerCpu::setPStateMin(int minState)
     return false;
 }
 
+bool PowerCpu::setPState(int min, int max)
+{
+    return (setPStateMin(min) && setPStateMax(max));
+}
+
 bool PowerCpu::hasCoreTemp()
 {
     return QFile::exists(QString(LINUX_CORETEMP).arg(0));

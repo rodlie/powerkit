@@ -27,6 +27,7 @@ public slots:
     bool SetPStateTurbo(bool enable);
     bool SetPStateMax(int value);
     bool SetPStateMin(int value);
+    bool SetPState(int min, int max);
 };
 
 #endif // MANAGER_H

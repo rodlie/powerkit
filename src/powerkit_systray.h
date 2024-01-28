@@ -196,6 +196,8 @@ private slots:
     void updateMenu();
     void updateBacklight(QString file);
     void handleBacklightSlider(int value);
+    void handlePStateMinSlider(int value);
+    void handlePStateMaxSlider(int value);
     void getInhibitors();
     void openSettings();
     void getCpuFreq();

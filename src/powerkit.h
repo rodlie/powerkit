@@ -228,6 +228,9 @@ public slots:
     void setLockScreenOnSuspend(bool lock);
     void setLockScreenOnResume(bool lock);
     bool setDisplayBacklight(QString const &device, int value);
+    bool SetPState(int min, int max);
+    bool SetPStateMin(int value);
+    bool SetPStateMax(int value);
 };
 
 #endif // POWERKIT_H

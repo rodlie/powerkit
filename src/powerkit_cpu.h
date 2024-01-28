@@ -62,6 +62,7 @@ public:
     static int getPStateMin();
     static bool setPStateMax(int maxState);
     static bool setPStateMin(int minState);
+    static bool setPState(int min, int max);
 
     static bool hasCoreTemp();
     static int getCoreTemp();

@@ -1129,6 +1129,11 @@ void SysTray::populateMenu()
         pstateMinSlider->setValue(PowerCpu::getPStateMin());
         pstateMaxSlider->setValue(PowerCpu::getPStateMax());
 
+        connect(pstateMinSlider, SIGNAL(valueChanged(int)),
+                this, SLOT(handlePStateMinSlider(int)));
+        connect(pstateMaxSlider, SIGNAL(valueChanged(int)),
+                this, SLOT(handlePStateMaxSlider(int)));
+
         pstateTurboCheckbox = new QCheckBox(menuFrame);
         pstateTurboCheckbox->setText(tr("Turbo Boost"));
         pstateTurboCheckbox->setCheckable(true);
@@ -1253,14 +1258,18 @@ void SysTray::updateMenu()
 
     inhibitorsMenu->setEnabled(man->GetInhibitors().size()>0);
 
-    /*qDebug() << "has pstate?" << PowerCpu::hasPState();
+    qDebug() << "has pstate?" << PowerCpu::hasPState();
     qDebug() << "pstate turbo?" << PowerCpu::hasPStateTurbo();
     qDebug() << "pstate min?" << PowerCpu::getPStateMin();
     qDebug() << "pstate max?" << PowerCpu::getPStateMax();
     qDebug() << "cpu freq?" << PowerCpu::getFrequencies();
-    qDebug() << "cpu freq avail?" << PowerCpu::getAvailableFrequency();
+    //qDebug() << "cpu freq avail?" << PowerCpu::getAvailableFrequency();
+    qDebug() << "cpu freq min?" << PowerCpu::getMinFrequency();
+    qDebug() << "cpu freq max?" << PowerCpu::getMaxFrequency();
     qDebug() << "cpu total?" << PowerCpu::getTotal();
-    qDebug() << "cpu gov?" << PowerCpu::getGovernors();*/
+    qDebug() << "cpu gov?" << PowerCpu::getGovernors();
+    qDebug() << "cpu gov avail?" << PowerCpu::getAvailableGovernors();
+    qDebug() << "cpu temp?" << PowerCpu::getCoreTemp();
 
     getCpuFreq();
 }
@@ -1282,6 +1291,20 @@ void SysTray::handleBacklightSlider(int value)
         //if (hasBacklight) { Common::adjustBacklight(backlightDevice, value); }
         /*else {*/ man->setDisplayBacklight(backlightDevice, value); //}
     }
+}
+
+void SysTray::handlePStateMinSlider(int value)
+{
+    man->SetPStateMin(value);
+    if (pstateMinSlider) { pstateMinSlider->setValue(PowerCpu::getPStateMin()); }
+    getCpuFreq();
+}
+
+void SysTray::handlePStateMaxSlider(int value)
+{
+    man->SetPStateMax(value);
+    if (pstateMaxSlider) { pstateMaxSlider->setValue(PowerCpu::getPStateMax()); }
+    getCpuFreq();
 }
 
 void SysTray::getInhibitors()
