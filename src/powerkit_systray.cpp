@@ -10,6 +10,7 @@
 #include "powerkit_systray.h"
 #include "powerkit_def.h"
 #include "powerkit_theme.h"
+#include "powerkit_notify.h"
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"
 #include "powerkit_cpu.h"
@@ -897,13 +898,18 @@ void SysTray::showMessage(const QString &title,
                           const QString &msg,
                           bool critical)
 {
-    if (tray->isVisible() && showNotifications) {
-        if (critical) {
-            tray->showMessage(title, msg,
-                              QSystemTrayIcon::Critical,
-                              900000);
-        } else {
-            tray->showMessage(title, msg);
+    if (showNotifications) {
+        SystemNotification notifier;
+        if (notifier.valid) {
+            notifier.sendMessage(title, msg, critical);
+        } else if (tray->isVisible()) {
+            if (critical) {
+                tray->showMessage(title, msg,
+                        QSystemTrayIcon::Critical,
+                        900000);
+            } else {
+                tray->showMessage(title, msg);
+            }
         }
     }
 }
