@@ -292,30 +292,37 @@ bool PowerCpu::setPStateMin(int minState)
 
 bool PowerCpu::hasCoreTemp()
 {
-    return QFile::exists(QString(LINUX_CORETEMP));
+    return QFile::exists(QString(LINUX_CORETEMP).arg(0));
 }
 
 int PowerCpu::getCoreTemp()
 {
     double temp = 0.0;
     if (!hasCoreTemp()) { return temp; }
-    int count = 1;
-    while (QFile::exists(QString("%1/%2")
-                         .arg(LINUX_CORETEMP)
-                         .arg(QString(LINUX_CORETEMP_INPUT)
-                              .arg(count))))
-    {
-        QFile file(QString("%1/%2")
-                   .arg(LINUX_CORETEMP)
-                   .arg(QString(LINUX_CORETEMP_INPUT)
-                        .arg(count)));
-        if (file.open(QIODevice::ReadOnly)) {
-            double ctemp = file.readAll().trimmed().toDouble();
-            if (ctemp>temp) { temp = ctemp; }
-            qDebug() << "CORE TEMP" << count << ctemp;
+
+    int temps = 1;
+    int hwmons = 10;
+    for (int hwmon = 0; hwmon < hwmons; ++hwmon) {
+        bool foundPackage = false;
+        QFile file(QString("%1/%2").arg(QString(LINUX_CORETEMP).arg(hwmon),
+                                        QString(LINUX_CORETEMP_LABEL).arg(temps)));
+        if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+            QString label = file.readAll().trimmed();
+            if (label.startsWith("Package")) { foundPackage = true; }
             file.close();
         }
-        count++;
+        if (foundPackage) {
+            QFile file(QString("%1/%2").arg(QString(LINUX_CORETEMP).arg(hwmon),
+                                            QString(LINUX_CORETEMP_INPUT).arg(temps)));
+            if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                double ctemp = file.readAll().trimmed().toDouble();
+                file.close();
+                if (ctemp > temp) {
+                    temp = ctemp;
+                    break;
+                }
+            }
+        }
     }
     return temp;
 }

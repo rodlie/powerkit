@@ -27,7 +27,7 @@
 #define LINUX_CPU_PSTATE_MAX_PERF "max_perf_pct"
 #define LINUX_CPU_PSTATE_MIN_PERF "min_perf_pct"
 
-#define LINUX_CORETEMP "/sys/class/hwmon/hwmon0"
+#define LINUX_CORETEMP "/sys/class/hwmon/hwmon%1"
 #define LINUX_CORETEMP_CRIT "temp%1_crit"
 #define LINUX_CORETEMP_INPUT "temp%1_input"
 #define LINUX_CORETEMP_LABEL "temp%1_label"
