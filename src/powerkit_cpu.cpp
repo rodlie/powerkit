@@ -127,10 +127,10 @@ const QStringList PowerCpu::getFrequencies()
     return result;
 }
 
-// Legacy, remove?
 const QStringList PowerCpu::getAvailableFrequency()
 {
     QStringList result;
+    if (hasPState()) { return result; }
     QFile gov(QString("%1/cpu%2/%3/%4")
               .arg(LINUX_CPU_SYS)
               .arg(0)
@@ -178,19 +178,20 @@ int PowerCpu::getScalingFrequency(int cpu, int scale)
     return result;
 }
 
-// Legacy, remove?
 bool PowerCpu::frequencyExists(const QString &freq)
 {
+    if (hasPState()) { return false; }
     if (freq.isEmpty()) { return false; }
     return getAvailableFrequency().contains(freq);
 }
 
 bool PowerCpu::setFrequency(const QString &freq, int cpu)
 {
-    /*if (!frequencyExists(freq)) { return false; }
+    if (hasPState()) { return false; }
+    if (!frequencyExists(freq)) { return false; }
     if (getGovernor(cpu) != "userspace") {
         if (!setGovernor("userspace", cpu)) { return false; }
-    }*/
+    }
     QString val = freq;
     int freqMin = getMinFrequency();
     int freqMax = getMaxFrequency();
@@ -204,14 +205,15 @@ bool PowerCpu::setFrequency(const QString &freq, int cpu)
         QTextStream out(&file);
         out << val;
         file.close();
-        if (val == getFrequency(cpu)) { return true; } // this might not work properly?
+        if (val == getFrequency(cpu)) { return true; }
     }
     return false;
 }
 
 bool PowerCpu::setFrequency(const QString &freq)
 {
-    //if (!frequencyExists(freq)) { return false; }
+    if (hasPState()) { return false; }
+    if (!frequencyExists(freq)) { return false; }
     bool failed = false;
     for (int i=0;i<getTotal();++i) {
         if (!setFrequency(freq, i)) { failed = true; }
@@ -222,9 +224,7 @@ bool PowerCpu::setFrequency(const QString &freq)
 
 bool PowerCpu::hasPState()
 {
-    return QFile::exists(QString("%1/%2")
-                         .arg(LINUX_CPU_SYS)
-                         .arg(LINUX_CPU_PSTATE));
+    return QFile::exists(QString("%1/%2").arg(LINUX_CPU_SYS, LINUX_CPU_PSTATE));
 }
 
 bool PowerCpu::hasPStateTurbo()
