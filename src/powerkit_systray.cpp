@@ -1296,14 +1296,22 @@ void SysTray::handleBacklightSlider(int value)
 void SysTray::handlePStateMinSlider(int value)
 {
     man->SetPStateMin(value);
-    if (pstateMinSlider) { pstateMinSlider->setValue(PowerCpu::getPStateMin()); }
+    if (pstateMinSlider) {
+        pstateMinSlider->blockSignals(true);
+        pstateMinSlider->setValue(PowerCpu::getPStateMin());
+        pstateMinSlider->blockSignals(false);
+    }
     getCpuFreq();
 }
 
 void SysTray::handlePStateMaxSlider(int value)
 {
     man->SetPStateMax(value);
-    if (pstateMaxSlider) { pstateMaxSlider->setValue(PowerCpu::getPStateMax()); }
+    if (pstateMaxSlider) {
+        pstateMaxSlider->blockSignals(true);
+        pstateMaxSlider->setValue(PowerCpu::getPStateMax());
+        pstateMaxSlider->blockSignals(false);
+    }
     getCpuFreq();
 }
 
