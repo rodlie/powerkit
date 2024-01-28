@@ -196,16 +196,15 @@ bool PowerCpu::setFrequency(const QString &freq, int cpu)
     int freqMax = getMaxFrequency();
     if (freq.toInt() > freqMax) { val = QString::number(freqMax); }
     else if (freq.toInt() < freqMin) { val = QString::number(freqMin); }
-    QFile file(QString("%1/cpu%2/%3/%4")
-              .arg(LINUX_CPU_SYS)
-              .arg(cpu)
-              .arg(LINUX_CPU_DIR)
-              .arg(LINUX_CPU_SET_SPEED));
+    QFile file(QString("%1/cpu%2/%3/%4").arg(LINUX_CPU_SYS,
+                                             QString::number(cpu),
+                                             LINUX_CPU_DIR,
+                                             LINUX_CPU_SET_SPEED));
     if (file.open(QIODevice::WriteOnly|QIODevice::Truncate)) {
         QTextStream out(&file);
-        out << freq;
+        out << val;
         file.close();
-        if (freq == getFrequency(cpu)) { return true;}
+        if (val == getFrequency(cpu)) { return true; } // this might not work properly?
     }
     return false;
 }
