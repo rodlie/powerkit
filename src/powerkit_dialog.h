@@ -64,6 +64,7 @@ private:
 
     QCheckBox *notifyOnBattery;
     QCheckBox *notifyOnAC;
+    QCheckBox *notifyNewInhibitor;
     QLabel *lidActionACLabel;
     QLabel *lidActionBatteryLabel;
     QLabel *batteryBacklightLabel;
@@ -108,6 +109,7 @@ private slots:
     void handleWarnOnVeryLowBattery(bool triggered);
     void handleNotifyBattery(bool triggered);
     void handleNotifyAC(bool triggered);
+    void handleNotifyNewInhibitor(bool triggered);
     void enableLid(bool enabled);
     void handleBacklightMouseWheel(bool triggered);
     void handleSuspendLockScreen(bool triggered);

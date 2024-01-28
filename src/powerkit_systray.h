@@ -125,6 +125,7 @@ private:
     bool warnOnVeryLowBattery;
     bool notifyOnBattery;
     bool notifyOnAC;
+    bool notifyNewInhibitor;
     bool backlightMouseWheel;
     bool ignoreKernelResume;
 

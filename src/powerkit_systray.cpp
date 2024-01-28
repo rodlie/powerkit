@@ -62,6 +62,7 @@ SysTray::SysTray(QObject *parent)
     , warnOnVeryLowBattery(true)
     , notifyOnBattery(true)
     , notifyOnAC(true)
+    , notifyNewInhibitor(true)
     , backlightMouseWheel(true)
     , ignoreKernelResume(false)
     , powerMenu(nullptr)
@@ -520,6 +521,9 @@ void SysTray::loadSettings()
     if (PowerSettings::isValid(CONF_NOTIFY_ON_AC)) {
         notifyOnAC = PowerSettings::getValue(CONF_NOTIFY_ON_AC).toBool();
     }
+    if (PowerSettings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
+        notifyNewInhibitor = PowerSettings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
+    }
     if (PowerSettings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
         man->setLockScreenOnSuspend(PowerSettings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool());
     }
@@ -853,10 +857,11 @@ void SysTray::handleNewInhibitScreenSaver(const QString &application,
                                           const QString &reason,
                                           quint32 cookie)
 {
-    qDebug() << "new screensaver inhibit" << application << reason << cookie;
-    Q_UNUSED(application)
-    Q_UNUSED(reason)
-    Q_UNUSED(cookie)
+    if (notifyNewInhibitor) {
+        showMessage(tr("New screen inhibitor (%1)").arg(cookie),
+                    QString("%1: %2").arg(application, reason));
+    }
+
     checkDevices();
     getInhibitors();
 }
@@ -865,10 +870,11 @@ void SysTray::handleNewInhibitPowerManagement(const QString &application,
                                               const QString &reason,
                                               quint32 cookie)
 {
-    qDebug() << "new powermanagement inhibit" << application << reason << cookie;
-    Q_UNUSED(application)
-    Q_UNUSED(reason)
-    Q_UNUSED(cookie)
+    if (notifyNewInhibitor) {
+        showMessage(tr("New power inhibitor (%1)").arg(cookie),
+                    QString("%1: %2").arg(application, reason));
+    }
+
     checkDevices();
     getInhibitors();
 }

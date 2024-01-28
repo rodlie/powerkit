@@ -129,6 +129,8 @@ Dialog::Dialog(QWidget *parent,
             this, SLOT(handleNotifyBattery(bool)));
     connect(notifyOnAC, SIGNAL(toggled(bool)),
             this, SLOT(handleNotifyAC(bool)));
+    connect(notifyNewInhibitor, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyNewInhibitor(bool)));
     connect(backlightMouseWheel, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightMouseWheel(bool)));
     connect(suspendLockScreen, SIGNAL(toggled(bool)),
@@ -527,10 +529,16 @@ void Dialog::setupWidgets()
     notifyOnAC->setText(tr("Notify on AC"));
     notifyOnAC->setToolTip(tr("Notify when switched on AC power"));
 
+    notifyNewInhibitor = new QCheckBox(this);
+    notifyNewInhibitor->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
+    notifyNewInhibitor->setText(tr("Notify new inhibitors"));
+    notifyNewInhibitor->setToolTip(tr("Notify on new screensaver or power inhibitors"));
+
     notifyContainerLayout->addWidget(warnOnLowBattery);
     notifyContainerLayout->addWidget(warnOnVeryLowBattery);
     notifyContainerLayout->addWidget(notifyOnBattery);
     notifyContainerLayout->addWidget(notifyOnAC);
+    notifyContainerLayout->addWidget(notifyNewInhibitor);
 
     QWidget *settingsWidget = new QWidget(this);
     QVBoxLayout *settingsLayout = new QVBoxLayout(settingsWidget);
@@ -726,6 +734,12 @@ void Dialog::loadSettings()
     }
     notifyOnAC->setChecked(defaultNotifyOnAC);
 
+    bool defaultNotifyNewInhibitor = true;
+    if (PowerSettings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
+        defaultNotifyNewInhibitor = PowerSettings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
+    }
+    notifyNewInhibitor->setChecked(defaultNotifyNewInhibitor);
+
     bool defaultSuspendLockScreen = true;
     if (PowerSettings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
         defaultSuspendLockScreen = PowerSettings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool();
@@ -845,6 +859,8 @@ void Dialog::saveSettings()
                               notifyOnBattery->isChecked());
     PowerSettings::setValue(CONF_NOTIFY_ON_AC,
                               notifyOnAC->isChecked());
+    PowerSettings::setValue(CONF_NOTIFY_NEW_INHIBITOR,
+                              notifyNewInhibitor->isChecked());
     PowerSettings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL,
                               backlightMouseWheel->isChecked());
     PowerSettings::setValue(CONF_SUSPEND_LOCK_SCREEN,
@@ -1092,6 +1108,11 @@ void Dialog::handleNotifyBattery(bool triggered)
 void Dialog::handleNotifyAC(bool triggered)
 {
     PowerSettings::setValue(CONF_NOTIFY_ON_AC, triggered);
+}
+
+void Dialog::handleNotifyNewInhibitor(bool triggered)
+{
+    PowerSettings::setValue(CONF_NOTIFY_NEW_INHIBITOR, triggered);
 }
 
 void Dialog::enableLid(bool enabled)
