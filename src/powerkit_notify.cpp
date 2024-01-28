@@ -22,8 +22,8 @@ SystemNotification::SystemNotification(QObject* parent)
     valid = dbus->isValid();
 }
 
-void SystemNotification::sendMessage(const QString& text,
-                                     const QString& title,
+void SystemNotification::sendMessage(const QString& title,
+                                     const QString& text,
                                      const bool critical)
 {
     QList<QVariant> args;

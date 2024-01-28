@@ -25,8 +25,8 @@ public:
     explicit SystemNotification(QObject* parent = nullptr);
     bool valid;
 
-    void sendMessage(const QString& text,
-                     const QString& title,
+    void sendMessage(const QString& title,
+                     const QString& text,
                      const bool critical);
 
 private:
