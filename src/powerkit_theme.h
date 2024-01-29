@@ -9,11 +9,22 @@
 #ifndef THEME_H
 #define THEME_H
 
+#include <QPixmap>
+#include <QColor>
+
 class Theme
 {
 public:
     static void setAppTheme();
     static void setIconTheme();
+    static const QPixmap drawCircleProgress(const int &progress,
+                                            const int &dimension,
+                                            const int &width,
+                                            const int &padding,
+                                            const bool dash,
+                                            const QString &text,
+                                            const QColor &color1 = Qt::red,
+                                            const QColor &color2 = Qt::white);
 };
 
 #endif // THEME_H

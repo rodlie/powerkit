@@ -14,6 +14,8 @@
 #include <QSettings>
 #include <QPalette>
 #include <QDebug>
+#include <QPainter>
+#include <QPen>
 
 #include "powerkit_def.h"
 #include "powerkit_settings.h"
@@ -85,4 +87,61 @@ void Theme::setIconTheme()
         }
     }
 #endif
+}
+
+const QPixmap Theme::drawCircleProgress(const int &progress,
+                                        const int &dimension,
+                                        const int &width,
+                                        const int &padding,
+                                        const bool dash,
+                                        const QString &text,
+                                        const QColor &color1,
+                                        const QColor &color2)
+{
+    double value = (double)progress / 100;
+    if (value < 0.) { value = 0.; }
+    else if (value > 1.) { value = 1.; }
+
+    QRectF circle(padding / 2,
+                  padding / 2,
+                  dimension - padding,
+                  dimension - padding);
+
+    int startAngle = -90 * 16;
+    int spanAngle = value * 360 * 16;
+
+    QPixmap pix(dimension, dimension);
+    pix.fill(Qt::transparent);
+
+    QPainter p(&pix);
+    p.setRenderHint(QPainter::Antialiasing);
+
+    QPen pen;
+    pen.setWidth(width);
+    pen.setCapStyle(Qt::FlatCap);
+    pen.setColor(color1);
+    if (dash) { pen.setDashPattern(QVector<qreal>{0.5, 1.105}); }
+
+    QPen pen2;
+    pen2.setWidth(width);
+    pen2.setColor(color2);
+    pen2.setCapStyle(Qt::FlatCap);
+
+    p.setPen(pen);
+    p.drawArc(circle, startAngle, 360 * 16);
+
+    p.setPen(pen2);
+    p.drawArc(circle, startAngle, spanAngle);
+
+    if (!text.isEmpty()) {
+        int textPadding = padding * 4;
+        p.drawText(QRectF(textPadding / 2,
+                          textPadding / 2,
+                          dimension - textPadding,
+                          dimension - textPadding),
+                   Qt::AlignCenter,
+                   text);
+    }
+
+    return pix;
 }
