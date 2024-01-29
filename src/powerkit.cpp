@@ -703,14 +703,10 @@ double PowerKit::BatteryLeft()
 
 void PowerKit::LockScreen()
 {
-    qDebug() << "lock screen";
-    QProcess proc;
-    QString cmd = PowerSettings::getValue("screensaver_lock_cmd",
-                                          XSCREENSAVER_LOCK).toString();
-    QStringList args = cmd.trimmed().split(" ");
-    proc.start((args.count() > 0 ? args.takeFirst() : cmd), args);
-    proc.waitForFinished();
-    proc.close();
+    int exe = QProcess::execute(PowerSettings::getValue("screensaver_lock_cmd",
+                                                        SS_LOCK_CMD).toString(),
+                                QStringList());
+    qDebug() << "screen lock" << exe;
 }
 
 bool PowerKit::HasBattery()
