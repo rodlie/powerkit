@@ -6,12 +6,14 @@
 # See the LICENSE file for full details
 */
 
-#include "powerkit_freedesktop_ss.h"
+#include "powerkit_screensaver.h"
 #include <QMapIterator>
 #include <QDBusConnection>
 #include <QDBusInterface>
 #include <QCoreApplication>
 #include <QProcess>
+#include <QRandomGenerator>
+#include <QDebug>
 
 #include "powerkit_def.h"
 #include "powerkit_settings.h"
@@ -22,23 +24,15 @@ ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
     connect(&timer, SIGNAL(timeout()),
             this, SLOT(timeOut()));
     timer.start();
-}
-
-int ScreenSaver::randInt(int low, int high)
-{
-    QTime time = QTime::currentTime();
-    qsrand((uint)time.msec());
-    return qrand() % ((high + 1) - low) + low;
+    Update();
 }
 
 quint32 ScreenSaver::genCookie()
 {
-    int low = 0;
-    int high = 1000;
-    quint32 cookie = (quint32)randInt(low, high);
+    quint32 cookie = QRandomGenerator::global()->generate();
     while(!clients.contains(cookie)) {
         if (!clients.contains(cookie)) { clients[cookie] = QTime::currentTime(); }
-        else { cookie = (quint32)randInt(low, high); }
+        else { cookie = QRandomGenerator::global()->generate(); }
     }
     return cookie;
 }
@@ -71,22 +65,27 @@ void ScreenSaver::pingPM()
 {
     QDBusInterface iface(PM_SERVICE, PM_PATH, PM_SERVICE,
                          QDBusConnection::sessionBus());
-    if (!iface.isValid()) {
-        return;
-    }
+    if (!iface.isValid()) { return; }
     iface.call(SS_SIMULATE);
+}
+
+void ScreenSaver::Update()
+{
+    int exe1 = QProcess::execute("xset",
+                                 QStringList() << "-dpms");
+    int exe2 = QProcess::execute("xset",
+                                 QStringList() << "s" << "on");
+    int exe3 = QProcess::execute("xset",
+                                 QStringList() << "s" << PowerSettings::getValue("screensaver_blank_timeout",
+                                                                                 SS_BLANK_TIMEOUT).toString());
+    qDebug() << "screensaver update" << exe1 << exe2 << exe3;
+    SimulateUserActivity();
 }
 
 void ScreenSaver::SimulateUserActivity()
 {
-    QProcess proc;
-    QString cmd = PowerSettings::getValue("screensaver_simulate_activity_cmd",
-                                          XSCREENSAVER_SIMULATE).toString();
-    QStringList args = cmd.trimmed().split(" ");
-    proc.start((args.count() > 0 ? args.takeFirst() : cmd), args);
-    proc.waitForFinished();
-    proc.close();
-    pingPM();
+    int exe = QProcess::execute("xset", QStringList() << "s" << "reset");
+    qDebug() << "screensaver reset" << exe;
 }
 
 quint32 ScreenSaver::Inhibit(const QString &application,
