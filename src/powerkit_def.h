@@ -117,10 +117,9 @@ enum criticalAction
 #define SS_TIMEOUT 30000
 #define SS_MAX_INHIBIT 18000
 #define SS_SIMULATE "SimulateUserActivity"
-
-#define XSCREENSAVER_SIMULATE "xscreensaver-command -deactivate"
-#define XSCREENSAVER_LOCK "xscreensaver-command -lock"
-#define XSCREENSAVER_RUN "xscreensaver -no-splash"
+#define SS_BLANK_TIMEOUT 300
+#define SS_LOCK_TIMEOUT 250
+#define SS_LOCK_CMD "xsecurelock"
 
 #define CONF_DIALOG_GEOMETRY "dialog_geometry"
 #define CONF_SUSPEND_BATTERY_TIMEOUT "suspend_battery_timeout"
