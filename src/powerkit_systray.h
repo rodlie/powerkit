@@ -32,25 +32,9 @@
 #include <QSlider>
 #include <QCheckBox>
 
-//#include "common.h"
 #include "powerkit_freedesktop_pm.h"
 #include "powerkit_screensaver.h"
-#include "powerkit_x11_screens.h"
-#include "powerkit.h"
-
-#include <X11/extensions/scrnsaver.h>
-#undef CursorShape
-#undef Bool
-#undef Status
-#undef None
-#undef KeyPress
-#undef KeyRelease
-#undef FocusIn
-#undef FocusOut
-#undef FontChange
-#undef Expose
-#undef FrameFeature
-#undef Unsorted
+#include "powerkit_manager.h"
 
 //#define DEVICE_UUID Qt::UserRole+1
 //#define DEVICE_TYPE Qt::UserRole+2
@@ -85,9 +69,9 @@ public:
 
 private:
     TrayIcon *tray;
-    PowerKit *man;
+    PowerKit::Manager *man;
     PowerManagement *pm;
-    ScreenSaver *ss;
+    PowerKit::ScreenSaver *ss;
     bool wasLowBattery;
     bool wasVeryLowBattery;
     int lowBatteryValue;
@@ -165,7 +149,6 @@ private slots:
     void handleCritical(double left);
     void drawBattery(double left);
     void timeout();
-    int xIdle();
     void resetTimer();
     void setInternalMonitor();
     bool internalMonitorIsConnected();
