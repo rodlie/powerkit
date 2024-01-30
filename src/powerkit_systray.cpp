@@ -6,20 +6,25 @@
 # See the LICENSE file for full details
 */
 
-#include "InhibitAdaptor.h"
 #include "powerkit_systray.h"
-#include "powerkit_def.h"
+#include "powerkit_common.h"
 #include "powerkit_theme.h"
 #include "powerkit_notify.h"
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"
 #include "powerkit_cpu.h"
+#include "powerkit_x11_screens.h"
+
+#include "InhibitAdaptor.h"
+#include "ScreenSaverAdaptor.h"
 
 #include <QMessageBox>
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QProcess>
+
+using namespace PowerKit;
 
 SysTray::SysTray(QObject *parent)
     : QObject(parent)
@@ -46,8 +51,6 @@ SysTray::SysTray(QObject *parent)
     , disableLidOnExternalMonitors(false)
     , autoSuspendBatteryAction(suspendSleep)
     , autoSuspendACAction(suspendNone)
-    , xscreensaver(nullptr)
-    , startupScreensaver(true)
     , watcher(nullptr)
     , lidXrandr(false)
     , lidWasClosed(false)
@@ -99,7 +102,7 @@ SysTray::SysTray(QObject *parent)
             SLOT(handleTrayWheel(TrayIcon::WheelAction)));
 
     // setup manager
-    man = new PowerKit(this);
+    man = new Manager(this);
     connect(man,
             SIGNAL(UpdatedDevices()),
             this,
@@ -187,13 +190,6 @@ SysTray::SysTray(QObject *parent)
             man,
             SLOT(handleDelInhibitScreenSaver(quint32)));
 
-    // setup xscreensaver
-    xscreensaver = new QProcess(this);
-    connect(xscreensaver,
-            SIGNAL(finished(int)),
-            this,
-            SLOT(handleScreensaverFinished(int)));
-
     // setup timer
     timer = new QTimer(this);
     timer->setInterval(60000);
@@ -204,7 +200,7 @@ SysTray::SysTray(QObject *parent)
     timer->start();
 
     // check for config
-    PowerSettings::getConf();
+    Settings::getConf();
 
     // setup theme
     Theme::setAppTheme();
@@ -216,14 +212,6 @@ SysTray::SysTray(QObject *parent)
     // load settings and register service
     loadSettings();
     registerService();
-
-    // start xscreensaver
-    if (desktopSS) {
-        QString cmd = PowerSettings::getValue("screensaver_run_cmd",
-                                              XSCREENSAVER_RUN).toString();
-        QStringList args = cmd.trimmed().split(" ");
-        xscreensaver->start((args.count() > 0 ? args.takeFirst() : cmd), args);
-    }
 
     // setup backlight
     backlightWatcher = new QFileSystemWatcher(this);
@@ -244,8 +232,8 @@ SysTray::SysTray(QObject *parent)
 
     // setup watcher
     watcher = new QFileSystemWatcher(this);
-    watcher->addPath(PowerSettings::getDir());
-    watcher->addPath(PowerSettings::getConf());
+    watcher->addPath(Settings::getDir());
+    watcher->addPath(Settings::getConf());
     connect(watcher,
             SIGNAL(fileChanged(QString)),
             this,
@@ -261,21 +249,15 @@ SysTray::~SysTray()
     menuFrame->deleteLater();
     menuHeader->deleteLater();
     powerMenu->deleteLater();
-    if (xscreensaver->isOpen()) { xscreensaver->close(); }
 }
 
 // what to do when user clicks systray
 void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    switch (reason) {
-    case QSystemTrayIcon::Trigger:
-    case QSystemTrayIcon::Context:
-    case QSystemTrayIcon::DoubleClick:
-    case QSystemTrayIcon::MiddleClick:
-    default:
-        powerMenu->exec(QCursor::pos());
-        break;
-    }
+    Q_UNUSED(reason)
+
+    updateMenu();
+    powerMenu->exec(QCursor::pos());
 }
 
 void SysTray::checkDevices()
@@ -400,7 +382,7 @@ void SysTray::handleOnBattery()
         backlightBatteryValue>0) {
         qDebug() << "set brightness on battery";
         if (backlightBatteryDisableIfLower &&
-            backlightBatteryValue>PowerBacklight::getCurrentBrightness(backlightDevice)) {
+            backlightBatteryValue>Backlight::getCurrentBrightness(backlightDevice)) {
             qDebug() << "brightness is lower than battery value, ignore";
             return;
         }
@@ -429,7 +411,7 @@ void SysTray::handleOnAC()
         backlightACValue>0) {
         qDebug() << "set brightness on ac";
         if (backlightACDisableIfHigher &&
-            backlightACValue<PowerBacklight::getCurrentBrightness(backlightDevice)) {
+            backlightACValue<Backlight::getCurrentBrightness(backlightDevice)) {
             qDebug() << "brightness is higher than ac value, ignore";
             return;
         }
@@ -447,98 +429,98 @@ void SysTray::loadSettings()
     qDebug() << "(re)load settings...";
 
     // set default settings
-    if (PowerSettings::isValid(CONF_SUSPEND_BATTERY_TIMEOUT)) {
-        autoSuspendBattery = PowerSettings::getValue(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
+    if (Settings::isValid(CONF_SUSPEND_BATTERY_TIMEOUT)) {
+        autoSuspendBattery = Settings::getValue(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
     }
-    if (PowerSettings::isValid(CONF_SUSPEND_AC_TIMEOUT)) {
-        autoSuspendAC = PowerSettings::getValue(CONF_SUSPEND_AC_TIMEOUT).toInt();
+    if (Settings::isValid(CONF_SUSPEND_AC_TIMEOUT)) {
+        autoSuspendAC = Settings::getValue(CONF_SUSPEND_AC_TIMEOUT).toInt();
     }
-    if (PowerSettings::isValid(CONF_SUSPEND_BATTERY_ACTION)) {
-        autoSuspendBatteryAction = PowerSettings::getValue(CONF_SUSPEND_BATTERY_ACTION).toInt();
+    if (Settings::isValid(CONF_SUSPEND_BATTERY_ACTION)) {
+        autoSuspendBatteryAction = Settings::getValue(CONF_SUSPEND_BATTERY_ACTION).toInt();
     }
-    if (PowerSettings::isValid(CONF_SUSPEND_AC_ACTION)) {
-        autoSuspendACAction = PowerSettings::getValue(CONF_SUSPEND_AC_ACTION).toInt();
+    if (Settings::isValid(CONF_SUSPEND_AC_ACTION)) {
+        autoSuspendACAction = Settings::getValue(CONF_SUSPEND_AC_ACTION).toInt();
     }
-    if (PowerSettings::isValid(CONF_CRITICAL_BATTERY_TIMEOUT)) {
-        critBatteryValue = PowerSettings::getValue(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
+    if (Settings::isValid(CONF_CRITICAL_BATTERY_TIMEOUT)) {
+        critBatteryValue = Settings::getValue(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
     }
-    if (PowerSettings::isValid(CONF_LID_BATTERY_ACTION)) {
-        lidActionBattery = PowerSettings::getValue(CONF_LID_BATTERY_ACTION).toInt();
+    if (Settings::isValid(CONF_LID_BATTERY_ACTION)) {
+        lidActionBattery = Settings::getValue(CONF_LID_BATTERY_ACTION).toInt();
     }
-    if (PowerSettings::isValid(CONF_LID_AC_ACTION)) {
-        lidActionAC = PowerSettings::getValue(CONF_LID_AC_ACTION).toInt();
+    if (Settings::isValid(CONF_LID_AC_ACTION)) {
+        lidActionAC = Settings::getValue(CONF_LID_AC_ACTION).toInt();
     }
-    if (PowerSettings::isValid(CONF_CRITICAL_BATTERY_ACTION)) {
-        criticalAction = PowerSettings::getValue(CONF_CRITICAL_BATTERY_ACTION).toInt();
+    if (Settings::isValid(CONF_CRITICAL_BATTERY_ACTION)) {
+        criticalAction = Settings::getValue(CONF_CRITICAL_BATTERY_ACTION).toInt();
     }
-    if (PowerSettings::isValid(CONF_FREEDESKTOP_SS)) {
-        desktopSS = PowerSettings::getValue(CONF_FREEDESKTOP_SS).toBool();
+    if (Settings::isValid(CONF_FREEDESKTOP_SS)) {
+        desktopSS = Settings::getValue(CONF_FREEDESKTOP_SS).toBool();
     }
-    if (PowerSettings::isValid(CONF_FREEDESKTOP_PM)) {
-        desktopPM = PowerSettings::getValue(CONF_FREEDESKTOP_PM).toBool();
+    if (Settings::isValid(CONF_FREEDESKTOP_PM)) {
+        desktopPM = Settings::getValue(CONF_FREEDESKTOP_PM).toBool();
     }
-    if (PowerSettings::isValid(CONF_TRAY_NOTIFY)) {
-        showNotifications = PowerSettings::getValue(CONF_TRAY_NOTIFY).toBool();
+    if (Settings::isValid(CONF_TRAY_NOTIFY)) {
+        showNotifications = Settings::getValue(CONF_TRAY_NOTIFY).toBool();
     }
-    if (PowerSettings::isValid(CONF_TRAY_SHOW)) {
-        showTray = PowerSettings::getValue(CONF_TRAY_SHOW).toBool();
+    if (Settings::isValid(CONF_TRAY_SHOW)) {
+        showTray = Settings::getValue(CONF_TRAY_SHOW).toBool();
     }
-    if (PowerSettings::isValid(CONF_LID_DISABLE_IF_EXTERNAL)) {
-        disableLidOnExternalMonitors = PowerSettings::getValue(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
+    if (Settings::isValid(CONF_LID_DISABLE_IF_EXTERNAL)) {
+        disableLidOnExternalMonitors = Settings::getValue(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
     }
-    if (PowerSettings::isValid(CONF_LID_XRANDR)) {
-        lidXrandr = PowerSettings::getValue(CONF_LID_XRANDR).toBool();
+    if (Settings::isValid(CONF_LID_XRANDR)) {
+        lidXrandr = Settings::getValue(CONF_LID_XRANDR).toBool();
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_AC_ENABLE)) {
-        backlightOnAC = PowerSettings::getValue(CONF_BACKLIGHT_AC_ENABLE).toBool();
+    if (Settings::isValid(CONF_BACKLIGHT_AC_ENABLE)) {
+        backlightOnAC = Settings::getValue(CONF_BACKLIGHT_AC_ENABLE).toBool();
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_AC)) {
-        backlightACValue = PowerSettings::getValue(CONF_BACKLIGHT_AC).toInt();
+    if (Settings::isValid(CONF_BACKLIGHT_AC)) {
+        backlightACValue = Settings::getValue(CONF_BACKLIGHT_AC).toInt();
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_BATTERY_ENABLE)) {
-        backlightOnBattery = PowerSettings::getValue(CONF_BACKLIGHT_BATTERY_ENABLE).toBool();
+    if (Settings::isValid(CONF_BACKLIGHT_BATTERY_ENABLE)) {
+        backlightOnBattery = Settings::getValue(CONF_BACKLIGHT_BATTERY_ENABLE).toBool();
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_BATTERY)) {
-        backlightBatteryValue = PowerSettings::getValue(CONF_BACKLIGHT_BATTERY).toInt();
+    if (Settings::isValid(CONF_BACKLIGHT_BATTERY)) {
+        backlightBatteryValue = Settings::getValue(CONF_BACKLIGHT_BATTERY).toInt();
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
-        backlightBatteryDisableIfLower =  PowerSettings::getValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)
-                                                                    .toBool();
+    if (Settings::isValid(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
+        backlightBatteryDisableIfLower =  Settings::getValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)
+                                                             .toBool();
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
-        backlightACDisableIfHigher = PowerSettings::getValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
-                                                               .toBool();
+    if (Settings::isValid(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
+        backlightACDisableIfHigher = Settings::getValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
+                                                        .toBool();
     }
-    if (PowerSettings::isValid(CONF_WARN_ON_LOW_BATTERY)) {
-        warnOnLowBattery = PowerSettings::getValue(CONF_WARN_ON_LOW_BATTERY).toBool();
+    if (Settings::isValid(CONF_WARN_ON_LOW_BATTERY)) {
+        warnOnLowBattery = Settings::getValue(CONF_WARN_ON_LOW_BATTERY).toBool();
     }
-    if (PowerSettings::isValid(CONF_WARN_ON_VERYLOW_BATTERY)) {
-        warnOnVeryLowBattery = PowerSettings::getValue(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
+    if (Settings::isValid(CONF_WARN_ON_VERYLOW_BATTERY)) {
+        warnOnVeryLowBattery = Settings::getValue(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
     }
-    if (PowerSettings::isValid(CONF_NOTIFY_ON_BATTERY)) {
-        notifyOnBattery = PowerSettings::getValue(CONF_NOTIFY_ON_BATTERY).toBool();
+    if (Settings::isValid(CONF_NOTIFY_ON_BATTERY)) {
+        notifyOnBattery = Settings::getValue(CONF_NOTIFY_ON_BATTERY).toBool();
     }
-    if (PowerSettings::isValid(CONF_NOTIFY_ON_AC)) {
-        notifyOnAC = PowerSettings::getValue(CONF_NOTIFY_ON_AC).toBool();
+    if (Settings::isValid(CONF_NOTIFY_ON_AC)) {
+        notifyOnAC = Settings::getValue(CONF_NOTIFY_ON_AC).toBool();
     }
-    if (PowerSettings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
-        notifyNewInhibitor = PowerSettings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
+    if (Settings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
+        notifyNewInhibitor = Settings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
     }
-    if (PowerSettings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
-        man->setLockScreenOnSuspend(PowerSettings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool());
+    if (Settings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
+        man->setLockScreenOnSuspend(Settings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool());
     }
-    if (PowerSettings::isValid(CONF_RESUME_LOCK_SCREEN)) {
-        man->setLockScreenOnResume(PowerSettings::getValue(CONF_RESUME_LOCK_SCREEN).toBool());
+    if (Settings::isValid(CONF_RESUME_LOCK_SCREEN)) {
+        man->setLockScreenOnResume(Settings::getValue(CONF_RESUME_LOCK_SCREEN).toBool());
     }
-    if (PowerSettings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY)) {
-        man->setSuspendWakeAlarmOnBattery(PowerSettings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY).toInt());
+    if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY)) {
+        man->setSuspendWakeAlarmOnBattery(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY).toInt());
     }
-    if (PowerSettings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_AC)) {
-        man->setSuspendWakeAlarmOnAC(PowerSettings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
+    if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_AC)) {
+        man->setSuspendWakeAlarmOnAC(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
     }
 
-    if (PowerSettings::isValid(CONF_KERNEL_BYPASS)) {
-        ignoreKernelResume = PowerSettings::getValue(CONF_KERNEL_BYPASS).toBool();
+    if (Settings::isValid(CONF_KERNEL_BYPASS)) {
+        ignoreKernelResume = Settings::getValue(CONF_KERNEL_BYPASS).toBool();
     } else {
         ignoreKernelResume = false;
     }
@@ -558,11 +540,14 @@ void SysTray::loadSettings()
     }
 
     // backlight
-    backlightDevice = PowerBacklight::getDevice();
-    hasBacklight = PowerBacklight::canAdjustBrightness(backlightDevice);
-    if (PowerSettings::isValid(CONF_BACKLIGHT_MOUSE_WHEEL)) {
-        backlightMouseWheel = PowerSettings::getValue(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
+    backlightDevice = Backlight::getDevice();
+    hasBacklight = Backlight::canAdjustBrightness(backlightDevice);
+    if (Settings::isValid(CONF_BACKLIGHT_MOUSE_WHEEL)) {
+        backlightMouseWheel = Settings::getValue(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
     }
+
+    // screensaver
+    ss->Update();
 }
 
 // register session services
@@ -606,26 +591,23 @@ void SysTray::registerService()
         qWarning() << "Enabled org.freedesktop.PowerManagement" << hasDesktopPM;
     }
 
-    bool hasDesktopSS = true;
-    if (desktopSS) {
-        if (!QDBusConnection::sessionBus().registerService(SS_SERVICE)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopSS = false;
+    // register org.freedesktop.ScreenSaver
+    bool hasScreenSaver = true;
+    if (!QDBusConnection::sessionBus().registerService(PK_SCREENSAVER_SERVICE)) {
+        qWarning() << "Failed to register screensaver service" << QDBusConnection::sessionBus().lastError().message();
+        hasScreenSaver = false;
+    } else {
+        new ScreenSaverAdaptor(ss);
+        if (!QDBusConnection::sessionBus().registerObject(PK_SCREENSAVER_PATH_ROOT, ss)) {
+            qWarning() << "Failed to register screensaver object" << QDBusConnection::sessionBus().lastError().message();
+            hasScreenSaver = false;
         }
-        if (!QDBusConnection::sessionBus().registerObject(SS_PATH,
-                                                          ss,
-                                                          QDBusConnection::ExportAllSlots)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopSS = false;
+        if (!QDBusConnection::sessionBus().registerObject(PK_SCREENSAVER_PATH_FULL, ss)) {
+            qWarning() << "Failed to register screensaver object" << QDBusConnection::sessionBus().lastError().message();
+            hasScreenSaver = false;
         }
-        if (!QDBusConnection::sessionBus().registerObject(SS_FULL_PATH,
-                                                          ss,
-                                                          QDBusConnection::ExportAllSlots)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopSS = false;
-        }
-        qWarning() << "Enabled org.freedesktop.ScreenSaver" << hasDesktopSS;
     }
+    qWarning() << "Enabled org.freedesktop.ScreenSaver" << hasScreenSaver;
 
     bool hasDesktopPK = true;
     if (!QDBusConnection::sessionBus().registerService(POWERKIT_SERVICE)) {
@@ -646,7 +628,7 @@ void SysTray::registerService()
     }
     qWarning() << "Enabled org.freedesktop.PowerKit" << hasDesktopPK;
 
-    if (!hasDesktopPK || (desktopPM && !hasDesktopPM) || (desktopSS && !hasDesktopSS)) { hasService = false; }
+    if (!hasDesktopPK || (desktopPM && !hasDesktopPM) || !hasScreenSaver) { hasService = false; }
 }
 
 // dbus session inhibit status handler
@@ -717,27 +699,19 @@ void SysTray::drawBattery(double left)
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-    if (left <= 0 || !man->HasBattery()) {
-        tray->setIcon(icon);
+    if (!man->HasBattery()) {
+        tray->setIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
         return;
     }
 
-    if (left <= 10) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left <= 25) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left <= 75) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left <= 90) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
-    } else {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left >= 100 && !man->OnBattery()) {
-            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-        }
-    }
-    tray->setIcon(icon);
+    tray->setIcon(Theme::drawCircleProgress(left,
+                                            22,
+                                            4,
+                                            4,
+                                            false,
+                                            QString(),
+                                            Qt::red,
+                                            man->OnBattery() ? Qt::white : Qt::green));
 }
 
 // timeout, check if idle
@@ -750,7 +724,7 @@ void SysTray::timeout()
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    int uIdle = xIdle();
+    int uIdle = ss->GetSessionIdleTime() / 60;
 
     qDebug() << "timeout?" << timeouts << "idle?" << uIdle << "inhibit?" << pm->HasInhibit() << man->GetInhibitors();
 
@@ -790,24 +764,6 @@ void SysTray::timeout()
         default: break;
         }
     }
-}
-
-// get user idle time
-int SysTray::xIdle()
-{
-    long idle = 0;
-    Display *display = XOpenDisplay(0);
-    if (display != 0) {
-        XScreenSaverInfo *info = XScreenSaverAllocInfo();
-        XScreenSaverQueryInfo(display, DefaultRootWindow(display), info);
-        if (info) {
-            idle = info->idle;
-            XFree(info);
-        }
-    }
-    XCloseDisplay(display);
-    int minutes = (idle-(1000*60))/(1000*60);
-    return minutes;
 }
 
 // reset the idle timer
@@ -893,12 +849,6 @@ void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
     getInhibitors();
 }
 
-// what to do when xscreensaver ends
-void SysTray::handleScreensaverFinished(int exitcode)
-{
-    Q_UNUSED(exitcode)
-}
-
 // show notifications
 void SysTray::showMessage(const QString &title,
                           const QString &msg,
@@ -934,32 +884,32 @@ void SysTray::disableHibernate()
     if (criticalAction == criticalHibernate) {
         qWarning() << "reset critical action to shutdown";
         criticalAction = criticalShutdown;
-        PowerSettings::setValue(CONF_CRITICAL_BATTERY_ACTION,
-                                  criticalAction);
+        Settings::setValue(CONF_CRITICAL_BATTERY_ACTION,
+                           criticalAction);
     }
     if (lidActionBattery == lidHibernate) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
-        PowerSettings::setValue(CONF_LID_BATTERY_ACTION,
-                                  lidActionBattery);
+        Settings::setValue(CONF_LID_BATTERY_ACTION,
+                           lidActionBattery);
     }
     if (lidActionAC == lidHibernate) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
-        PowerSettings::setValue(CONF_LID_AC_ACTION,
-                                  lidActionAC);
+        Settings::setValue(CONF_LID_AC_ACTION,
+                           lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendHibernate) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
-        PowerSettings::setValue(CONF_SUSPEND_BATTERY_ACTION,
-                                  autoSuspendBatteryAction);
+        Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
+                           autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendHibernate) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
-        PowerSettings::setValue(CONF_SUSPEND_AC_ACTION,
-                                  autoSuspendACAction);
+        Settings::setValue(CONF_SUSPEND_AC_ACTION,
+                           autoSuspendACAction);
     }
 }
 
@@ -969,25 +919,25 @@ void SysTray::disableSuspend()
     if (lidActionBattery == lidSleep) {
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
-        PowerSettings::setValue(CONF_LID_BATTERY_ACTION,
+        Settings::setValue(CONF_LID_BATTERY_ACTION,
                                   lidActionBattery);
     }
     if (lidActionAC == lidSleep) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
-        PowerSettings::setValue(CONF_LID_AC_ACTION,
+        Settings::setValue(CONF_LID_AC_ACTION,
                                   lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendSleep) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
-        PowerSettings::setValue(CONF_SUSPEND_BATTERY_ACTION,
+        Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
                                   autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendSleep) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
-        PowerSettings::setValue(CONF_SUSPEND_AC_ACTION,
+        Settings::setValue(CONF_SUSPEND_AC_ACTION,
                                   autoSuspendACAction);
     }
 }
@@ -1029,11 +979,11 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
     switch (action) {
     case TrayIcon::WheelUp:
             man->setDisplayBacklight(backlightDevice,
-                                     PowerBacklight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
+                                     Backlight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
         break;
     case TrayIcon::WheelDown:
             man->setDisplayBacklight(backlightDevice,
-                                     PowerBacklight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
+                                     Backlight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
         break;
     default:;
     }
@@ -1088,17 +1038,21 @@ void SysTray::populateMenu()
     backlightContainerLayout->setContentsMargins(0,0,0,0);
     backlightContainerLayout->setSpacing(0);
 
-    QLabel *cpuFreqIcon = new QLabel(cpuHeaderWidget);
-    cpuFreqIcon->setPixmap(QIcon::fromTheme(DEFAULT_APP_ICON)
-                           .pixmap(32, 32));
+    //QLabel *cpuFreqIcon = new QLabel(cpuHeaderWidget);
+    //cpuFreqIcon->setPixmap(QIcon::fromTheme(DEFAULT_APP_ICON)
+      //                     .pixmap(32, 32));
 
     cpuFreqLabel = new QLabel(cpuHeaderWidget);
-    cpuFreqLabel->setText(tr("N/A"));
+    cpuFreqLabel->setMaximumSize(QSize(64, 64));
+    cpuFreqLabel->setMinimumSize(QSize(64, 64));
 
     labelBatteryIcon = new QLabel(batteryWidget);
+    labelBatteryIcon->setMaximumSize(QSize(64, 64));
+    labelBatteryIcon->setMinimumSize(QSize(64, 64));
+
     //labelBatteryIcon->setMinimumSize(32, 32);
     //labelBatteryIcon->setMaximumSize(32, 32);
-    labelBatteryStatus = new QLabel(batteryWidget);
+    //labelBatteryStatus = new QLabel(batteryWidget);
 
 
     QLabel *backlightLabel = new QLabel(menuFrame);
@@ -1108,7 +1062,7 @@ void SysTray::populateMenu()
     backlightSlider = new QSlider(menuFrame);
     backlightSlider->setMinimumWidth(100);
     backlightSlider->setMinimum(1);
-    backlightSlider->setMaximum(PowerBacklight::getMaxBrightness(backlightDevice));
+    backlightSlider->setMaximum(Backlight::getMaxBrightness(backlightDevice));
     backlightSlider->setSingleStep(1);
     backlightSlider->setOrientation(Qt::Horizontal);
     backlightSlider->setToolTip(tr("Adjust the display brightness."));
@@ -1116,18 +1070,17 @@ void SysTray::populateMenu()
                 this, SLOT(handleBacklightSlider(int)));
 
     cpuContainerLayout->addWidget(cpuHeaderWidget);
-    cpuHeaderLayout->addWidget(cpuFreqIcon);
-    cpuHeaderLayout->addWidget(cpuFreqLabel);
+   // cpuHeaderLayout->addWidget(cpuFreqIcon);
 
-    if (PowerCpu::hasPState()) {
+    /*if (Cpu::hasPState()) {
         pstateMinSlider = new QSlider(menuFrame);
         pstateMaxSlider = new QSlider(menuFrame);
         pstateMinSlider->setRange(0, 100);
         pstateMaxSlider->setRange(0,100);
         pstateMinSlider->setOrientation(Qt::Horizontal);
         pstateMaxSlider->setOrientation(Qt::Horizontal);
-        pstateMinSlider->setValue(PowerCpu::getPStateMin());
-        pstateMaxSlider->setValue(PowerCpu::getPStateMax());
+        pstateMinSlider->setValue(Cpu::getPStateMin());
+        pstateMaxSlider->setValue(Cpu::getPStateMax());
 
         connect(pstateMinSlider, SIGNAL(valueChanged(int)),
                 this, SLOT(handlePStateMinSlider(int)));
@@ -1137,7 +1090,7 @@ void SysTray::populateMenu()
         pstateTurboCheckbox = new QCheckBox(menuFrame);
         pstateTurboCheckbox->setText(tr("Turbo Boost"));
         pstateTurboCheckbox->setCheckable(true);
-        pstateTurboCheckbox->setChecked(PowerCpu::hasPStateTurbo());
+        pstateTurboCheckbox->setChecked(Cpu::hasPStateTurbo());
 
         QLabel *pstateMinLabel = new QLabel(menuFrame);
         QLabel *pstateMaxLabel = new QLabel(menuFrame);
@@ -1159,10 +1112,16 @@ void SysTray::populateMenu()
         cpuContainerLayout->addWidget(pstateMinWidget);
         cpuContainerLayout->addWidget(pstateMaxWidget);
         cpuContainerLayout->addWidget(pstateTurboCheckbox);
-    }
+    }*/
 
-    batteryContainerLayout->addWidget(labelBatteryIcon);
-    batteryContainerLayout->addWidget(labelBatteryStatus);
+    const auto statusWidget = new QWidget(menuFrame);
+    const auto statusLayout = new QHBoxLayout(statusWidget);
+
+    statusLayout->addWidget(labelBatteryIcon);
+    statusLayout->addWidget(cpuFreqLabel);
+
+    batteryContainerLayout->addWidget(statusWidget);
+    //batteryContainerLayout->addWidget(labelBatteryStatus);
     backlightContainerLayout->addWidget(backlightLabel);
     backlightContainerLayout->addWidget(backlightSlider);
 
@@ -1179,42 +1138,42 @@ void SysTray::populateMenu()
     powerMenu->addAction(menuHeader);
     powerMenu->addSeparator();
 
-    actRestart = new QAction(this);
-    actSuspend = new QAction(this);
-    actPowerOff = new QAction(this);
+    //actRestart = new QAction(this);
+    //actSuspend = new QAction(this);
+    //actPowerOff = new QAction(this);
     actSettings = new QAction(this);
-    actHibernate = new QAction(this);
-    actAbout = new QAction(this);
+    //actHibernate = new QAction(this);
+    //actAbout = new QAction(this);
 
-    actRestart->setText(tr("Restart"));
-    actSuspend->setText(tr("Suspend"));
-    actPowerOff->setText(tr("Shutdown"));
+    //actRestart->setText(tr("Restart"));
+    //actSuspend->setText(tr("Suspend"));
+    //actPowerOff->setText(tr("Shutdown"));
     actSettings->setText(tr("Settings"));
-    actHibernate->setText(tr("Hibernate"));
-    actAbout->setText(tr("About"));
+    //actHibernate->setText(tr("Hibernate"));
+    //actAbout->setText(tr("About"));
 
     connect(actSettings, SIGNAL(triggered(bool)), this, SLOT(openSettings()));
 
-    actRestart->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
-    actSuspend->setIcon(QIcon::fromTheme(DEFAULT_SUSPEND_ICON));
-    actPowerOff->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
+    //actRestart->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
+    //actSuspend->setIcon(QIcon::fromTheme(DEFAULT_SUSPEND_ICON));
+    //actPowerOff->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
     actSettings->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    actHibernate->setIcon(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON));
+    //actHibernate->setIcon(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON));
 
     inhibitorsMenu->setIcon(QIcon::fromTheme(DEFAULT_INHIBITOR_ICON));
-    actAbout->setIcon(QIcon::fromTheme(DEFAULT_HELP_ICON));
+    //actAbout->setIcon(QIcon::fromTheme(DEFAULT_HELP_ICON));
 
     powerMenu->addMenu(inhibitorsMenu);
-    powerMenu->addSeparator();
-    powerMenu->addAction(actSuspend);
-    powerMenu->addAction(actHibernate);
-    powerMenu->addSeparator();
-    powerMenu->addAction(actRestart);
-    powerMenu->addAction(actPowerOff);
+    //powerMenu->addSeparator();
+    //powerMenu->addAction(actSuspend);
+    //powerMenu->addAction(actHibernate);
+    //powerMenu->addSeparator();
+    //powerMenu->addAction(actRestart);
+    //powerMenu->addAction(actPowerOff);
     powerMenu->addSeparator();
     powerMenu->addAction(actSettings);
-    powerMenu->addSeparator();
-    powerMenu->addAction(actAbout);
+    //powerMenu->addSeparator();
+    //powerMenu->addAction(actAbout);
 
     updateBacklight(QString());
     updateMenu();
@@ -1223,42 +1182,27 @@ void SysTray::populateMenu()
 void SysTray::updateMenu()
 {
     qDebug() << "update menu";
-    double left = man->BatteryLeft();
-    if (left<0) { left = 0; }
-    if (left>100) { left = 100; }
 
-    if (man->HasBattery()) {
-        QString leftString = QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull())
-                                .toUTC().toString("hh:mm");
-        labelBatteryStatus->setText(QString("<h2 style=\"font-weight:normal;margin-left:5;\">%1% (%2)</h2>").arg(left).arg(leftString));
-    } else {
-        labelBatteryStatus->setText(QString("<h2 style=\"font-weight:normal;margin-left:5;\">%1 (00:00)</h2>").arg(tr("AC")));
-    }
-
-    QIcon icon = QIcon::fromTheme(DEFAULT_AC_ICON);
-    if (left <1 || !man->HasBattery()) {
-        labelBatteryIcon->setPixmap(icon.pixmap(QSize(32, 32)));
-        return;
-    }
-    if (left <= 10) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_CRIT:DEFAULT_BATTERY_ICON_CRIT_AC);
-    } else if (left <= 25) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_LOW:DEFAULT_BATTERY_ICON_LOW_AC);
-    } else if (left <= 75) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_GOOD:DEFAULT_BATTERY_ICON_GOOD_AC);
-    } else if (left <= 90) {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_FULL_AC);
-    } else {
-        icon = QIcon::fromTheme(man->OnBattery()?DEFAULT_BATTERY_ICON_FULL:DEFAULT_BATTERY_ICON_CHARGED);
-        if (left > 99 && !man->OnBattery()) {
-            icon = QIcon::fromTheme(DEFAULT_AC_ICON);
+    if (labelBatteryIcon) {
+        if (!man->HasBattery()) { labelBatteryIcon->clear(); }
+        else {
+            double battery = man->BatteryLeft();
+            if (battery < 0) { battery = 0; }
+            if (battery > 100) { battery = 100; }
+            QString batteryTime = QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull()).toUTC().toString("hh:mm");
+            labelBatteryIcon->setPixmap(Theme::drawCircleProgress(battery,
+                                                                  64,
+                                                                  4,
+                                                                  4,
+                                                                  true,
+                                                                  QString("%1% \n%2").arg(QString::number(battery),
+                                                                                          batteryTime)));
         }
     }
-    labelBatteryIcon->setPixmap(icon.pixmap(QSize(32, 32)));
 
     inhibitorsMenu->setEnabled(man->GetInhibitors().size()>0);
 
-    qDebug() << "has pstate?" << PowerCpu::hasPState();
+    /*qDebug() << "has pstate?" << PowerCpu::hasPState();
     qDebug() << "pstate turbo?" << PowerCpu::hasPStateTurbo();
     qDebug() << "pstate min?" << PowerCpu::getPStateMin();
     qDebug() << "pstate max?" << PowerCpu::getPStateMax();
@@ -1270,6 +1214,7 @@ void SysTray::updateMenu()
     qDebug() << "cpu gov?" << PowerCpu::getGovernors();
     qDebug() << "cpu gov avail?" << PowerCpu::getAvailableGovernors();
     qDebug() << "cpu temp?" << PowerCpu::getCoreTemp();
+    qDebug() << "battery left" << man->BatteryLeft();*/
 
     getCpuFreq();
 }
@@ -1278,7 +1223,7 @@ void SysTray::updateBacklight(QString file)
 {
     qDebug() << "BACKLIGHT SLIDER UPDATE" << file;
     Q_UNUSED(file);
-    int value = PowerBacklight::getCurrentBrightness(backlightDevice);
+    int value = Backlight::getCurrentBrightness(backlightDevice);
     if (value != backlightSlider->value()) {
         backlightSlider->setValue(value);
     }
@@ -1287,7 +1232,7 @@ void SysTray::updateBacklight(QString file)
 void SysTray::handleBacklightSlider(int value)
 {
     qDebug() << "BACKLIGHT SLIDER CHANGED" << value;
-    if (PowerBacklight::getCurrentBrightness(backlightDevice) != value) {
+    if (Backlight::getCurrentBrightness(backlightDevice) != value) {
         //if (hasBacklight) { Common::adjustBacklight(backlightDevice, value); }
         /*else {*/ man->setDisplayBacklight(backlightDevice, value); //}
     }
@@ -1298,7 +1243,7 @@ void SysTray::handlePStateMinSlider(int value)
     man->SetPStateMin(value);
     if (pstateMinSlider) {
         pstateMinSlider->blockSignals(true);
-        pstateMinSlider->setValue(PowerCpu::getPStateMin());
+        pstateMinSlider->setValue(Cpu::getPStateMin());
         pstateMinSlider->blockSignals(false);
     }
     getCpuFreq();
@@ -1309,7 +1254,7 @@ void SysTray::handlePStateMaxSlider(int value)
     man->SetPStateMax(value);
     if (pstateMaxSlider) {
         pstateMaxSlider->blockSignals(true);
-        pstateMaxSlider->setValue(PowerCpu::getPStateMax());
+        pstateMaxSlider->setValue(Cpu::getPStateMax());
         pstateMaxSlider->blockSignals(false);
     }
     getCpuFreq();
@@ -1372,22 +1317,38 @@ void SysTray::openSettings()
 
 void SysTray::getCpuFreq()
 {
-    QStringList freqs = PowerCpu::getFrequencies();
-    double currentCpuFreq = 0.0;
-    for (int i=0;i<freqs.size();++i) {
-        double freq = freqs.at(i).toDouble();
-        if (freq>currentCpuFreq) { currentCpuFreq = freq; }
+    QStringList freqs = Cpu::getFrequencies();
+    int currentCpuFreq = 0;
+    double currentFancyFreq = 0.;
+    for (int i=0; i < freqs.size(); ++i) {
+        auto freq = freqs.at(i).toLong();
+        if (freq > currentCpuFreq) {
+            currentCpuFreq = freq;
+            currentFancyFreq = freqs.at(i).toDouble();
+        }
     }
 
     QString temp;
-    if (PowerCpu::hasCoreTemp()) {
-        double coretemp = PowerCpu::getCoreTemp();
+    if (Cpu::hasCoreTemp()) {
+        double coretemp = Cpu::getCoreTemp();
         if (coretemp>0) {
             temp = QString(" (%1&#8451;)")
                    .arg(QString::number(coretemp/1000, 'f', 0));
         }
     }
-    cpuFreqLabel->setText(QString("<h2 style=\"font-weight:normal;margin-left:5;\">%1 GHz%2</h2>").arg(QString::number(currentCpuFreq/1000000, 'f', 2)).arg(temp));
+
+    int freqMin = Cpu::getMinFrequency();
+    int freqMax = Cpu::getMaxFrequency();
+    int progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
+
+    if (cpuFreqLabel) {
+        cpuFreqLabel->setPixmap(Theme::drawCircleProgress(progress,
+                                                          64,
+                                                          4,
+                                                          4,
+                                                          true,
+                                                          QString("%1\nGhz").arg(QString::number(currentFancyFreq/1000000, 'f', 2))));
+    }
 }
 
 // catch wheel events
