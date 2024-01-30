@@ -22,7 +22,7 @@
 
 void Theme::setAppTheme()
 {
-    bool native = PowerSettings::getValue("native_theme", false).toBool();
+    bool native = PowerSettings::getValue(CONF_NATIVE_THEME, false).toBool();
     if (native) { return; }
     qApp->setStyle("Fusion");
     QPalette palette;

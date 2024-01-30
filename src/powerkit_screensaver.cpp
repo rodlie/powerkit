@@ -76,7 +76,7 @@ void ScreenSaver::Update()
     int exe2 = QProcess::execute("xset",
                                  QStringList() << "s" << "on");
     int exe3 = QProcess::execute("xset",
-                                 QStringList() << "s" << PowerSettings::getValue("screensaver_blank_timeout",
+                                 QStringList() << "s" << PowerSettings::getValue(CONF_SCREENSAVER_BLANK_TIMEOUT,
                                                                                  SS_BLANK_TIMEOUT).toString());
     qDebug() << "screensaver update" << exe1 << exe2 << exe3;
     SimulateUserActivity();
@@ -84,7 +84,8 @@ void ScreenSaver::Update()
 
 void ScreenSaver::SimulateUserActivity()
 {
-    int exe = QProcess::execute("xset", QStringList() << "s" << "reset");
+    int exe = QProcess::execute("xset",
+                                QStringList() << "s" << "reset");
     qDebug() << "screensaver reset" << exe;
 }
 

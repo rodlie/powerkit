@@ -133,8 +133,8 @@ enum criticalAction
 #define CONF_LID_BATTERY_ACTION "lid_battery_action"
 #define CONF_LID_AC_ACTION "lid_ac_action"
 #define CONF_LID_DISABLE_IF_EXTERNAL "disable_lid_action_external_monitor"
-#define CONF_FREEDESKTOP_SS "freedesktop_ss"
-#define CONF_FREEDESKTOP_PM "freedesktop_pm"
+#define CONF_FREEDESKTOP_SS "freedesktop_ss" // deprecated
+#define CONF_FREEDESKTOP_PM "freedesktop_pm" // deprecated
 #define CONF_TRAY_NOTIFY "tray_notify"
 #define CONF_TRAY_SHOW "show_tray"
 #define CONF_LID_XRANDR "lid_xrandr_action"
@@ -154,6 +154,9 @@ enum criticalAction
 #define CONF_SUSPEND_LOCK_SCREEN "lock_screen_on_suspend"
 #define CONF_RESUME_LOCK_SCREEN "lock_screen_on_resume"
 #define CONF_ICON_THEME "icon_theme"
+#define CONF_NATIVE_THEME "native_theme"
 #define CONF_KERNEL_BYPASS "kernel_cmd_bypass"
+#define CONF_SCREENSAVER_LOCK_CMD "screensaver_lock_cmd"
+#define CONF_SCREENSAVER_BLANK_TIMEOUT "screensaver_blank_timeout"
 
 #endif // DEF_H
