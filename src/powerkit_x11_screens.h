@@ -14,6 +14,19 @@
 
 #include <X11/extensions/Xrandr.h>
 
+#undef CursorShape
+#undef Bool
+#undef Status
+#undef None
+#undef KeyPress
+#undef KeyRelease
+#undef FocusIn
+#undef FocusOut
+#undef FontChange
+#undef Expose
+#undef FrameFeature
+#undef Unsorted
+
 class Screens
 {
 public:
