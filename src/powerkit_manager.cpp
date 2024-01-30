@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "powerkit.h"
+#include "powerkit_manager.h"
 #include "powerkit_def.h"
 #include "powerkit_settings.h"
 

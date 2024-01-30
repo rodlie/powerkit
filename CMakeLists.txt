@@ -98,8 +98,6 @@ add_executable(${PROJECT_NAME}d
 file(GLOB
      POWERKIT_SRC
      "src/main.cpp"
-     "src/${PROJECT_NAME}.h"
-     "src/${PROJECT_NAME}.cpp"
      "src/${PROJECT_NAME}_*.h"
      "src/${PROJECT_NAME}_*.cpp")
 add_executable(${PROJECT_NAME}

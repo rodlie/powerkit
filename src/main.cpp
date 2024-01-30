@@ -7,31 +7,25 @@
 */
 
 #include <QApplication>
+
 #include "powerkit_systray.h"
 #include "powerkit_dialog.h"
-#include "powerkit.h"
+#include "powerkit_manager.h"
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     QCoreApplication::setApplicationName("freedesktop");
     QCoreApplication::setOrganizationDomain("org");
-#ifdef POWERKIT_VERSION
-    QString version = POWERKIT_VERSION;
-#else
-    QString version = "devel";
-#endif
-    QCoreApplication::setApplicationVersion(version);
+    QCoreApplication::setApplicationVersion(QString::fromUtf8(POWERKIT_VERSION));
 
-    // launch config?
     QStringList args = QApplication::arguments();
     if (args.contains("--config")) {
-        Dialog dialog;
+        PowerKit::Dialog dialog;
         dialog.show();
         return a.exec();
     }
 
-    // check if a powerkit session is already running
     QDBusInterface session(POWERKIT_SERVICE,
                            POWERKIT_PATH,
                            POWERKIT_SERVICE,
@@ -41,7 +35,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    // start powerkit systray
-    SysTray tray(a.parent());
+    SysTray powerkit(a.parent());
     return a.exec();
 }

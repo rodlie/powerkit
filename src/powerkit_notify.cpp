@@ -8,7 +8,7 @@
 
 #include "powerkit_notify.h"
 #include "powerkit_def.h"
-#include "powerkit.h"
+#include "powerkit_manager.h"
 
 SystemNotification::SystemNotification(QObject* parent)
   : QObject(parent)
