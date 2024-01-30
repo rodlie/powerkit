@@ -27,6 +27,8 @@ namespace PowerKit
     private:
         QTimer timer;
         QMap<quint32, QTime> clients;
+        int blank;
+        QString xlock;
 
     signals:
         void newInhibit(const QString &application_name,

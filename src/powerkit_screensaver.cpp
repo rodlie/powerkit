@@ -18,9 +18,13 @@
 #include "powerkit_common.h"
 #include "powerkit_settings.h"
 
+#include <X11/extensions/scrnsaver.h>
+
 using namespace PowerKit;
 
-ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
+ScreenSaver::ScreenSaver(QObject *parent)
+    : QObject(parent)
+    , blank(PK_SCREENSAVER_TIMEOUT_BLANK)
 {
     timer.setInterval(PK_SCREENSAVER_TIMER);
     connect(&timer, SIGNAL(timeout()),
@@ -54,14 +58,19 @@ void ScreenSaver::checkForExpiredClients()
 bool ScreenSaver::canInhibit()
 {
     checkForExpiredClients();
-    if (clients.size()>0) { return true; }
+    if (clients.size() > 0) { return true; }
     return false;
 }
 
 void ScreenSaver::timeOut()
 {
-    qDebug() << "screensaver timeout" << canInhibit();
-    if (canInhibit()) { SimulateUserActivity(); }
+    if (canInhibit()) {
+        SimulateUserActivity();
+        return;
+    }
+    int idle = GetSessionIdleTime();
+    qDebug() << "screensaver idle" << idle << blank;
+    if (idle >= blank) { Lock(); }
 }
 
 void ScreenSaver::pingPM()
@@ -74,20 +83,25 @@ void ScreenSaver::pingPM()
 
 void ScreenSaver::Update()
 {
+    xlock = Settings::getValue(PK_SCREENSAVER_CONF_LOCK_CMD,
+                               PK_SCREENSAVER_LOCK_CMD).toString();
+    blank = Settings::getValue(PK_SCREENSAVER_CONF_TIMEOUT_BLANK,
+                               PK_SCREENSAVER_TIMEOUT_BLANK).toInt();
     int exe1 = QProcess::execute("xset",
                                  QStringList() << "-dpms");
     int exe2 = QProcess::execute("xset",
                                  QStringList() << "s" << "on");
     int exe3 = QProcess::execute("xset",
-                                 QStringList() << "s" << Settings::getValue(PK_SCREENSAVER_CONF_TIMEOUT_BLANK,
-                                                                            PK_SCREENSAVER_TIMEOUT_BLANK).toString());
+                                 QStringList() << "s" << QString::number(blank));
     qDebug() << "screensaver update" << exe1 << exe2 << exe3;
     SimulateUserActivity();
 }
 
 void ScreenSaver::Lock()
 {
+    if (xlock.isEmpty()) { return; }
     qDebug() << "screensaver lock";
+    QProcess::startDetached(xlock, QStringList());
 }
 
 void ScreenSaver::SimulateUserActivity()
@@ -99,8 +113,21 @@ void ScreenSaver::SimulateUserActivity()
 
 quint32 ScreenSaver::GetSessionIdleTime()
 {
-    qDebug() << "screensaver idle";
-    return 0;
+    quint32 idle = 0;
+    Display *display = XOpenDisplay(0);
+    if (display != 0) {
+        XScreenSaverInfo *info = XScreenSaverAllocInfo();
+        XScreenSaverQueryInfo(display,
+                              DefaultRootWindow(display),
+                              info);
+        if (info) {
+            idle = info->idle;
+            XFree(info);
+        }
+    }
+    XCloseDisplay(display);
+    quint32 secs = idle / 1000;
+    return secs;
 }
 
 quint32 ScreenSaver::Inhibit(const QString &application_name,
