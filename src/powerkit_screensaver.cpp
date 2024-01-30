@@ -60,6 +60,7 @@ bool ScreenSaver::canInhibit()
 
 void ScreenSaver::timeOut()
 {
+    qDebug() << "screensaver timeout" << canInhibit();
     if (canInhibit()) { SimulateUserActivity(); }
 }
 
@@ -84,6 +85,11 @@ void ScreenSaver::Update()
     SimulateUserActivity();
 }
 
+void ScreenSaver::Lock()
+{
+    qDebug() << "screensaver lock";
+}
+
 void ScreenSaver::SimulateUserActivity()
 {
     int exe = QProcess::execute("xset",
@@ -91,11 +97,19 @@ void ScreenSaver::SimulateUserActivity()
     qDebug() << "screensaver reset" << exe;
 }
 
-quint32 ScreenSaver::Inhibit(const QString &application,
-                             const QString &reason)
+quint32 ScreenSaver::GetSessionIdleTime()
+{
+    qDebug() << "screensaver idle";
+    return 0;
+}
+
+quint32 ScreenSaver::Inhibit(const QString &application_name,
+                             const QString &reason_for_inhibit)
 {
     quint32 cookie = genCookie();
-    emit newInhibit(application, reason, cookie);
+    emit newInhibit(application_name,
+                    reason_for_inhibit,
+                    cookie);
     timeOut();
     return cookie;
 }

@@ -79,6 +79,13 @@ qt_add_dbus_adaptor(
     PowerManagement
     InhibitAdaptor
 )
+qt_add_dbus_adaptor(
+    ADAPTERS
+    share/org.freedesktop.ScreenSaver.xml
+    powerkit_screensaver.h
+    PowerKit::ScreenSaver
+    ScreenSaverAdaptor
+)
 
 # exe
 set(SOURCES

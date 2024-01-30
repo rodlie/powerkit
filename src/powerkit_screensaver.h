@@ -29,8 +29,8 @@ namespace PowerKit
         QMap<quint32, QTime> clients;
 
     signals:
-        void newInhibit(const QString &application,
-                        const QString &reason,
+        void newInhibit(const QString &application_name,
+                        const QString &reason_for_inhibit,
                         quint32 cookie);
         void removedInhibit(quint32 cookie);
 
@@ -43,9 +43,11 @@ namespace PowerKit
 
     public slots:
         void Update();
+        void Lock();
         void SimulateUserActivity();
-        quint32 Inhibit(const QString &application,
-                        const QString &reason);
+        quint32 GetSessionIdleTime();
+        quint32 Inhibit(const QString &application_name,
+                        const QString &reason_for_inhibit);
         void UnInhibit(quint32 cookie);
     };
 }
