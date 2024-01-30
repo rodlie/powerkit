@@ -20,7 +20,7 @@
 
 ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 {
-    timer.setInterval(SS_TIMEOUT);
+    timer.setInterval(PK_SCREENSAVER_TIMER);
     connect(&timer, SIGNAL(timeout()),
             this, SLOT(timeOut()));
     timer.start();
@@ -43,7 +43,7 @@ void ScreenSaver::checkForExpiredClients()
     while (client.hasNext()) {
         client.next();
         if (client.value()
-            .secsTo(QTime::currentTime())>=SS_MAX_INHIBIT) {
+            .secsTo(QTime::currentTime())>=PK_SCREENSAVER_MAX_INHIBIT) {
             clients.remove(client.key());
         }
     }
@@ -66,7 +66,7 @@ void ScreenSaver::pingPM()
     QDBusInterface iface(PM_SERVICE, PM_PATH, PM_SERVICE,
                          QDBusConnection::sessionBus());
     if (!iface.isValid()) { return; }
-    iface.call(SS_SIMULATE);
+    iface.call(PK_SCREENSAVER_ACTIVITY);
 }
 
 void ScreenSaver::Update()
@@ -76,8 +76,8 @@ void ScreenSaver::Update()
     int exe2 = QProcess::execute("xset",
                                  QStringList() << "s" << "on");
     int exe3 = QProcess::execute("xset",
-                                 QStringList() << "s" << PowerSettings::getValue(CONF_SCREENSAVER_BLANK_TIMEOUT,
-                                                                                 SS_BLANK_TIMEOUT).toString());
+                                 QStringList() << "s" << PowerSettings::getValue(PK_SCREENSAVER_CONF_TIMEOUT_BLANK,
+                                                                                 PK_SCREENSAVER_TIMEOUT_BLANK).toString());
     qDebug() << "screensaver update" << exe1 << exe2 << exe3;
     SimulateUserActivity();
 }

@@ -407,14 +407,13 @@ void PowerKit::handlePrepareForSuspend(bool prepare)
     qDebug() << "handle prepare for suspend/resume from consolekit/logind" << prepare;
     if (prepare) {
         qDebug() << "ZZZ...";
-        if (lockScreenOnSuspend) { LockScreen(); }
+        LockScreen();
         emit PrepareForSuspend();
-        releaseSuspendLock(); // we are ready for suspend
+        QTimer::singleShot(500, this, SLOT(releaseSuspendLock()));
     }
     else { // resume
         qDebug() << "WAKE UP!";
         UpdateDevices();
-        if (lockScreenOnResume) { LockScreen(); }
         if (hasWakeAlarm() &&
              wakeAlarmDate.isValid() &&
              CanHibernate())
@@ -703,10 +702,10 @@ double PowerKit::BatteryLeft()
 
 void PowerKit::LockScreen()
 {
-    int exe = QProcess::execute(PowerSettings::getValue("screensaver_lock_cmd",
-                                                        SS_LOCK_CMD).toString(),
-                                QStringList());
-    qDebug() << "screen lock" << exe;
+    qDebug() << "screen lock";
+    QProcess::startDetached(PowerSettings::getValue(PK_SCREENSAVER_CONF_LOCK_CMD,
+                                                    PK_SCREENSAVER_LOCK_CMD).toString(),
+                            QStringList());
 }
 
 bool PowerKit::HasBattery()

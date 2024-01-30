@@ -48,8 +48,8 @@ enum criticalAction
 #define VIRTUAL_MONITOR "VIRTUAL"
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
 #define TURN_ON_MONITOR "xrandr --output %1 --auto "
-#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors"
-#define DRACO_XCONFIG "draco-settings-x11 --reset-monitors"
+#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors" // deprecated
+#define DRACO_XCONFIG "draco-settings-x11 --reset-monitors" // deprecated
 
 #define LID_BATTERY_DEFAULT lidSleep
 #define LID_AC_DEFAULT lidLock
@@ -111,16 +111,6 @@ enum criticalAction
 #define PM_SERVICE_INHIBIT "org.freedesktop.PowerManagement.Inhibit"
 #define PM_FULL_PATH_INHIBIT "/org/freedesktop/PowerManagement/Inhibit"
 
-#define SS_SERVICE "org.freedesktop.ScreenSaver"
-#define SS_PATH "/ScreenSaver"
-#define SS_FULL_PATH "/org/freedesktop/ScreenSaver"
-#define SS_TIMEOUT 30000
-#define SS_MAX_INHIBIT 18000
-#define SS_SIMULATE "SimulateUserActivity"
-#define SS_BLANK_TIMEOUT 300
-#define SS_LOCK_TIMEOUT 250
-#define SS_LOCK_CMD "xsecurelock"
-
 #define CONF_DIALOG_GEOMETRY "dialog_geometry"
 #define CONF_SUSPEND_BATTERY_TIMEOUT "suspend_battery_timeout"
 #define CONF_SUSPEND_BATTERY_ACTION "suspend_battery_action"
@@ -156,7 +146,18 @@ enum criticalAction
 #define CONF_ICON_THEME "icon_theme"
 #define CONF_NATIVE_THEME "native_theme"
 #define CONF_KERNEL_BYPASS "kernel_cmd_bypass"
-#define CONF_SCREENSAVER_LOCK_CMD "screensaver_lock_cmd"
-#define CONF_SCREENSAVER_BLANK_TIMEOUT "screensaver_blank_timeout"
+
+// screensaver
+#define PK_SCREENSAVER_CONF_LOCK_CMD "screensaver_lock_cmd"
+#define PK_SCREENSAVER_CONF_TIMEOUT_BLANK "screensaver_blank_timeout"
+#define PK_SCREENSAVER_SERVICE "org.freedesktop.ScreenSaver"
+#define PK_SCREENSAVER_PATH_ROOT "/ScreenSaver"
+#define PK_SCREENSAVER_PATH_FULL "/org/freedesktop/ScreenSaver"
+#define PK_SCREENSAVER_TIMER 30000
+#define PK_SCREENSAVER_MAX_INHIBIT 18000
+#define PK_SCREENSAVER_ACTIVITY "SimulateUserActivity"
+#define PK_SCREENSAVER_TIMEOUT_BLANK 300
+#define PK_SCREENSAVER_TIMEOUT_LOCK 250
+#define PK_SCREENSAVER_LOCK_CMD "xsecurelock"
 
 #endif // DEF_H
