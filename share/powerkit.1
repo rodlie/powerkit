@@ -2,13 +2,14 @@
 .\"
 .TH "POWERKIT" "1" "January 2024" "Version 2.0.0" "PowerKit Documentation"
 .SH NAME
-\f[I]powerkit\f[R] - desktop independent full featured power manager
+\f[I]powerkit\f[R] - desktop independent Linux power manager
 .SH SYNOPSIS
 powerkit \f[I]\f[CI][--config]\f[I]\f[R]
 .SH DESCRIPTION
-powerkit is an desktop independent full featured power manager for
-Linux, originally created for
-\f[I]Slackware (http://www.slackware.com/)\f[R] for use with alternative
+\f[B]NOTE:\f[R] powerkit version 2 is under heavy development, it may
+break at any time!
+.PP
+powerkit is an desktop independent Linux power manager for alternative
 X11 desktop environments and window managers.
 .IP \[bu] 2
 Implements
@@ -27,17 +28,17 @@ Automatically hibernate or shutdown on critical battery
 .IP \[bu] 2
 Inhibit actions if external monitor(s) is connected
 .IP \[bu] 2
-Screen locking support (using XScreenSaver)
+Screen locking support
 .IP \[bu] 2
 Screen backlight support
-.IP \[bu] 2
-Screen hotplug support
 .IP \[bu] 2
 RTC wake alarm support
 .IP \[bu] 2
 CPU frequency scaling support
 .IP \[bu] 2
 Thermal support
+.IP \[bu] 2
+Notification support
 .SH USAGE
 powerkit should be started during the X11 user session.
 Consult the documentation for your desktop environment or window manager
@@ -54,44 +55,18 @@ manager!\f[R]
 .SS CONFIGURATION
 The most common options are available directly from the system tray
 icon, for more advanced options open \f[I]\f[CI]Settings\f[I]\f[R] from
-the system tray menu or run \f[I]\f[CI]powerkit --conf\f[I]\f[R].
+the system tray menu or run \f[I]\f[CI]powerkit --config\f[I]\f[R].
 You should also be able to lauch the powerkit settings from your desktop
 application menu (if available).
 .SS SCREEN SAVER
-powerkit depends on
-\f[I]XScreenSaver (https://www.jwz.org/xscreensaver/)\f[R] to handle the
-screen locking feature and screen poweroff, the default settings may
-need to be adjusted.
-You can launch the configuration GUI with the
-\f[I]\f[CI]xscreensaver-demo\f[I]\f[R] command.
+powerkit implements a basic screen saver to handle screen blanking,
+poweroff and locking feature.
 .PP
-Recommended settings are:
-.IP \[bu] 2
-Mode: \f[I]\f[CI]Blank Screen Only\f[I]\f[R]
-.IP \[bu] 2
-Blank After: \f[I]\f[CI]5 minutes\f[I]\f[R]
-.IP \[bu] 2
-Lock Screen After: \f[I]\f[CI]enabled + 0 minutes\f[I]\f[R]
-.IP \[bu] 2
-Display Power Management: \f[I]\f[CI]enabled\f[I]\f[R]
-.RS 2
-.IP \[bu] 2
-Standby After: \f[I]\f[CI]0 minutes\f[I]\f[R]
-.IP \[bu] 2
-Suspend After: \f[I]\f[CI]0 minutes\f[I]\f[R]
-.IP \[bu] 2
-Off After: \f[I]\f[CI]0 minutes\f[I]\f[R]
-.IP \[bu] 2
-Quick Power-off in Blank Only Mode: \f[I]\f[CI]enabled\f[I]\f[R]
-.RE
-.PP
-Note that powerkit will start \f[I]XScreenSaver\f[R] during startup
-(unless \f[I]org.freedesktop.ScreenSaver\f[R] is disabled).
-.PP
-Support for alternative screen savers can be added if needed.
+Locking feature depends on \f[CR]xsecurelock\f[R].
 .SS BACKLIGHT
-The current display brightness (on laptops) can be adjusted with the
-mouse wheel on the system tray icon or through the system tray menu.
+The current display brightness (on laptops and supported displays) can
+be adjusted with the mouse wheel on the system tray icon or through the
+system tray menu.
 .SS HIBERNATE
 If hibernate \f[I]\[lq]just works\[rq]\f[R] depends on your system,
 worst case a swap partition (or file) is needed by the kernel to support
@@ -123,15 +98,15 @@ use the \f[I]org.freedesktop.PowerManagement\f[R] specification.
 Any application that uses \f[I]org.freedesktop.PowerManagement\f[R] will
 work with powerkit.
 .PP
-Common use cases are audio playback, downloading and more.
+Common use cases are audio playback, downloading, rendering and similar.
 .SS Google Chrome/Chromium does not inhibit the screen saver!?
 \f[I]Chrome (https://chrome.google.com)\f[R] does not use
 \f[I]org.freedesktop.ScreenSaver\f[R] or
 \f[I]org.freedesktop.PowerManagement\f[R] until it detects a supported
-desktop environment \f[I](KDE/Xfce)\f[R].
+desktop environment.
 Add the following to \f[I]\f[CI]\[ti]/.bashrc\f[I]\f[R] or the
 \f[I]\f[CI]google-chrome\f[I]\f[R] launcher if you don\[cq]t run a
-desktop environment:
+supported desktop environment:
 .IP
 .EX
 export DESKTOP_SESSION=xfce
@@ -146,7 +121,7 @@ powerkit requires the following dependencies:
 .IP \[bu] 2
 \f[I]Xrandr (https://www.x.org/wiki/libraries/libxrandr/)\f[R]
 .IP \[bu] 2
-\f[I]Qt5 (https://qt.io)\f[R]
+\f[I]Qt5 (https://qt.io)\f[R] \f[I](Core/DBus/Gui/Widgets)\f[R]
 .IP \[bu] 2
 \f[I]D-Bus (https://www.freedesktop.org/wiki/Software/dbus/)\f[R]
 .IP \[bu] 2
@@ -154,7 +129,7 @@ powerkit requires the following dependencies:
 .IP \[bu] 2
 \f[I]UPower (https://upower.freedesktop.org/)\f[R]
 .IP \[bu] 2
-\f[I]XScreenSaver (https://www.jwz.org/xscreensaver/)\f[R]
+\f[I]xsecurelock (https://github.com/google/xsecurelock)\f[R]
 .SH BUILD
 First make sure you have the required dependencies installed, then
 review the most common build options:
@@ -172,7 +147,8 @@ Usually the \f[I]\f[CI]root\f[I]\f[R] user.
 \f[I]\f[CI]SERVICE_GROUP=<power>\f[I]\f[R] - Group that can access the
 powerkitd service, this should be any desktop user that can change
 screen brightness, CPU performance and RTC wake alarm.
-Usually the \f[I]\f[CI]power\f[I]\f[R] group.
+Usually the \f[I]\f[CI]power\f[I]\f[R] group or similar.
+Consult your system documentation.
 .PP
 Now configure powerkit with CMake and build (\f[I]example for packaging
 purposes\f[R]).
@@ -216,6 +192,16 @@ pkg
 .SH CHANGELOG
 .SS 2.0.0 (TBA)
 .IP \[bu] 2
+Recommended locker is \f[CR]xsecurelock\f[R]
+.IP \[bu] 2
+Improved support for logind
+.IP \[bu] 2
+Removed support for ConsoleKit
+.IP \[bu] 2
+Removed support for XScreenSaver
+.IP \[bu] 2
+Added screen saver in powerkit
+.IP \[bu] 2
 Easier to use (minimal setup)
 .IP \[bu] 2
 New UI
@@ -237,6 +223,8 @@ powerkitd
 .IP \[bu] 2
 Service for unprivileged users (needed for CPU/RTC/brightness)
 .RE
+.PP
+May change at any time during development.
 .SH OPTIONS
 .TP
 \f[I]\f[CI]--config\f[I]\f[R]
@@ -246,9 +234,8 @@ Launch configuration.
 \f[I]\f[CI]\[ti]/.config/powerkit/powerkit.conf\f[I]\f[R]
 Per user configuration file.
 .SH SEE ALSO
-\f[B]\f[CB]xscreensaver\f[B]\f[R](1),
-\f[B]\f[CB]xscreensaver-demo\f[B]\f[R](1),
-\f[B]\f[CB]UPower\f[B]\f[R](7), \f[B]\f[CB]powerkitd\f[B]\f[R](8)
+\f[B]\f[CB]xsecurelock\f[B]\f[R](1), \f[B]\f[CB]UPower\f[B]\f[R](7),
+\f[B]\f[CB]powerkitd\f[B]\f[R](8)
 .SH BUGS
 See \f[B]https://github.com/rodlie/powerkit/issues\f[R].
 .SH COPYRIGHT

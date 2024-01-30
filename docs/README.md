@@ -1,6 +1,6 @@
 # NAME
 
-*powerkit* - desktop independent full featured power manager
+*powerkit* - desktop independent Linux power manager
 
 # SYNOPSIS
 
@@ -8,7 +8,9 @@ powerkit *`[--config]`*
 
 # DESCRIPTION
 
-powerkit is an desktop independent full featured power manager for Linux, originally created for *[Slackware](http://www.slackware.com/)* for use with alternative X11 desktop environments and window managers.
+**NOTE:** powerkit version 2 is under heavy development, it may break at any time!
+
+powerkit is an desktop independent Linux power manager for alternative X11 desktop environments and window managers.
 
  * Implements *[org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html)* service
  * Implements *[org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/)* service
@@ -16,12 +18,12 @@ powerkit is an desktop independent full featured power manager for Linux, origin
  * Automatically lock screen on idle
  * Automatically hibernate or shutdown on critical battery
  * Inhibit actions if external monitor(s) is connected
- * Screen locking support (using XScreenSaver)
+ * Screen locking support
  * Screen backlight support
- * Screen hotplug support
  * RTC wake alarm support
  * CPU frequency scaling support
  * Thermal support
+ * Notification support
 
 # USAGE
 
@@ -34,30 +36,17 @@ powerkit should be started during the X11 user session. Consult the documentatio
 
 ## CONFIGURATION
 
-The most common options are available directly from the system tray icon, for more advanced options open *``Settings``* from the system tray menu or run *``powerkit --conf``*. You should also be able to lauch the powerkit settings from your desktop application menu (if available).
+The most common options are available directly from the system tray icon, for more advanced options open *``Settings``* from the system tray menu or run *``powerkit --config``*. You should also be able to lauch the powerkit settings from your desktop application menu (if available).
 
 ## SCREEN SAVER
 
-powerkit depends on *[XScreenSaver](https://www.jwz.org/xscreensaver/)* to handle the screen locking feature and screen poweroff, the default settings may need to be adjusted. You can launch the configuration GUI with the *``xscreensaver-demo``* command.
+powerkit implements a basic screen saver to handle screen blanking, poweroff and locking feature.
 
-Recommended settings are:
-
-* Mode: *``Blank Screen Only``*
-* Blank After: *``5 minutes``*
-* Lock Screen After: *``enabled + 0 minutes``*
-* Display Power Management: *``enabled``*
-  * Standby After: *``0 minutes``*
-  * Suspend After: *``0 minutes``*
-  * Off After: *``0 minutes``*
-  * Quick Power-off in Blank Only Mode: *``enabled``*
-
-Note that powerkit will start *XScreenSaver* during startup (unless *org.freedesktop.ScreenSaver* is disabled).
-
-Support for alternative screen savers can be added if needed.
+Locking feature depends on ``xsecurelock``.
 
 ## BACKLIGHT
 
-The current display brightness (on laptops) can be adjusted with the mouse wheel on the system tray icon or through the system tray menu.
+The current display brightness (on laptops and supported displays) can be adjusted with the mouse wheel on the system tray icon or through the system tray menu.
 
 ## HIBERNATE
 
@@ -83,11 +72,11 @@ Popular applications that uses this feature is Mozilla Firefox, Google Chrome, V
 
 The preferred way to inhibit suspend actions from an application is to use the *org.freedesktop.PowerManagement* specification. Any application that uses *org.freedesktop.PowerManagement* will work with powerkit.
 
-Common use cases are audio playback, downloading and more.
+Common use cases are audio playback, downloading, rendering and similar.
 
 ## Google Chrome/Chromium does not inhibit the screen saver!?
 
-*[Chrome](https://chrome.google.com)* does not use *org.freedesktop.ScreenSaver* or *org.freedesktop.PowerManagement* until it detects a supported desktop environment *(KDE/Xfce)*. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a desktop environment:
+*[Chrome](https://chrome.google.com)* does not use *org.freedesktop.ScreenSaver* or *org.freedesktop.PowerManagement* until it detects a supported desktop environment. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a supported desktop environment:
 
 ```
 export DESKTOP_SESSION=xfce
@@ -101,11 +90,11 @@ powerkit requires the following dependencies:
  * *[X11](https://www.x.org)*
  * *[Xss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)*
  * *[Xrandr](https://www.x.org/wiki/libraries/libxrandr/)*
- * *[Qt5](https://qt.io)*
+ * *[Qt5](https://qt.io)* *(Core/DBus/Gui/Widgets)*
  * *[D-Bus](https://www.freedesktop.org/wiki/Software/dbus/)*
  * *[logind](https://www.freedesktop.org/wiki/Software/systemd/logind/)*
  * *[UPower](https://upower.freedesktop.org/)*
- * *[XScreenSaver](https://www.jwz.org/xscreensaver/)*
+ * *[xsecurelock](https://github.com/google/xsecurelock)*
 
 # BUILD
 
@@ -114,7 +103,7 @@ First make sure you have the required dependencies installed, then review the mo
  * *``CMAKE_INSTALL_PREFIX=</usr/local>``* - Install target. *``/usr``* recommended.
  * *``CMAKE_BUILD_TYPE=<Release/Debug>``* - Build type. *``Release``* recommended
  * *``SERVICE_USER=<root>``* - powerkitd owner, needs write access to /sys. Usually the *``root``* user.
- * *``SERVICE_GROUP=<power>``* - Group that can access the powerkitd service, this should be any desktop user that can change screen brightness, CPU performance and RTC wake alarm. Usually the *``power``* group.
+ * *``SERVICE_GROUP=<power>``* - Group that can access the powerkitd service, this should be any desktop user that can change screen brightness, CPU performance and RTC wake alarm. Usually the *``power``* group or similar. Consult your system documentation.
 
 Now configure powerkit with CMake and build (*example for packaging purposes*).
 ```
@@ -158,6 +147,11 @@ pkg
 
 ## 2.0.0 (TBA)
 
+ * Recommended locker is ``xsecurelock``
+ * Improved support for logind
+ * Removed support for ConsoleKit
+ * Removed support for XScreenSaver
+ * Added screen saver in powerkit
  * Easier to use (minimal setup)
  * New UI
  * RTC wake alarm support
@@ -166,7 +160,9 @@ pkg
    * Intel PState
  * powerkitd
    * Service for unprivileged users (needed for CPU/RTC/brightness)
- 
+
+May change at any time during development.
+
 # OPTIONS
 
 *``--config``*
@@ -179,7 +175,7 @@ pkg
 
 # SEE ALSO
 
-**``xscreensaver``**(1), **``xscreensaver-demo``**(1), **``UPower``**(7), **``powerkitd``**(8)
+**``xsecurelock``**(1), **``UPower``**(7), **``powerkitd``**(8)
 
 # BUGS
 
