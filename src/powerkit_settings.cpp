@@ -7,6 +7,7 @@
 */
 
 #include "powerkit_settings.h"
+
 #include <QFile>
 #include <QDir>
 #include <QSettings>
@@ -16,27 +17,30 @@
 
 #define PK "powerkit"
 
-void PowerSettings::setValue(const QString &type, const QVariant &value)
+using namespace PowerKit;
+
+void Settings::setValue(const QString &type,
+                        const QVariant &value)
 {
     QSettings settings(PK, PK);
     settings.setValue(type, value);
     settings.sync();
 }
 
-const QVariant PowerSettings::getValue(const QString &type,
-                                       const QVariant &fallback)
+const QVariant Settings::getValue(const QString &type,
+                                  const QVariant &fallback)
 {
     QSettings settings(PK, PK);
     return settings.value(type, fallback);
 }
 
-bool PowerSettings::isValid(const QString &type)
+bool Settings::isValid(const QString &type)
 {
     QSettings settings(PK, PK);
     return settings.value(type).isValid();
 }
 
-void PowerSettings::saveDefault()
+void Settings::saveDefault()
 {
     setValue(CONF_LID_BATTERY_ACTION,
                       LID_BATTERY_DEFAULT);
@@ -86,7 +90,7 @@ void PowerSettings::saveDefault()
                       false);
 }
 
-const QString PowerSettings::getConf()
+const QString Settings::getConf()
 {
     QString config = QString("%1/.config/powerkit/powerkit.conf")
                      .arg(QDir::homePath());
@@ -94,7 +98,7 @@ const QString PowerSettings::getConf()
     return config;
 }
 
-const QString PowerSettings::getDir()
+const QString Settings::getDir()
 {
     QString config = QString("%1/.config/powerkit").arg(QDir::homePath());
     if (!QFile::exists(config)) {

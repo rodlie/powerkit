@@ -73,7 +73,7 @@ Dialog::Dialog(QWidget *parent,
     }
 
     // trigger generation of powerkit.conf if not exists
-    PowerSettings::getConf();
+    Settings::getConf();
 
     // setup theme
     Theme::setAppTheme();
@@ -145,7 +145,7 @@ Dialog::Dialog(QWidget *parent,
 
 Dialog::~Dialog()
 {
-    PowerSettings::setValue(CONF_DIALOG, saveGeometry());
+    Settings::setValue(CONF_DIALOG, saveGeometry());
 }
 
 void Dialog::setupWidgets()
@@ -630,133 +630,133 @@ void Dialog::populate()
 // load settings and set defaults
 void Dialog::loadSettings()
 {
-    if (PowerSettings::isValid(CONF_DIALOG_GEOMETRY)) {
-        restoreGeometry(PowerSettings::getValue(CONF_DIALOG_GEOMETRY).toByteArray());
+    if (Settings::isValid(CONF_DIALOG_GEOMETRY)) {
+        restoreGeometry(Settings::getValue(CONF_DIALOG_GEOMETRY).toByteArray());
     }
 
     int defaultAutoSleepBattery = AUTO_SLEEP_BATTERY;
-    if (PowerSettings::isValid(CONF_SUSPEND_BATTERY_TIMEOUT)) {
-        defaultAutoSleepBattery = PowerSettings::getValue(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
+    if (Settings::isValid(CONF_SUSPEND_BATTERY_TIMEOUT)) {
+        defaultAutoSleepBattery = Settings::getValue(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
     }
     setDefaultAction(autoSleepBattery, defaultAutoSleepBattery);
 
     int defaultAutoSleepBatteryAction = DEFAULT_SUSPEND_BATTERY_ACTION;
-    if (PowerSettings::isValid(CONF_SUSPEND_BATTERY_ACTION)) {
-        defaultAutoSleepBatteryAction = PowerSettings::getValue(CONF_SUSPEND_BATTERY_ACTION).toInt();
+    if (Settings::isValid(CONF_SUSPEND_BATTERY_ACTION)) {
+        defaultAutoSleepBatteryAction = Settings::getValue(CONF_SUSPEND_BATTERY_ACTION).toInt();
     }
     setDefaultAction(autoSleepBatteryAction, defaultAutoSleepBatteryAction);
 
     int defaultAutoSleepAC = 0;
-    if (PowerSettings::isValid(CONF_SUSPEND_AC_TIMEOUT)) {
-        defaultAutoSleepAC = PowerSettings::getValue(CONF_SUSPEND_AC_TIMEOUT).toInt();
+    if (Settings::isValid(CONF_SUSPEND_AC_TIMEOUT)) {
+        defaultAutoSleepAC = Settings::getValue(CONF_SUSPEND_AC_TIMEOUT).toInt();
     }
     setDefaultAction(autoSleepAC, defaultAutoSleepAC);
 
     int defaultAutoSleepACAction = DEFAULT_SUSPEND_AC_ACTION;
-    if (PowerSettings::isValid(CONF_SUSPEND_AC_ACTION)) {
-        defaultAutoSleepACAction = PowerSettings::getValue(CONF_SUSPEND_AC_ACTION).toInt();
+    if (Settings::isValid(CONF_SUSPEND_AC_ACTION)) {
+        defaultAutoSleepACAction = Settings::getValue(CONF_SUSPEND_AC_ACTION).toInt();
     }
     setDefaultAction(autoSleepACAction, defaultAutoSleepACAction);
 
     int defaultCriticalBattery = CRITICAL_BATTERY;
-    if (PowerSettings::isValid(CONF_CRITICAL_BATTERY_TIMEOUT)) {
-        defaultCriticalBattery = PowerSettings::getValue(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
+    if (Settings::isValid(CONF_CRITICAL_BATTERY_TIMEOUT)) {
+        defaultCriticalBattery = Settings::getValue(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
     }
     setDefaultAction(criticalBattery, defaultCriticalBattery);
 
     int defaultLidActionBattery = LID_BATTERY_DEFAULT;
-    if (PowerSettings::isValid(CONF_LID_BATTERY_ACTION)) {
-        defaultLidActionBattery = PowerSettings::getValue(CONF_LID_BATTERY_ACTION).toInt();
+    if (Settings::isValid(CONF_LID_BATTERY_ACTION)) {
+        defaultLidActionBattery = Settings::getValue(CONF_LID_BATTERY_ACTION).toInt();
     }
     setDefaultAction(lidActionBattery, defaultLidActionBattery);
 
     int defaultLidActionAC = LID_AC_DEFAULT;
-    if (PowerSettings::isValid(CONF_LID_AC_ACTION)) {
-        defaultLidActionAC = PowerSettings::getValue(CONF_LID_AC_ACTION).toInt();
+    if (Settings::isValid(CONF_LID_AC_ACTION)) {
+        defaultLidActionAC = Settings::getValue(CONF_LID_AC_ACTION).toInt();
     }
     setDefaultAction(lidActionAC, defaultLidActionAC);
 
     int defaultCriticalAction = CRITICAL_DEFAULT;
-    if (PowerSettings::isValid(CONF_CRITICAL_BATTERY_ACTION)) {
-        defaultCriticalAction = PowerSettings::getValue(CONF_CRITICAL_BATTERY_ACTION).toInt();
+    if (Settings::isValid(CONF_CRITICAL_BATTERY_ACTION)) {
+        defaultCriticalAction = Settings::getValue(CONF_CRITICAL_BATTERY_ACTION).toInt();
     }
     setDefaultAction(criticalActionBattery, defaultCriticalAction);
 
     bool defaultDesktopSS = true;
-    if (PowerSettings::isValid(CONF_FREEDESKTOP_SS)) {
-        defaultDesktopSS = PowerSettings::getValue(CONF_FREEDESKTOP_SS).toBool();
+    if (Settings::isValid(CONF_FREEDESKTOP_SS)) {
+        defaultDesktopSS = Settings::getValue(CONF_FREEDESKTOP_SS).toBool();
     }
     desktopSS->setChecked(defaultDesktopSS);
 
     bool defaultDesktopPM = true;
-    if (PowerSettings::isValid(CONF_FREEDESKTOP_PM)) {
-        defaultDesktopPM = PowerSettings::getValue(CONF_FREEDESKTOP_PM).toBool();
+    if (Settings::isValid(CONF_FREEDESKTOP_PM)) {
+        defaultDesktopPM = Settings::getValue(CONF_FREEDESKTOP_PM).toBool();
     }
     desktopPM->setChecked(defaultDesktopPM);
 
     bool defaultShowNotifications = true;
-    if (PowerSettings::isValid(CONF_TRAY_NOTIFY)) {
-        defaultShowNotifications = PowerSettings::getValue(CONF_TRAY_NOTIFY).toBool();
+    if (Settings::isValid(CONF_TRAY_NOTIFY)) {
+        defaultShowNotifications = Settings::getValue(CONF_TRAY_NOTIFY).toBool();
     }
     showNotifications->setChecked(defaultShowNotifications);
 
     bool defaultShowTray = true;
-    if (PowerSettings::isValid(CONF_TRAY_SHOW)) {
-        defaultShowTray = PowerSettings::getValue(CONF_TRAY_SHOW).toBool();
+    if (Settings::isValid(CONF_TRAY_SHOW)) {
+        defaultShowTray = Settings::getValue(CONF_TRAY_SHOW).toBool();
     }
     showSystemTray->setChecked(defaultShowTray);
 
     bool defaultDisableLidAction = true;
-    if (PowerSettings::isValid(CONF_LID_DISABLE_IF_EXTERNAL)) {
-        defaultDisableLidAction = PowerSettings::getValue(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
+    if (Settings::isValid(CONF_LID_DISABLE_IF_EXTERNAL)) {
+        defaultDisableLidAction = Settings::getValue(CONF_LID_DISABLE_IF_EXTERNAL).toBool();
     }
     disableLidAction->setChecked(defaultDisableLidAction);
 
     bool defaultWarnOnLowBattery = true;
-    if (PowerSettings::isValid(CONF_WARN_ON_LOW_BATTERY)) {
-        defaultWarnOnLowBattery = PowerSettings::getValue(CONF_WARN_ON_LOW_BATTERY).toBool();
+    if (Settings::isValid(CONF_WARN_ON_LOW_BATTERY)) {
+        defaultWarnOnLowBattery = Settings::getValue(CONF_WARN_ON_LOW_BATTERY).toBool();
     }
     warnOnLowBattery->setChecked(defaultWarnOnLowBattery);
 
     bool defaultWarnOnVeryLowBattery = true;
-    if (PowerSettings::isValid(CONF_WARN_ON_VERYLOW_BATTERY)) {
-        defaultWarnOnVeryLowBattery = PowerSettings::getValue(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
+    if (Settings::isValid(CONF_WARN_ON_VERYLOW_BATTERY)) {
+        defaultWarnOnVeryLowBattery = Settings::getValue(CONF_WARN_ON_VERYLOW_BATTERY).toBool();
     }
     warnOnVeryLowBattery->setChecked(defaultWarnOnVeryLowBattery);
 
     bool defaultNotifyOnBattery = true;
-    if (PowerSettings::isValid(CONF_NOTIFY_ON_BATTERY)) {
-        defaultNotifyOnBattery = PowerSettings::getValue(CONF_NOTIFY_ON_BATTERY).toBool();
+    if (Settings::isValid(CONF_NOTIFY_ON_BATTERY)) {
+        defaultNotifyOnBattery = Settings::getValue(CONF_NOTIFY_ON_BATTERY).toBool();
     }
     notifyOnBattery->setChecked(defaultNotifyOnBattery);
 
     bool defaultNotifyOnAC = true;
-    if (PowerSettings::isValid(CONF_NOTIFY_ON_AC)) {
-        defaultNotifyOnAC = PowerSettings::getValue(CONF_NOTIFY_ON_AC).toBool();
+    if (Settings::isValid(CONF_NOTIFY_ON_AC)) {
+        defaultNotifyOnAC = Settings::getValue(CONF_NOTIFY_ON_AC).toBool();
     }
     notifyOnAC->setChecked(defaultNotifyOnAC);
 
     bool defaultNotifyNewInhibitor = true;
-    if (PowerSettings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
-        defaultNotifyNewInhibitor = PowerSettings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
+    if (Settings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
+        defaultNotifyNewInhibitor = Settings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
     }
     notifyNewInhibitor->setChecked(defaultNotifyNewInhibitor);
 
     bool defaultSuspendLockScreen = true;
-    if (PowerSettings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
-        defaultSuspendLockScreen = PowerSettings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool();
+    if (Settings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
+        defaultSuspendLockScreen = Settings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool();
     }
     suspendLockScreen->setChecked(defaultSuspendLockScreen);
 
     bool defaultResumeLockScreen = false;
-    if (PowerSettings::isValid(CONF_RESUME_LOCK_SCREEN)) {
-        defaultResumeLockScreen = PowerSettings::getValue(CONF_RESUME_LOCK_SCREEN).toBool();
+    if (Settings::isValid(CONF_RESUME_LOCK_SCREEN)) {
+        defaultResumeLockScreen = Settings::getValue(CONF_RESUME_LOCK_SCREEN).toBool();
     }
     resumeLockScreen->setChecked(defaultResumeLockScreen);
 
     bool defaultKernelBypass = false;
-    if (PowerSettings::isValid(CONF_KERNEL_BYPASS)) {
-        defaultKernelBypass = PowerSettings::getValue(CONF_KERNEL_BYPASS).toBool();
+    if (Settings::isValid(CONF_KERNEL_BYPASS)) {
+        defaultKernelBypass = Settings::getValue(CONF_KERNEL_BYPASS).toBool();
     }
     bypassKernel->setChecked(defaultKernelBypass);
 
@@ -779,31 +779,31 @@ void Dialog::loadSettings()
     backlightSliderAC->setMaximum(backlightMax);
     backlightSliderAC->setValue(backlightSliderAC->maximum());
 
-    backlightBatteryCheck->setChecked(PowerSettings::getValue(CONF_BACKLIGHT_BATTERY_ENABLE)
+    backlightBatteryCheck->setChecked(Settings::getValue(CONF_BACKLIGHT_BATTERY_ENABLE)
                                       .toBool());
-    backlightACCheck->setChecked(PowerSettings::getValue(CONF_BACKLIGHT_AC_ENABLE)
+    backlightACCheck->setChecked(Settings::getValue(CONF_BACKLIGHT_AC_ENABLE)
                                  .toBool());
-    if (PowerSettings::isValid(CONF_BACKLIGHT_BATTERY)) {
-        backlightSliderBattery->setValue(PowerSettings::getValue(CONF_BACKLIGHT_BATTERY)
+    if (Settings::isValid(CONF_BACKLIGHT_BATTERY)) {
+        backlightSliderBattery->setValue(Settings::getValue(CONF_BACKLIGHT_BATTERY)
                                          .toInt());
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_AC)) {
-        backlightSliderAC->setValue(PowerSettings::getValue(CONF_BACKLIGHT_AC)
+    if (Settings::isValid(CONF_BACKLIGHT_AC)) {
+        backlightSliderAC->setValue(Settings::getValue(CONF_BACKLIGHT_AC)
                                     .toInt());
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
+    if (Settings::isValid(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)) {
         backlightBatteryLowerCheck->setChecked(
-                    PowerSettings::getValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)
+                    Settings::getValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER)
                     .toBool());
     }
-    if (PowerSettings::isValid(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
+    if (Settings::isValid(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)) {
         backlightACHigherCheck->setChecked(
-                    PowerSettings::getValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
+                    Settings::getValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER)
                     .toBool());
     }
     bool defaultBacklightMouseWheel = true;
-    if (PowerSettings::isValid(CONF_BACKLIGHT_MOUSE_WHEEL)) {
-        defaultBacklightMouseWheel = PowerSettings::getValue(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
+    if (Settings::isValid(CONF_BACKLIGHT_MOUSE_WHEEL)) {
+        defaultBacklightMouseWheel = Settings::getValue(CONF_BACKLIGHT_MOUSE_WHEEL).toBool();
     }
     backlightMouseWheel->setChecked(defaultBacklightMouseWheel);
 
@@ -813,61 +813,61 @@ void Dialog::loadSettings()
 
 void Dialog::saveSettings()
 {
-    PowerSettings::setValue(CONF_LID_BATTERY_ACTION,
+    Settings::setValue(CONF_LID_BATTERY_ACTION,
                               lidActionBattery->currentIndex());
-    PowerSettings::setValue(CONF_LID_AC_ACTION,
+    Settings::setValue(CONF_LID_AC_ACTION,
                               lidActionAC->currentIndex());
-    PowerSettings::setValue(CONF_CRITICAL_BATTERY_ACTION,
+    Settings::setValue(CONF_CRITICAL_BATTERY_ACTION,
                               criticalActionBattery->currentIndex());
-    PowerSettings::setValue(CONF_CRITICAL_BATTERY_TIMEOUT,
+    Settings::setValue(CONF_CRITICAL_BATTERY_TIMEOUT,
                               criticalBattery->value());
-    PowerSettings::setValue(CONF_SUSPEND_BATTERY_TIMEOUT,
+    Settings::setValue(CONF_SUSPEND_BATTERY_TIMEOUT,
                               autoSleepBattery->value());
-    PowerSettings::setValue(CONF_SUSPEND_AC_TIMEOUT,
+    Settings::setValue(CONF_SUSPEND_AC_TIMEOUT,
                               autoSleepAC->value());
-    PowerSettings::setValue(CONF_FREEDESKTOP_SS,
+    Settings::setValue(CONF_FREEDESKTOP_SS,
                               desktopSS->isChecked());
-    PowerSettings::setValue(CONF_FREEDESKTOP_PM,
+    Settings::setValue(CONF_FREEDESKTOP_PM,
                               desktopPM->isChecked());
-    PowerSettings::setValue(CONF_TRAY_NOTIFY,
+    Settings::setValue(CONF_TRAY_NOTIFY,
                               showNotifications->isChecked());
-    PowerSettings::setValue(CONF_TRAY_SHOW,
+    Settings::setValue(CONF_TRAY_SHOW,
                               showSystemTray->isChecked());
-    PowerSettings::setValue(CONF_LID_DISABLE_IF_EXTERNAL,
+    Settings::setValue(CONF_LID_DISABLE_IF_EXTERNAL,
                               disableLidAction->isChecked());
-    PowerSettings::setValue(CONF_SUSPEND_BATTERY_ACTION,
+    Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
                               autoSleepBatteryAction->currentIndex());
-    PowerSettings::setValue(CONF_SUSPEND_AC_ACTION,
+    Settings::setValue(CONF_SUSPEND_AC_ACTION,
                               autoSleepACAction->currentIndex());
-    PowerSettings::setValue(CONF_BACKLIGHT_BATTERY_ENABLE,
+    Settings::setValue(CONF_BACKLIGHT_BATTERY_ENABLE,
                               backlightBatteryCheck->isChecked());
-    PowerSettings::setValue(CONF_BACKLIGHT_AC_ENABLE,
+    Settings::setValue(CONF_BACKLIGHT_AC_ENABLE,
                               backlightACCheck->isChecked());
-    PowerSettings::setValue(CONF_BACKLIGHT_BATTERY,
+    Settings::setValue(CONF_BACKLIGHT_BATTERY,
                               backlightSliderBattery->value());
-    PowerSettings::setValue(CONF_BACKLIGHT_AC,
+    Settings::setValue(CONF_BACKLIGHT_AC,
                               backlightSliderAC->value());
-    PowerSettings::setValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER,
+    Settings::setValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER,
                               backlightBatteryLowerCheck->isChecked());
-    PowerSettings::setValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER,
+    Settings::setValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER,
                               backlightACHigherCheck->isChecked());
-    PowerSettings::setValue(CONF_DIALOG,
+    Settings::setValue(CONF_DIALOG,
                               saveGeometry());
-    PowerSettings::setValue(CONF_WARN_ON_LOW_BATTERY,
+    Settings::setValue(CONF_WARN_ON_LOW_BATTERY,
                               warnOnLowBattery->isChecked());
-    PowerSettings::setValue(CONF_WARN_ON_VERYLOW_BATTERY,
+    Settings::setValue(CONF_WARN_ON_VERYLOW_BATTERY,
                               warnOnVeryLowBattery->isChecked());
-    PowerSettings::setValue(CONF_NOTIFY_ON_BATTERY,
+    Settings::setValue(CONF_NOTIFY_ON_BATTERY,
                               notifyOnBattery->isChecked());
-    PowerSettings::setValue(CONF_NOTIFY_ON_AC,
+    Settings::setValue(CONF_NOTIFY_ON_AC,
                               notifyOnAC->isChecked());
-    PowerSettings::setValue(CONF_NOTIFY_NEW_INHIBITOR,
+    Settings::setValue(CONF_NOTIFY_NEW_INHIBITOR,
                               notifyNewInhibitor->isChecked());
-    PowerSettings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL,
+    Settings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL,
                               backlightMouseWheel->isChecked());
-    PowerSettings::setValue(CONF_SUSPEND_LOCK_SCREEN,
+    Settings::setValue(CONF_SUSPEND_LOCK_SCREEN,
                               suspendLockScreen->isChecked());
-    PowerSettings::setValue(CONF_RESUME_LOCK_SCREEN,
+    Settings::setValue(CONF_RESUME_LOCK_SCREEN,
                               resumeLockScreen->isChecked());
 }
 
@@ -903,39 +903,39 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
 void Dialog::handleLidActionBattery(int index)
 {
     checkPerms();
-    PowerSettings::setValue(CONF_LID_BATTERY_ACTION, index);
+    Settings::setValue(CONF_LID_BATTERY_ACTION, index);
 }
 
 void Dialog::handleLidActionAC(int index)
 {
     checkPerms();
-    PowerSettings::setValue(CONF_LID_AC_ACTION, index);
+    Settings::setValue(CONF_LID_AC_ACTION, index);
 }
 
 void Dialog::handleCriticalAction(int index)
 {
     checkPerms();
-    PowerSettings::setValue(CONF_CRITICAL_BATTERY_ACTION, index);
+    Settings::setValue(CONF_CRITICAL_BATTERY_ACTION, index);
 }
 
 void Dialog::handleCriticalBattery(int value)
 {
-    PowerSettings::setValue(CONF_CRITICAL_BATTERY_TIMEOUT, value);
+    Settings::setValue(CONF_CRITICAL_BATTERY_TIMEOUT, value);
 }
 
 void Dialog::handleAutoSleepBattery(int value)
 {
-    PowerSettings::setValue(CONF_SUSPEND_BATTERY_TIMEOUT, value);
+    Settings::setValue(CONF_SUSPEND_BATTERY_TIMEOUT, value);
  }
 
 void Dialog::handleAutoSleepAC(int value)
 {
-    PowerSettings::setValue(CONF_SUSPEND_AC_TIMEOUT, value);
+    Settings::setValue(CONF_SUSPEND_AC_TIMEOUT, value);
 }
 
 void Dialog::handleDesktopSS(bool triggered)
 {
-    PowerSettings::setValue(CONF_FREEDESKTOP_SS, triggered);
+    Settings::setValue(CONF_FREEDESKTOP_SS, triggered);
     QMessageBox::information(this, tr("Restart required"),
                              tr("You must restart powerkit to apply this setting"));
     // TODO: add restart now?
@@ -943,7 +943,7 @@ void Dialog::handleDesktopSS(bool triggered)
 
 void Dialog::handleDesktopPM(bool triggered)
 {
-    PowerSettings::setValue(CONF_FREEDESKTOP_PM, triggered);
+    Settings::setValue(CONF_FREEDESKTOP_PM, triggered);
     QMessageBox::information(this, tr("Restart required"),
                              tr("You must restart powerkit to apply this setting"));
     // TODO: add restart now?
@@ -951,29 +951,29 @@ void Dialog::handleDesktopPM(bool triggered)
 
 void Dialog::handleShowNotifications(bool triggered)
 {
-    PowerSettings::setValue(CONF_TRAY_NOTIFY, triggered);
+    Settings::setValue(CONF_TRAY_NOTIFY, triggered);
 }
 
 void Dialog::handleShowSystemTray(bool triggered)
 {
-    PowerSettings::setValue(CONF_TRAY_SHOW, triggered);
+    Settings::setValue(CONF_TRAY_SHOW, triggered);
 }
 
 void Dialog::handleDisableLidAction(bool triggered)
 {
-    PowerSettings::setValue(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
+    Settings::setValue(CONF_LID_DISABLE_IF_EXTERNAL, triggered);
 }
 
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
     checkPerms();
-    PowerSettings::setValue(CONF_SUSPEND_BATTERY_ACTION, index);
+    Settings::setValue(CONF_SUSPEND_BATTERY_ACTION, index);
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
     checkPerms();
-    PowerSettings::setValue(CONF_SUSPEND_AC_ACTION, index);
+    Settings::setValue(CONF_SUSPEND_AC_ACTION, index);
 }
 
 void Dialog::checkPerms()
@@ -1039,22 +1039,22 @@ void Dialog::checkPerms()
 
 void Dialog::handleBacklightBatteryCheck(bool triggered)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_BATTERY_ENABLE, triggered);
+    Settings::setValue(CONF_BACKLIGHT_BATTERY_ENABLE, triggered);
 }
 
 void Dialog::handleBacklightACCheck(bool triggered)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_AC_ENABLE, triggered);
+    Settings::setValue(CONF_BACKLIGHT_AC_ENABLE, triggered);
 }
 
 void Dialog::handleBacklightBatterySlider(int value)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_BATTERY, value);
+    Settings::setValue(CONF_BACKLIGHT_BATTERY, value);
 }
 
 void Dialog::handleBacklightACSlider(int value)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_AC, value);
+    Settings::setValue(CONF_BACKLIGHT_AC, value);
 }
 
 void Dialog::hibernateWarn()
@@ -1071,12 +1071,12 @@ void Dialog::sleepWarn()
 
 void Dialog::handleBacklightBatteryCheckLower(bool triggered)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER, triggered);
+    Settings::setValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER, triggered);
 }
 
 void Dialog::handleBacklightACCheckHigher(bool triggered)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
+    Settings::setValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER, triggered);
 }
 
 void Dialog::enableBacklight(bool enabled)
@@ -1094,27 +1094,27 @@ void Dialog::enableBacklight(bool enabled)
 
 void Dialog::handleWarnOnLowBattery(bool triggered)
 {
-    PowerSettings::setValue(CONF_WARN_ON_LOW_BATTERY, triggered);
+    Settings::setValue(CONF_WARN_ON_LOW_BATTERY, triggered);
 }
 
 void Dialog::handleWarnOnVeryLowBattery(bool triggered)
 {
-    PowerSettings::setValue(CONF_WARN_ON_VERYLOW_BATTERY, triggered);
+    Settings::setValue(CONF_WARN_ON_VERYLOW_BATTERY, triggered);
 }
 
 void Dialog::handleNotifyBattery(bool triggered)
 {
-    PowerSettings::setValue(CONF_NOTIFY_ON_BATTERY, triggered);
+    Settings::setValue(CONF_NOTIFY_ON_BATTERY, triggered);
 }
 
 void Dialog::handleNotifyAC(bool triggered)
 {
-    PowerSettings::setValue(CONF_NOTIFY_ON_AC, triggered);
+    Settings::setValue(CONF_NOTIFY_ON_AC, triggered);
 }
 
 void Dialog::handleNotifyNewInhibitor(bool triggered)
 {
-    PowerSettings::setValue(CONF_NOTIFY_NEW_INHIBITOR, triggered);
+    Settings::setValue(CONF_NOTIFY_NEW_INHIBITOR, triggered);
 }
 
 void Dialog::enableLid(bool enabled)
@@ -1128,20 +1128,20 @@ void Dialog::enableLid(bool enabled)
 
 void Dialog::handleBacklightMouseWheel(bool triggered)
 {
-    PowerSettings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
+    Settings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
 }
 
 void Dialog::handleSuspendLockScreen(bool triggered)
 {
-    PowerSettings::setValue(CONF_SUSPEND_LOCK_SCREEN, triggered);
+    Settings::setValue(CONF_SUSPEND_LOCK_SCREEN, triggered);
 }
 
 void Dialog::handleResumeLockScreen(bool triggered)
 {
-    PowerSettings::setValue(CONF_RESUME_LOCK_SCREEN, triggered);
+    Settings::setValue(CONF_RESUME_LOCK_SCREEN, triggered);
 }
 
 void Dialog::handleKernelBypass(bool triggered)
 {
-    PowerSettings::setValue(CONF_KERNEL_BYPASS, triggered);
+    Settings::setValue(CONF_KERNEL_BYPASS, triggered);
 }

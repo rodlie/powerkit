@@ -6,8 +6,8 @@
 # See the LICENSE file for full details
 */
 
-#ifndef DIALOG_H
-#define DIALOG_H
+#ifndef POWERKIT_CONFIG_H
+#define POWERKIT_CONFIG_H
 
 #include <QDialog>
 #include <QComboBox>
@@ -120,4 +120,4 @@ namespace PowerKit
     };
 }
 
-#endif // DIALOG_H
+#endif // POWERKIT_CONFIG_H

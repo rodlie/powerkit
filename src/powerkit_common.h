@@ -6,8 +6,8 @@
 # See the LICENSE file for full details
 */
 
-#ifndef DEF_H
-#define DEF_H
+#ifndef POWERKIT_COMMON_H
+#define POWERKIT_COMMON_H
 
 enum randrAction
 {
@@ -166,4 +166,4 @@ enum criticalAction
 #define PK_SCREENSAVER_TIMEOUT_LOCK 250
 #define PK_SCREENSAVER_LOCK_CMD "xsecurelock"
 
-#endif // DEF_H
+#endif // POWERKIT_COMMON_H

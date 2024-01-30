@@ -6,22 +6,26 @@
 # See the LICENSE file for full details
 */
 
-#ifndef POWER_SETTINGS_H
-#define POWER_SETTINGS_H
+#ifndef POWERKIT_SETTINGS_H
+#define POWERKIT_SETTINGS_H
 
 #include <QVariant>
 #include <QString>
 
-class PowerSettings
+namespace PowerKit
 {
-public:
-    static void setValue(const QString &type, const QVariant &value);
-    static const QVariant getValue(const QString &type,
-                                   const QVariant &fallback = QVariant());
-    static bool isValid(const QString &type);
-    static void saveDefault();
-    static const QString getConf();
-    static const QString getDir();
-};
+    class Settings
+    {
+    public:
+        static void setValue(const QString &type,
+                             const QVariant &value);
+        static const QVariant getValue(const QString &type,
+                                       const QVariant &fallback = QVariant());
+        static bool isValid(const QString &type);
+        static void saveDefault();
+        static const QString getConf();
+        static const QString getDir();
+    };
+}
 
-#endif // POWER_SETTINGS_H
+#endif // POWERKIT_SETTINGS_H

@@ -24,7 +24,7 @@ using namespace PowerKit;
 
 void Theme::setAppTheme()
 {
-    bool native = PowerSettings::getValue(CONF_NATIVE_THEME, false).toBool();
+    bool native = Settings::getValue(CONF_NATIVE_THEME, false).toBool();
     if (native) { return; }
     qApp->setStyle("Fusion");
     QPalette palette;
@@ -62,7 +62,7 @@ void Theme::setIconTheme()
 
     QString theme = QIcon::themeName();
     if (theme.isEmpty() || theme == "hicolor") { // try to load saved theme
-        theme = PowerSettings::getValue(CONF_ICON_THEME).toString();
+        theme = Settings::getValue(CONF_ICON_THEME).toString();
     }
     if(theme.isEmpty() || theme == "hicolor") { // Nope, then scan for first available
         // gtk
@@ -75,7 +75,7 @@ void Theme::setIconTheme()
         }
         // fallback
         if(theme.isNull()) { theme = DEFAULT_THEME; }
-        if (!theme.isEmpty()) { PowerSettings::setValue(CONF_ICON_THEME, theme); }
+        if (!theme.isEmpty()) { Settings::setValue(CONF_ICON_THEME, theme); }
     }
     qDebug() << "Using icon theme" << theme;
     QIcon::setThemeName(theme);
@@ -85,7 +85,7 @@ void Theme::setIconTheme()
         if (testTheme.isNull()) {
             qDebug() << "icon theme is broken, use failsafe!";
             QIcon::setThemeName(DEFAULT_THEME);
-            Common::savePowerSettings(CONF_ICON_THEME, DEFAULT_THEME);
+            Common::saveSettings(CONF_ICON_THEME, DEFAULT_THEME);
         }
     }
 #endif
