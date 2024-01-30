@@ -20,6 +20,8 @@
 #include "powerkit_def.h"
 #include "powerkit_settings.h"
 
+using namespace PowerKit;
+
 void Theme::setAppTheme()
 {
     bool native = PowerSettings::getValue(CONF_NATIVE_THEME, false).toBool();

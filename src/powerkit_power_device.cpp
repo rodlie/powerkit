@@ -7,6 +7,7 @@
 */
 
 #include "powerkit_power_device.h"
+#include "powerkit_def.h"
 
 #include <QDBusConnection>
 #include <QStringList>
@@ -28,6 +29,8 @@
 #define PROP_DEV_TYPE "Type"
 #define PROP_DEV_VENDOR "Vendor"
 #define PROP_DEV_NATIVEPATH "NativePath"
+
+using namespace PowerKit;
 
 Device::Device(const QString block, QObject *parent)
     : QObject(parent)

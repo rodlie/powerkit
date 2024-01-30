@@ -32,7 +32,7 @@ ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 quint32 ScreenSaver::genCookie()
 {
     quint32 cookie = QRandomGenerator::global()->generate();
-    while(!clients.contains(cookie)) {
+    while (!clients.contains(cookie)) {
         if (!clients.contains(cookie)) { clients[cookie] = QTime::currentTime(); }
         else { cookie = QRandomGenerator::global()->generate(); }
     }
@@ -45,7 +45,7 @@ void ScreenSaver::checkForExpiredClients()
     while (client.hasNext()) {
         client.next();
         if (client.value()
-            .secsTo(QTime::currentTime())>=PK_SCREENSAVER_MAX_INHIBIT) {
+            .secsTo(QTime::currentTime()) >= PK_SCREENSAVER_MAX_INHIBIT) {
             clients.remove(client.key());
         }
     }

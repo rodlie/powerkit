@@ -6,25 +6,28 @@
 # See the LICENSE file for full details
 */
 
-#ifndef THEME_H
-#define THEME_H
+#ifndef POWERKIT_THEME_H
+#define POWERKIT_THEME_H
 
 #include <QPixmap>
 #include <QColor>
 
-class Theme
+namespace PowerKit
 {
-public:
-    static void setAppTheme();
-    static void setIconTheme();
-    static const QPixmap drawCircleProgress(const int &progress,
-                                            const int &dimension,
-                                            const int &width,
-                                            const int &padding,
-                                            const bool dash,
-                                            const QString &text,
-                                            const QColor &color1 = Qt::red,
-                                            const QColor &color2 = Qt::white);
-};
+    class Theme
+    {
+    public:
+        static void setAppTheme();
+        static void setIconTheme();
+        static const QPixmap drawCircleProgress(const int &progress,
+                                                const int &dimension,
+                                                const int &width,
+                                                const int &padding,
+                                                const bool dash,
+                                                const QString &text,
+                                                const QColor &color1 = Qt::red,
+                                                const QColor &color2 = Qt::white);
+    };
+}
 
-#endif // THEME_H
+#endif // POWERKIT_THEME_H

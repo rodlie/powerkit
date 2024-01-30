@@ -18,7 +18,9 @@
 #define RTC_DEV "/dev/rtc"
 #endif
 
-bool PowerRtc::setAlarm(const QDateTime &date)
+using namespace PowerKit;
+
+bool Rtc::setAlarm(const QDateTime &date)
 {
 #ifdef Q_OS_LINUX
     if (!date.isValid() || date.isNull()) { return false; }
@@ -63,6 +65,7 @@ bool PowerRtc::setAlarm(const QDateTime &date)
     close(fd);
     return true;
 #else
+    Q_UNUSED(date)
     return false;
 #endif
 }

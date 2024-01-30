@@ -6,15 +6,18 @@
 # See the LICENSE file for full details
 */
 
-#ifndef POWER_RTC_H
-#define POWER_RTC_H
+#ifndef POWERKIT_RTC_H
+#define POWERKIT_RTC_H
 
 #include <QDateTime>
 
-class PowerRtc
+namespace PowerKit
 {
-public:
-    static bool setAlarm(const QDateTime &date);
-};
+    class Rtc
+    {
+    public:
+        static bool setAlarm(const QDateTime &date);
+    };
+}
 
-#endif // POWER_RTC_H
+#endif // POWERKIT_RTC_H

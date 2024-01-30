@@ -22,7 +22,7 @@ bool Manager::SetWakeAlarm(const QString &alarm)
     qDebug() << "Try to set RTC wake alarm" << alarm;
     QDateTime date = QDateTime::fromString(alarm, "yyyy-MM-dd HH:mm:ss");
     if (date.isNull() || !date.isValid()) { return false; }
-    return PowerRtc::setAlarm(date);
+    return PowerKit::Rtc::setAlarm(date);
 }
 
 bool Manager::SetDisplayBacklight(const QString &device, int value)
