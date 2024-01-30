@@ -159,7 +159,7 @@ enum criticalAction
 #define PK_SCREENSAVER_SERVICE "org.freedesktop.ScreenSaver"
 #define PK_SCREENSAVER_PATH_ROOT "/ScreenSaver"
 #define PK_SCREENSAVER_PATH_FULL "/org/freedesktop/ScreenSaver"
-#define PK_SCREENSAVER_TIMER 30000
+#define PK_SCREENSAVER_TIMER 10000
 #define PK_SCREENSAVER_MAX_INHIBIT 18000
 #define PK_SCREENSAVER_ACTIVITY "SimulateUserActivity"
 #define PK_SCREENSAVER_TIMEOUT_BLANK 300
