@@ -6,8 +6,8 @@
 # See the LICENSE file for full details
 */
 
-#ifndef NOTIFY_H
-#define NOTIFY_H
+#ifndef POWERKIT_NOTIFY_H
+#define POWERKIT_NOTIFY_H
 
 #include <QObject>
 #include <QApplication>
@@ -17,20 +17,23 @@
 
 class QDBusInterface;
 
-class SystemNotification : public QObject
+namespace PowerKit
 {
-    Q_OBJECT
+    class SystemNotification : public QObject
+    {
+        Q_OBJECT
 
-public:
-    explicit SystemNotification(QObject* parent = nullptr);
-    bool valid;
+    public:
+        explicit SystemNotification(QObject* parent = nullptr);
+        bool valid;
 
-    void sendMessage(const QString& title,
-                     const QString& text,
-                     const bool critical);
+        void sendMessage(const QString& title,
+                         const QString& text,
+                         const bool critical);
 
-private:
-    QDBusInterface *dbus;
-};
+    private:
+        QDBusInterface *dbus;
+    };
+}
 
-#endif // NOTIFY_H
+#endif // POWERKIT_NOTIFY_H

@@ -10,6 +10,8 @@
 #include "powerkit_common.h"
 #include "powerkit_manager.h"
 
+using namespace PowerKit;
+
 SystemNotification::SystemNotification(QObject* parent)
   : QObject(parent)
 {
