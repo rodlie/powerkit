@@ -7,7 +7,7 @@
 */
 
 #include "powerkit_manager.h"
-#include "powerkit_def.h"
+#include "powerkit_common.h"
 #include "powerkit_settings.h"
 
 #include <QDBusInterface>

@@ -7,7 +7,7 @@
 */
 
 #include "powerkit_dialog.h"
-#include "powerkit_def.h"
+#include "powerkit_common.h"
 #include "powerkit_theme.h"
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"

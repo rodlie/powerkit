@@ -13,7 +13,7 @@
 #include <QProcess>
 #include <QDebug>
 
-#include "powerkit_def.h"
+#include "powerkit_common.h"
 
 PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
 {

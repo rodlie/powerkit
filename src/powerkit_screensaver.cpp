@@ -15,7 +15,7 @@
 #include <QRandomGenerator>
 #include <QDebug>
 
-#include "powerkit_def.h"
+#include "powerkit_common.h"
 #include "powerkit_settings.h"
 
 using namespace PowerKit;

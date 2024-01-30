@@ -7,7 +7,7 @@
 */
 
 #include "powerkit_device.h"
-#include "powerkit_def.h"
+#include "powerkit_common.h"
 
 #include <QDBusConnection>
 #include <QStringList>
