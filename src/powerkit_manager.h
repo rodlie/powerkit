@@ -18,7 +18,7 @@
 #include <QDateTime>
 #include <QDBusUnixFileDescriptor>
 
-#include "powerkit_power_device.h"
+#include "powerkit_device.h"
 
 #define POWERKIT_SERVICE "org.freedesktop.PowerKit"
 #define POWERKIT_PATH "/PowerKit"
