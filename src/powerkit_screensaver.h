@@ -6,8 +6,8 @@
 # See the LICENSE file for full details
 */
 
-#ifndef SCREENSAVER_H
-#define SCREENSAVER_H
+#ifndef POWERKIT_SCREENSAVER_H
+#define POWERKIT_SCREENSAVER_H
 
 #include <QObject>
 #include <QTimer>
@@ -15,36 +15,39 @@
 #include <QMap>
 #include <QString>
 
-class ScreenSaver : public QObject
+namespace PowerKit
 {
-    Q_OBJECT
+    class ScreenSaver : public QObject
+    {
+        Q_OBJECT
 
-public:
-    explicit ScreenSaver(QObject *parent = NULL);
+    public:
+        explicit ScreenSaver(QObject *parent = NULL);
 
-private:
-    QTimer timer;
-    QMap<quint32, QTime> clients;
+    private:
+        QTimer timer;
+        QMap<quint32, QTime> clients;
 
-signals:
-    void newInhibit(const QString &application,
-                    const QString &reason,
-                    quint32 cookie);
-    void removedInhibit(quint32 cookie);
+    signals:
+        void newInhibit(const QString &application,
+                        const QString &reason,
+                        quint32 cookie);
+        void removedInhibit(quint32 cookie);
 
-private slots:
-    quint32 genCookie();
-    void checkForExpiredClients();
-    bool canInhibit();
-    void timeOut();
-    void pingPM();
+    private slots:
+        quint32 genCookie();
+        void checkForExpiredClients();
+        bool canInhibit();
+        void timeOut();
+        void pingPM();
 
-public slots:
-    void Update();
-    void SimulateUserActivity();
-    quint32 Inhibit(const QString &application,
-                    const QString &reason);
-    void UnInhibit(quint32 cookie);
-};
+    public slots:
+        void Update();
+        void SimulateUserActivity();
+        quint32 Inhibit(const QString &application,
+                        const QString &reason);
+        void UnInhibit(quint32 cookie);
+    };
+}
 
-#endif // SCREENSAVER_H
+#endif // POWERKIT_SCREENSAVER_H

@@ -7,12 +7,15 @@
 */
 
 #include "powerkit_backlight.h"
+
 #include <QFile>
 #include <QDir>
 #include <QDirIterator>
 #include <QDebug>
 
-const QString PowerBacklight::getDevice()
+using namespace PowerKit;
+
+const QString Backlight::getDevice()
 {
     QString path = "/sys/class/backlight";
     QDirIterator it(path, QDirIterator::Subdirectories);
@@ -31,19 +34,19 @@ const QString PowerBacklight::getDevice()
     return QString();
 }
 
-bool PowerBacklight::canAdjustBrightness(const QString &device)
+bool Backlight::canAdjustBrightness(const QString &device)
 {
     QFileInfo backlight(QString("%1/brightness").arg(device));
     if (backlight.isWritable()) { return true; }
     return false;
 }
 
-bool PowerBacklight::canAdjustBrightness()
+bool Backlight::canAdjustBrightness()
 {
     return canAdjustBrightness(getDevice());
 }
 
-int PowerBacklight::getMaxBrightness(const QString &device)
+int Backlight::getMaxBrightness(const QString &device)
 {
     int result = 0;
     QFile backlight(QString("%1/max_brightness").arg(device));
@@ -54,12 +57,12 @@ int PowerBacklight::getMaxBrightness(const QString &device)
     return result;
 }
 
-int PowerBacklight::getMaxBrightness()
+int Backlight::getMaxBrightness()
 {
     return getMaxBrightness(getDevice());
 }
 
-int PowerBacklight::getCurrentBrightness(const QString &device)
+int Backlight::getCurrentBrightness(const QString &device)
 {
     int result = 0;
     QFile backlight(QString("%1/brightness").arg(device));
@@ -70,12 +73,12 @@ int PowerBacklight::getCurrentBrightness(const QString &device)
     return result;
 }
 
-int PowerBacklight::getCurrentBrightness()
+int Backlight::getCurrentBrightness()
 {
     return getCurrentBrightness(getDevice());
 }
 
-bool PowerBacklight::setCurrentBrightness(const QString &device, int value)
+bool Backlight::setCurrentBrightness(const QString &device, int value)
 {
     if (!canAdjustBrightness(device)) { return false; }
     QFile backlight(QString("%1/brightness").arg(device));
@@ -89,7 +92,7 @@ bool PowerBacklight::setCurrentBrightness(const QString &device, int value)
     return false;
 }
 
-bool PowerBacklight::setCurrentBrightness(int value)
+bool Backlight::setCurrentBrightness(int value)
 {
     return setCurrentBrightness(getDevice(), value);
 }

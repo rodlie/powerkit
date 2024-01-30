@@ -9,7 +9,9 @@
 #include "powerkit_client.h"
 #include <QDebug>
 
-double PowerClient::getBatteryLeft(QDBusInterface *iface)
+using namespace PowerKit;
+
+double Client::getBatteryLeft(QDBusInterface *iface)
 {
     if (!iface) { return -1; }
     qDebug() << "check for battery left";
@@ -21,7 +23,7 @@ double PowerClient::getBatteryLeft(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::hasBattery(QDBusInterface *iface)
+bool Client::hasBattery(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we have any battery";
@@ -33,7 +35,7 @@ bool PowerClient::hasBattery(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::onBattery(QDBusInterface *iface)
+bool Client::onBattery(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we are on battery";
@@ -45,7 +47,7 @@ bool PowerClient::onBattery(QDBusInterface *iface)
     return  ok;
 }
 
-qlonglong PowerClient::timeToEmpty(QDBusInterface *iface)
+qlonglong Client::timeToEmpty(QDBusInterface *iface)
 {
     if (!iface) { return -1; }
     qDebug() << "check for time to empty";
@@ -57,7 +59,7 @@ qlonglong PowerClient::timeToEmpty(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::canHibernate(QDBusInterface *iface)
+bool Client::canHibernate(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we can hibernate";
@@ -69,7 +71,7 @@ bool PowerClient::canHibernate(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::canSuspend(QDBusInterface *iface)
+bool Client::canSuspend(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we can suspend";
@@ -81,7 +83,7 @@ bool PowerClient::canSuspend(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::canRestart(QDBusInterface *iface)
+bool Client::canRestart(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we can restart";
@@ -93,7 +95,7 @@ bool PowerClient::canRestart(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::canPowerOff(QDBusInterface *iface)
+bool Client::canPowerOff(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we can poweroff";
@@ -105,7 +107,7 @@ bool PowerClient::canPowerOff(QDBusInterface *iface)
     return  ok;
 }
 
-bool PowerClient::lidIsPresent(QDBusInterface *iface)
+bool Client::lidIsPresent(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "check if we have a lid";
@@ -117,7 +119,7 @@ bool PowerClient::lidIsPresent(QDBusInterface *iface)
     return  ok;
 }
 
-void PowerClient::lockScreen(QDBusInterface *iface)
+void Client::lockScreen(QDBusInterface *iface)
 {
     if (!iface) { return; }
     qDebug() << "lock screen";
@@ -127,7 +129,7 @@ void PowerClient::lockScreen(QDBusInterface *iface)
     qDebug() << "locked screen?" << ok;
 }
 
-void PowerClient::hibernate(QDBusInterface *iface)
+void Client::hibernate(QDBusInterface *iface)
 {
     if (!iface) { return; }
     qDebug() << "hibernate";
@@ -137,7 +139,7 @@ void PowerClient::hibernate(QDBusInterface *iface)
     qDebug() << "reply" << ok;
 }
 
-void PowerClient::suspend(QDBusInterface *iface)
+void Client::suspend(QDBusInterface *iface)
 {
     if (!iface) { return; }
     qDebug() << "suspend";
@@ -147,7 +149,7 @@ void PowerClient::suspend(QDBusInterface *iface)
     qDebug() << "reply" << ok;
 }
 
-bool PowerClient::restart(QDBusInterface *iface)
+bool Client::restart(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "restart";
@@ -158,7 +160,7 @@ bool PowerClient::restart(QDBusInterface *iface)
     return ok;
 }
 
-bool PowerClient::poweroff(QDBusInterface *iface)
+bool Client::poweroff(QDBusInterface *iface)
 {
     if (!iface) { return false; }
     qDebug() << "poweroff";

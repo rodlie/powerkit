@@ -28,45 +28,45 @@ bool Manager::SetWakeAlarm(const QString &alarm)
 bool Manager::SetDisplayBacklight(const QString &device, int value)
 {
     qDebug() << "Try to set DISPLAY backlight" << device << value;
-    if (!PowerBacklight::canAdjustBrightness(device)) { return false; }
+    if (!PowerKit::Backlight::canAdjustBrightness(device)) { return false; }
     int light = value;
-    if (light>PowerBacklight::getMaxBrightness(device)) { light = PowerBacklight::getMaxBrightness(device); }
+    if (light>PowerKit::Backlight::getMaxBrightness(device)) { light = PowerKit::Backlight::getMaxBrightness(device); }
     else if (light<0) { light = 0; }
-    return PowerBacklight::setCurrentBrightness(device, light);
+    return PowerKit::Backlight::setCurrentBrightness(device, light);
 }
 
 bool Manager::SetCpuGovernor(const QString &gov)
 {
     qDebug() << "Try to set CPU governor" << gov;
-    return PowerCpu::setGovernor(gov);
+    return PowerKit::Cpu::setGovernor(gov);
 }
 
 bool Manager::SetCpuFrequency(const QString &freq)
 {
     qDebug() << "Try to set CPU frequency" << freq;
-    return  PowerCpu::setFrequency(freq);
+    return  PowerKit::Cpu::setFrequency(freq);
 }
 
 bool Manager::SetPStateTurbo(bool enable)
 {
     qDebug() << "Try to set Intel Turbo Boost" << enable;
-    return PowerCpu::setPStateTurbo(enable);
+    return PowerKit::Cpu::setPStateTurbo(enable);
 }
 
 bool Manager::SetPStateMax(int value)
 {
     qDebug() << "Try to set Intel pstate max" << value;
-    return PowerCpu::setPStateMax(value);
+    return PowerKit::Cpu::setPStateMax(value);
 }
 
 bool Manager::SetPStateMin(int value)
 {
     qDebug() << "Try to set Intel pstate min" << value;
-    return PowerCpu::setPStateMin(value);
+    return PowerKit::Cpu::setPStateMin(value);
 }
 
 bool Manager::SetPState(int min, int max)
 {
     qDebug() << "Try to set Intel pstate min max" << min << max;
-    return PowerCpu::setPState(min, max);
+    return PowerKit::Cpu::setPState(min, max);
 }

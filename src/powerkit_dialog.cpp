@@ -17,6 +17,8 @@
 
 #define MAX_WIDTH 150
 
+using namespace PowerKit;
+
 Dialog::Dialog(QWidget *parent,
                bool quitOnClose)
     : QDialog(parent)
@@ -60,7 +62,7 @@ Dialog::Dialog(QWidget *parent,
     QDBusConnection session = QDBusConnection::sessionBus();
     dbus = new QDBusInterface(POWERKIT_SERVICE,
                               POWERKIT_PATH,
-                              POWERKIT_SERVICE,
+                              POWERKIT_MANAGER,
                               session, this);
     if (!dbus->isValid()) {
         QMessageBox::warning(this,
@@ -762,13 +764,13 @@ void Dialog::loadSettings()
     checkPerms();
 
     // backlight
-    backlightDevice = PowerBacklight::getDevice();
+    backlightDevice = Backlight::getDevice();
 
     backlightSliderAC->setEnabled(true);
     backlightSliderBattery->setEnabled(true);
 
     int backlightMin = 1;
-    int backlightMax = PowerBacklight::getMaxBrightness(backlightDevice);
+    int backlightMax = Backlight::getMaxBrightness(backlightDevice);
 
     backlightSliderBattery->setMinimum(backlightMin);
     backlightSliderBattery->setMaximum(backlightMax);
@@ -806,7 +808,7 @@ void Dialog::loadSettings()
     backlightMouseWheel->setChecked(defaultBacklightMouseWheel);
 
     enableBacklight(true);
-    enableLid(PowerClient::lidIsPresent(dbus));
+    enableLid(Client::lidIsPresent(dbus));
 }
 
 void Dialog::saveSettings()
@@ -976,7 +978,7 @@ void Dialog::handleAutoSleepACAction(int index)
 
 void Dialog::checkPerms()
 {
-    if (!PowerClient::canHibernate(dbus)) {
+    if (!Client::canHibernate(dbus)) {
         bool warnCantHibernate = false;
         if (criticalActionBattery->currentIndex() == criticalHibernate) {
             warnCantHibernate = true;
@@ -1009,7 +1011,7 @@ void Dialog::checkPerms()
         }
         if (warnCantHibernate) { hibernateWarn(); }
     }
-    if (!PowerClient::canSuspend(dbus)) {
+    if (!Client::canSuspend(dbus)) {
         bool warnCantSleep = false;
         if (lidActionAC->currentIndex() == lidSleep) {
             warnCantSleep = true;

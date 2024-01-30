@@ -18,6 +18,8 @@
 #include "powerkit_def.h"
 #include "powerkit_settings.h"
 
+using namespace PowerKit;
+
 ScreenSaver::ScreenSaver(QObject *parent) : QObject(parent)
 {
     timer.setInterval(PK_SCREENSAVER_TIMER);

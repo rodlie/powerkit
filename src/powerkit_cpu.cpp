@@ -7,11 +7,35 @@
 */
 
 #include "powerkit_cpu.h"
+
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
 
-int PowerCpu::getTotal()
+#define LINUX_CPU_SYS "/sys/devices/system/cpu"
+#define LINUX_CPU_DIR "cpufreq"
+#define LINUX_CPU_FREQUENCIES "scaling_available_frequencies"
+#define LINUX_CPU_FREQUENCY "scaling_cur_freq"
+#define LINUX_CPU_FREQUENCY_MAX "scaling_max_freq"
+#define LINUX_CPU_FREQUENCY_MIN "scaling_min_freq"
+#define LINUX_CPU_GOVERNORS "scaling_available_governors"
+#define LINUX_CPU_GOVERNOR "scaling_governor"
+#define LINUX_CPU_SET_SPEED "scaling_setspeed"
+#define LINUX_CPU_PSTATE "intel_pstate"
+#define LINUX_CPU_PSTATE_STATUS "status"
+#define LINUX_CPU_PSTATE_NOTURBO "no_turbo"
+#define LINUX_CPU_PSTATE_MAX_PERF "max_perf_pct"
+#define LINUX_CPU_PSTATE_MIN_PERF "min_perf_pct"
+
+#define LINUX_CORETEMP "/sys/class/hwmon/hwmon%1"
+#define LINUX_CORETEMP_CRIT "temp%1_crit"
+#define LINUX_CORETEMP_INPUT "temp%1_input"
+#define LINUX_CORETEMP_LABEL "temp%1_label"
+#define LINUX_CORETEMP_MAX "temp%1_max"
+
+using namespace PowerKit;
+
+int Cpu::getTotal()
 {
     int counter = 0;
     while(1) {
@@ -24,7 +48,7 @@ int PowerCpu::getTotal()
     return -1;
 }
 
-const QString PowerCpu::getGovernor(int cpu)
+const QString Cpu::getGovernor(int cpu)
 {
     QString result;
     QFile gov(QString("%1/cpu%2/%3/%4")
@@ -40,7 +64,7 @@ const QString PowerCpu::getGovernor(int cpu)
     return result;
 }
 
-const QStringList PowerCpu::getGovernors()
+const QStringList Cpu::getGovernors()
 {
     QStringList result;
     for (int i=0;i<getTotal();++i) {
@@ -50,7 +74,7 @@ const QStringList PowerCpu::getGovernors()
     return result;
 }
 
-const QStringList PowerCpu::getAvailableGovernors()
+const QStringList Cpu::getAvailableGovernors()
 {
     QStringList result;
     QFile gov(QString("%1/cpu%2/%3/%4")
@@ -67,13 +91,13 @@ const QStringList PowerCpu::getAvailableGovernors()
     return result;
 }
 
-bool PowerCpu::governorExists(const QString &gov)
+bool Cpu::governorExists(const QString &gov)
 {
     if (gov.isEmpty()) { return false; }
     return getAvailableGovernors().contains(gov);
 }
 
-bool PowerCpu::setGovernor(const QString &gov, int cpu)
+bool Cpu::setGovernor(const QString &gov, int cpu)
 {
     if (!governorExists(gov)) { return false; }
     QFile file(QString("%1/cpu%2/%3/%4")
@@ -90,7 +114,7 @@ bool PowerCpu::setGovernor(const QString &gov, int cpu)
     return false;
 }
 
-bool PowerCpu::setGovernor(const QString &gov)
+bool Cpu::setGovernor(const QString &gov)
 {
     if (!governorExists(gov)) { return false; }
     bool failed = false;
@@ -101,7 +125,7 @@ bool PowerCpu::setGovernor(const QString &gov)
     return true;
 }
 
-const QString PowerCpu::getFrequency(int cpu)
+const QString Cpu::getFrequency(int cpu)
 {
     QString result;
     QFile freq(QString("%1/cpu%2/%3/%4")
@@ -117,7 +141,7 @@ const QString PowerCpu::getFrequency(int cpu)
     return result;
 }
 
-const QStringList PowerCpu::getFrequencies()
+const QStringList Cpu::getFrequencies()
 {
     QStringList result;
     for (int i=0;i<getTotal();++i) {
@@ -127,7 +151,7 @@ const QStringList PowerCpu::getFrequencies()
     return result;
 }
 
-const QStringList PowerCpu::getAvailableFrequency()
+const QStringList Cpu::getAvailableFrequency()
 {
     QStringList result;
     if (hasPState()) { return result; }
@@ -145,17 +169,17 @@ const QStringList PowerCpu::getAvailableFrequency()
     return result;
 }
 
-int PowerCpu::getMinFrequency()
+int Cpu::getMinFrequency()
 {
     return getScalingFrequency(0, 0);
 }
 
-int PowerCpu::getMaxFrequency()
+int Cpu::getMaxFrequency()
 {
     return getScalingFrequency(0, 1);
 }
 
-int PowerCpu::getScalingFrequency(int cpu, int scale)
+int Cpu::getScalingFrequency(int cpu, int scale)
 {
     int result = 0;
     QString type;
@@ -178,14 +202,14 @@ int PowerCpu::getScalingFrequency(int cpu, int scale)
     return result;
 }
 
-bool PowerCpu::frequencyExists(const QString &freq)
+bool Cpu::frequencyExists(const QString &freq)
 {
     if (hasPState()) { return false; }
     if (freq.isEmpty()) { return false; }
     return getAvailableFrequency().contains(freq);
 }
 
-bool PowerCpu::setFrequency(const QString &freq, int cpu)
+bool Cpu::setFrequency(const QString &freq, int cpu)
 {
     if (hasPState()) { return false; }
     if (!frequencyExists(freq)) { return false; }
@@ -210,7 +234,7 @@ bool PowerCpu::setFrequency(const QString &freq, int cpu)
     return false;
 }
 
-bool PowerCpu::setFrequency(const QString &freq)
+bool Cpu::setFrequency(const QString &freq)
 {
     if (hasPState()) { return false; }
     if (!frequencyExists(freq)) { return false; }
@@ -222,12 +246,12 @@ bool PowerCpu::setFrequency(const QString &freq)
     return true;
 }
 
-bool PowerCpu::hasPState()
+bool Cpu::hasPState()
 {
     return QFile::exists(QString("%1/%2").arg(LINUX_CPU_SYS, LINUX_CPU_PSTATE));
 }
 
-bool PowerCpu::hasPStateTurbo()
+bool Cpu::hasPStateTurbo()
 {
     bool result = false;
     if (!hasPState()) { return result; }
@@ -245,7 +269,7 @@ bool PowerCpu::hasPStateTurbo()
     return result;
 }
 
-bool PowerCpu::setPStateTurbo(bool turbo)
+bool Cpu::setPStateTurbo(bool turbo)
 {
     if (!hasPState()) { return false; }
     QFile file(QString("%1/%2/%3")
@@ -263,7 +287,7 @@ bool PowerCpu::setPStateTurbo(bool turbo)
     return false;
 }
 
-int PowerCpu::getPStateMax()
+int Cpu::getPStateMax()
 {
     int value = -1;
     if (!hasPState()) { return value; }
@@ -279,7 +303,7 @@ int PowerCpu::getPStateMax()
     return value;
 }
 
-int PowerCpu::getPStateMin()
+int Cpu::getPStateMin()
 {
     int value = -1;
     if (!hasPState()) { return value; }
@@ -295,7 +319,7 @@ int PowerCpu::getPStateMin()
     return value;
 }
 
-bool PowerCpu::setPStateMax(int maxState)
+bool Cpu::setPStateMax(int maxState)
 {
     if (!hasPState()) { return false; }
     QFile file(QString("%1/%2/%3")
@@ -312,7 +336,7 @@ bool PowerCpu::setPStateMax(int maxState)
     return false;
 }
 
-bool PowerCpu::setPStateMin(int minState)
+bool Cpu::setPStateMin(int minState)
 {
     if (!hasPState()) { return false; }
     QFile file(QString("%1/%2/%3")
@@ -329,17 +353,17 @@ bool PowerCpu::setPStateMin(int minState)
     return false;
 }
 
-bool PowerCpu::setPState(int min, int max)
+bool Cpu::setPState(int min, int max)
 {
     return (setPStateMin(min) && setPStateMax(max));
 }
 
-bool PowerCpu::hasCoreTemp()
+bool Cpu::hasCoreTemp()
 {
     return QFile::exists(QString(LINUX_CORETEMP).arg(0));
 }
 
-int PowerCpu::getCoreTemp()
+int Cpu::getCoreTemp()
 {
     double temp = 0.0;
     if (!hasCoreTemp()) { return temp; }
