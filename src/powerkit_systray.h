@@ -34,7 +34,7 @@
 
 //#include "common.h"
 #include "powerkit_freedesktop_pm.h"
-#include "powerkit_freedesktop_ss.h"
+#include "powerkit_screensaver.h"
 #include "powerkit_x11_screens.h"
 #include "powerkit.h"
 
@@ -107,8 +107,6 @@ private:
     bool disableLidOnExternalMonitors;
     int autoSuspendBatteryAction;
     int autoSuspendACAction;
-    QProcess *xscreensaver;
-    bool startupScreensaver;
     QString internalMonitor;
     QFileSystemWatcher *watcher;
     bool lidXrandr;
@@ -180,7 +178,6 @@ private slots:
                                          quint32 cookie);
     void handleDelInhibitScreenSaver(quint32 cookie);
     void handleDelInhibitPowerManagement(quint32 cookie);
-    void handleScreensaverFinished(int exitcode);
     void showMessage(const QString &title,
                      const QString &msg,
                      bool critical = false);
