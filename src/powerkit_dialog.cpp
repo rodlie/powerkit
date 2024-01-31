@@ -29,8 +29,6 @@ Dialog::Dialog(QWidget *parent,
     , criticalBattery(nullptr)
     , autoSleepBattery(nullptr)
     , autoSleepAC(nullptr)
-    , desktopSS(nullptr)
-    , desktopPM(nullptr)
     , showNotifications(nullptr)
     , showSystemTray(nullptr)
     , disableLidAction(nullptr)
@@ -97,10 +95,6 @@ Dialog::Dialog(QWidget *parent,
             this, SLOT(handleAutoSleepBattery(int)));
     connect(autoSleepAC, SIGNAL(valueChanged(int)),
             this, SLOT(handleAutoSleepAC(int)));
-    connect(desktopSS, SIGNAL(toggled(bool)),
-            this, SLOT(handleDesktopSS(bool)));
-    connect(desktopPM, SIGNAL(toggled(bool)),
-            this, SLOT(handleDesktopPM(bool)));
     connect(showNotifications, SIGNAL(toggled(bool)),
             this, SLOT(handleShowNotifications(bool)));
     connect(showSystemTray, SIGNAL(toggled(bool)),
@@ -426,28 +420,6 @@ void Dialog::setupWidgets()
     acContainerLayout->addWidget(acBacklightContainer);
     acContainerLayout->addStretch();
 
-    // advanced
-    QGroupBox *advContainer = new QGroupBox(this);
-    advContainer->setTitle(tr("Services"));
-    QVBoxLayout *advContainerLayout = new QVBoxLayout(advContainer);
-
-    desktopSS = new QCheckBox(this);
-    desktopSS->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-    desktopSS->setText("org.freedesktop.ScreenSaver");
-    desktopSS->setToolTip(tr("Enable/Disable the screen saver D-Bus service."
-                             " Needed for applications to inhibit the running screen saver."));
-
-    desktopPM = new QCheckBox(this);
-    desktopPM->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
-    desktopPM->setText("org.freedesktop.PowerManagement");
-    desktopPM->setToolTip(tr("Enable/Disable the power management D-Bus service."
-                             " Needed for applications to inhibit auto suspend action."));
-
-    // add widgets to advanced
-    advContainerLayout->addWidget(desktopSS);
-    advContainerLayout->addWidget(desktopPM);
-    advContainerLayout->addStretch();
-
     // common
     QGroupBox *daemonContainer = new QGroupBox(this);
     daemonContainer->setTitle(tr("Common"));
@@ -557,7 +529,6 @@ void Dialog::setupWidgets()
     settingsLayout->addWidget(daemonContainer);
     settingsLayout->addWidget(ssContainer);
     settingsLayout->addWidget(notifyContainer);
-    settingsLayout->addWidget(advContainer);
     settingsLayout->addStretch();
 
     layout->addWidget(settingsContainerArea);
@@ -682,18 +653,6 @@ void Dialog::loadSettings()
     }
     setDefaultAction(criticalActionBattery, defaultCriticalAction);
 
-    bool defaultDesktopSS = true;
-    if (Settings::isValid(CONF_FREEDESKTOP_SS)) {
-        defaultDesktopSS = Settings::getValue(CONF_FREEDESKTOP_SS).toBool();
-    }
-    desktopSS->setChecked(defaultDesktopSS);
-
-    bool defaultDesktopPM = true;
-    if (Settings::isValid(CONF_FREEDESKTOP_PM)) {
-        defaultDesktopPM = Settings::getValue(CONF_FREEDESKTOP_PM).toBool();
-    }
-    desktopPM->setChecked(defaultDesktopPM);
-
     bool defaultShowNotifications = true;
     if (Settings::isValid(CONF_TRAY_NOTIFY)) {
         defaultShowNotifications = Settings::getValue(CONF_TRAY_NOTIFY).toBool();
@@ -814,61 +773,57 @@ void Dialog::loadSettings()
 void Dialog::saveSettings()
 {
     Settings::setValue(CONF_LID_BATTERY_ACTION,
-                              lidActionBattery->currentIndex());
+                       lidActionBattery->currentIndex());
     Settings::setValue(CONF_LID_AC_ACTION,
-                              lidActionAC->currentIndex());
+                       lidActionAC->currentIndex());
     Settings::setValue(CONF_CRITICAL_BATTERY_ACTION,
-                              criticalActionBattery->currentIndex());
+                       criticalActionBattery->currentIndex());
     Settings::setValue(CONF_CRITICAL_BATTERY_TIMEOUT,
-                              criticalBattery->value());
+                       criticalBattery->value());
     Settings::setValue(CONF_SUSPEND_BATTERY_TIMEOUT,
-                              autoSleepBattery->value());
+                       autoSleepBattery->value());
     Settings::setValue(CONF_SUSPEND_AC_TIMEOUT,
-                              autoSleepAC->value());
-    Settings::setValue(CONF_FREEDESKTOP_SS,
-                              desktopSS->isChecked());
-    Settings::setValue(CONF_FREEDESKTOP_PM,
-                              desktopPM->isChecked());
+                       autoSleepAC->value());
     Settings::setValue(CONF_TRAY_NOTIFY,
-                              showNotifications->isChecked());
+                       showNotifications->isChecked());
     Settings::setValue(CONF_TRAY_SHOW,
-                              showSystemTray->isChecked());
+                       showSystemTray->isChecked());
     Settings::setValue(CONF_LID_DISABLE_IF_EXTERNAL,
-                              disableLidAction->isChecked());
+                       disableLidAction->isChecked());
     Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
-                              autoSleepBatteryAction->currentIndex());
+                       autoSleepBatteryAction->currentIndex());
     Settings::setValue(CONF_SUSPEND_AC_ACTION,
-                              autoSleepACAction->currentIndex());
+                       autoSleepACAction->currentIndex());
     Settings::setValue(CONF_BACKLIGHT_BATTERY_ENABLE,
-                              backlightBatteryCheck->isChecked());
+                       backlightBatteryCheck->isChecked());
     Settings::setValue(CONF_BACKLIGHT_AC_ENABLE,
-                              backlightACCheck->isChecked());
+                       backlightACCheck->isChecked());
     Settings::setValue(CONF_BACKLIGHT_BATTERY,
-                              backlightSliderBattery->value());
+                       backlightSliderBattery->value());
     Settings::setValue(CONF_BACKLIGHT_AC,
-                              backlightSliderAC->value());
+                       backlightSliderAC->value());
     Settings::setValue(CONF_BACKLIGHT_BATTERY_DISABLE_IF_LOWER,
-                              backlightBatteryLowerCheck->isChecked());
+                       backlightBatteryLowerCheck->isChecked());
     Settings::setValue(CONF_BACKLIGHT_AC_DISABLE_IF_HIGHER,
-                              backlightACHigherCheck->isChecked());
+                       backlightACHigherCheck->isChecked());
     Settings::setValue(CONF_DIALOG,
-                              saveGeometry());
+                       saveGeometry());
     Settings::setValue(CONF_WARN_ON_LOW_BATTERY,
-                              warnOnLowBattery->isChecked());
+                       warnOnLowBattery->isChecked());
     Settings::setValue(CONF_WARN_ON_VERYLOW_BATTERY,
-                              warnOnVeryLowBattery->isChecked());
+                       warnOnVeryLowBattery->isChecked());
     Settings::setValue(CONF_NOTIFY_ON_BATTERY,
-                              notifyOnBattery->isChecked());
+                       notifyOnBattery->isChecked());
     Settings::setValue(CONF_NOTIFY_ON_AC,
-                              notifyOnAC->isChecked());
+                       notifyOnAC->isChecked());
     Settings::setValue(CONF_NOTIFY_NEW_INHIBITOR,
-                              notifyNewInhibitor->isChecked());
+                       notifyNewInhibitor->isChecked());
     Settings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL,
-                              backlightMouseWheel->isChecked());
+                       backlightMouseWheel->isChecked());
     Settings::setValue(CONF_SUSPEND_LOCK_SCREEN,
-                              suspendLockScreen->isChecked());
+                       suspendLockScreen->isChecked());
     Settings::setValue(CONF_RESUME_LOCK_SCREEN,
-                              resumeLockScreen->isChecked());
+                       resumeLockScreen->isChecked());
 }
 
 // set default action in combobox
@@ -931,22 +886,6 @@ void Dialog::handleAutoSleepBattery(int value)
 void Dialog::handleAutoSleepAC(int value)
 {
     Settings::setValue(CONF_SUSPEND_AC_TIMEOUT, value);
-}
-
-void Dialog::handleDesktopSS(bool triggered)
-{
-    Settings::setValue(CONF_FREEDESKTOP_SS, triggered);
-    QMessageBox::information(this, tr("Restart required"),
-                             tr("You must restart powerkit to apply this setting"));
-    // TODO: add restart now?
-}
-
-void Dialog::handleDesktopPM(bool triggered)
-{
-    Settings::setValue(CONF_FREEDESKTOP_PM, triggered);
-    QMessageBox::information(this, tr("Restart required"),
-                             tr("You must restart powerkit to apply this setting"));
-    // TODO: add restart now?
 }
 
 void Dialog::handleShowNotifications(bool triggered)

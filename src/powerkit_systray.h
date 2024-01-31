@@ -85,8 +85,6 @@ private:
     QTimer *timer;
     int timeouts;
     bool showNotifications;
-    bool desktopSS;
-    bool desktopPM;
     bool showTray;
     bool disableLidOnExternalMonitors;
     int autoSuspendBatteryAction;

@@ -47,8 +47,6 @@ namespace PowerKit
         QSpinBox *criticalBattery;
         QSpinBox *autoSleepBattery;
         QSpinBox *autoSleepAC;
-        QCheckBox *desktopSS;
-        QCheckBox *desktopPM;
         QCheckBox *showNotifications;
         QCheckBox *showSystemTray;
         QCheckBox *disableLidAction;
@@ -90,8 +88,6 @@ namespace PowerKit
         void handleCriticalBattery(int value);
         void handleAutoSleepBattery(int value);
         void handleAutoSleepAC(int value);
-        void handleDesktopSS(bool triggered);
-        void handleDesktopPM(bool triggered);
         void handleShowNotifications(bool triggered);
         void handleShowSystemTray(bool triggered);
         void handleDisableLidAction(bool triggered);

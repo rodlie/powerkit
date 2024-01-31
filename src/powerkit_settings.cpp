@@ -52,10 +52,6 @@ void Settings::saveDefault()
                       CRITICAL_BATTERY);
     setValue(CONF_SUSPEND_BATTERY_TIMEOUT,
                       AUTO_SLEEP_BATTERY);
-    setValue(CONF_FREEDESKTOP_SS,
-                      true);
-    setValue(CONF_FREEDESKTOP_PM,
-                      true);
     setValue(CONF_TRAY_NOTIFY,
                       true);
     setValue(CONF_TRAY_SHOW,

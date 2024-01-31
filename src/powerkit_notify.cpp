@@ -8,7 +8,9 @@
 
 #include "powerkit_notify.h"
 #include "powerkit_common.h"
-#include "powerkit_manager.h"
+
+#define NOTIFY_SERVICE "org.freedesktop.Notifications"
+#define NOTIFY_PATH "/org/freedesktop/Notifications"
 
 using namespace PowerKit;
 

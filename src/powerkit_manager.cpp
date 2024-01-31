@@ -705,7 +705,7 @@ double Manager::BatteryLeft()
 void Manager::LockScreen()
 {
     qDebug() << "screen lock";
-    QProcess::startDetached(Settings::getValue(PK_SCREENSAVER_CONF_LOCK_CMD,
+    QProcess::startDetached(Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
                                                PK_SCREENSAVER_LOCK_CMD).toString(),
                             QStringList());
 }

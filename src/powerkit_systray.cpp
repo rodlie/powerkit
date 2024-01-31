@@ -44,8 +44,6 @@ SysTray::SysTray(QObject *parent)
     , timer(nullptr)
     , timeouts(0)
     , showNotifications(true)
-    , desktopSS(true)
-    , desktopPM(true)
     , showTray(true)
     , disableLidOnExternalMonitors(false)
     , autoSuspendBatteryAction(suspendSleep)
@@ -452,12 +450,6 @@ void SysTray::loadSettings()
     if (Settings::isValid(CONF_CRITICAL_BATTERY_ACTION)) {
         criticalAction = Settings::getValue(CONF_CRITICAL_BATTERY_ACTION).toInt();
     }
-    if (Settings::isValid(CONF_FREEDESKTOP_SS)) {
-        desktopSS = Settings::getValue(CONF_FREEDESKTOP_SS).toBool();
-    }
-    if (Settings::isValid(CONF_FREEDESKTOP_PM)) {
-        desktopPM = Settings::getValue(CONF_FREEDESKTOP_PM).toBool();
-    }
     if (Settings::isValid(CONF_TRAY_NOTIFY)) {
         showNotifications = Settings::getValue(CONF_TRAY_NOTIFY).toBool();
     }
@@ -560,35 +552,33 @@ void SysTray::registerService()
     hasService = true;
 
     bool hasDesktopPM = true;
-    if (desktopPM) {
-        if (!QDBusConnection::sessionBus().registerService(PM_SERVICE)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopPM = false;
-        }
-        if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
-                                                          pm,
-                                                          QDBusConnection::ExportAllSlots)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopPM = false;
-        }
-        if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH,
-                                                          pm,
-                                                          QDBusConnection::ExportAllSlots)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopPM = false;
-        }
-
-        new InhibitAdaptor(pm);
-        if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH_INHIBIT, pm)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopPM = false;
-        }
-        if (!QDBusConnection::sessionBus().registerService(PM_SERVICE_INHIBIT)) {
-            qWarning() << QDBusConnection::sessionBus().lastError().message();
-            hasDesktopPM = false;
-        }
-        qWarning() << "Enabled org.freedesktop.PowerManagement" << hasDesktopPM;
+    if (!QDBusConnection::sessionBus().registerService(PM_SERVICE)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        hasDesktopPM = false;
     }
+    if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
+                                                      pm,
+                                                      QDBusConnection::ExportAllSlots)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        hasDesktopPM = false;
+    }
+    if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH,
+                                                      pm,
+                                                      QDBusConnection::ExportAllSlots)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        hasDesktopPM = false;
+    }
+
+    new InhibitAdaptor(pm);
+    if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH_INHIBIT, pm)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        hasDesktopPM = false;
+    }
+    if (!QDBusConnection::sessionBus().registerService(PM_SERVICE_INHIBIT)) {
+        qWarning() << QDBusConnection::sessionBus().lastError().message();
+        hasDesktopPM = false;
+    }
+    qWarning() << "Enabled org.freedesktop.PowerManagement" << hasDesktopPM;
 
     // register org.freedesktop.ScreenSaver
     bool hasScreenSaver = true;
@@ -627,7 +617,7 @@ void SysTray::registerService()
     }
     qWarning() << "Enabled org.freedesktop.PowerKit" << hasDesktopPK;
 
-    if (!hasDesktopPK || (desktopPM && !hasDesktopPM) || !hasScreenSaver) { hasService = false; }
+    if (!hasDesktopPK || !hasDesktopPM || !hasScreenSaver) { hasService = false; }
 }
 
 // dbus session inhibit status handler

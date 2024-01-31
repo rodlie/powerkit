@@ -9,51 +9,52 @@
 #ifndef POWERKIT_COMMON_H
 #define POWERKIT_COMMON_H
 
-enum randrAction
+namespace PowerKit
 {
-    randrAuto,
-    randrLeftOf,
-    randrRightOf,
-    randrAbove,
-    randrBelow,
-    randrSameAs
-};
+    enum randrAction
+    {
+        randrAuto,
+        randrLeftOf,
+        randrRightOf,
+        randrAbove,
+        randrBelow,
+        randrSameAs
+    };
 
-enum suspendAction
-{
-    suspendNone,
-    suspendSleep,
-    suspendHibernate,
-    suspendShutdown,
-    suspendHybrid
-};
+    enum suspendAction
+    {
+        suspendNone,
+        suspendSleep,
+        suspendHibernate,
+        suspendShutdown,
+        suspendHybrid
+    };
 
-enum lidAction
-{
-    lidNone,
-    lidLock,
-    lidSleep,
-    lidHibernate,
-    lidShutdown,
-    lidHybridSleep
-};
+    enum lidAction
+    {
+        lidNone,
+        lidLock,
+        lidSleep,
+        lidHibernate,
+        lidShutdown,
+        lidHybridSleep
+    };
 
-enum criticalAction
-{
-    criticalNone,
-    criticalHibernate,
-    criticalShutdown
-};
+    enum criticalAction
+    {
+        criticalNone,
+        criticalHibernate,
+        criticalShutdown
+    };
+}
 
 #define VIRTUAL_MONITOR "VIRTUAL"
 #define TURN_OFF_MONITOR "xrandr --output %1 --off"
 #define TURN_ON_MONITOR "xrandr --output %1 --auto "
-#define LUMINA_XCONFIG "lumina-xconfig --reset-monitors" // deprecated
-#define DRACO_XCONFIG "draco-settings-x11 --reset-monitors" // deprecated
 
-#define LID_BATTERY_DEFAULT lidSleep
-#define LID_AC_DEFAULT lidLock
-#define CRITICAL_DEFAULT criticalNone
+#define LID_BATTERY_DEFAULT PowerKit::lidSleep
+#define LID_AC_DEFAULT PowerKit::lidLock
+#define CRITICAL_DEFAULT PowerKit::criticalNone
 
 #define BACKLIGHT_MOVE_VALUE 10
 #define LOW_BATTERY 5 // % over critical
@@ -91,8 +92,8 @@ enum criticalAction
 #define DEFAULT_INHIBITOR_ICON "preferences-desktop-screensaver"
 #define DEFAULT_APP_ICON "applications-system"
 
-#define DEFAULT_SUSPEND_BATTERY_ACTION suspendSleep
-#define DEFAULT_SUSPEND_AC_ACTION suspendNone
+#define DEFAULT_SUSPEND_BATTERY_ACTION PowerKit::suspendSleep
+#define DEFAULT_SUSPEND_AC_ACTION PowerKit::suspendNone
 
 #define POWERKIT_SERVICE "org.freedesktop.PowerKit"
 #define POWERKIT_PATH "/PowerKit"
@@ -117,6 +118,7 @@ enum criticalAction
 #define DBUS_DEVICE "Device"
 #define DBUS_CHANGED "Changed"
 
+// config keys
 #define CONF_DIALOG_GEOMETRY "dialog_geometry"
 #define CONF_SUSPEND_BATTERY_TIMEOUT "suspend_battery_timeout"
 #define CONF_SUSPEND_BATTERY_ACTION "suspend_battery_action"
@@ -129,8 +131,6 @@ enum criticalAction
 #define CONF_LID_BATTERY_ACTION "lid_battery_action"
 #define CONF_LID_AC_ACTION "lid_ac_action"
 #define CONF_LID_DISABLE_IF_EXTERNAL "disable_lid_action_external_monitor"
-#define CONF_FREEDESKTOP_SS "freedesktop_ss" // deprecated
-#define CONF_FREEDESKTOP_PM "freedesktop_pm" // deprecated
 #define CONF_TRAY_NOTIFY "tray_notify"
 #define CONF_TRAY_SHOW "show_tray"
 #define CONF_LID_XRANDR "lid_xrandr_action"
@@ -152,18 +152,14 @@ enum criticalAction
 #define CONF_ICON_THEME "icon_theme"
 #define CONF_NATIVE_THEME "native_theme"
 #define CONF_KERNEL_BYPASS "kernel_cmd_bypass"
+#define CONF_SCREENSAVER_LOCK_CMD "screensaver_lock_cmd"
+#define CONF_SCREENSAVER_TIMEOUT_BLANK "screensaver_blank_timeout"
 
 // screensaver
-#define PK_SCREENSAVER_CONF_LOCK_CMD "screensaver_lock_cmd"
-#define PK_SCREENSAVER_CONF_TIMEOUT_BLANK "screensaver_blank_timeout"
+
+#define PK_SCREENSAVER_LOCK_CMD "xsecurelock"
 #define PK_SCREENSAVER_SERVICE "org.freedesktop.ScreenSaver"
 #define PK_SCREENSAVER_PATH_ROOT "/ScreenSaver"
 #define PK_SCREENSAVER_PATH_FULL "/org/freedesktop/ScreenSaver"
-#define PK_SCREENSAVER_TIMER 10000
-#define PK_SCREENSAVER_MAX_INHIBIT 18000
-#define PK_SCREENSAVER_ACTIVITY "SimulateUserActivity"
-#define PK_SCREENSAVER_TIMEOUT_BLANK 300
-#define PK_SCREENSAVER_TIMEOUT_LOCK 250
-#define PK_SCREENSAVER_LOCK_CMD "xsecurelock"
 
 #endif // POWERKIT_COMMON_H

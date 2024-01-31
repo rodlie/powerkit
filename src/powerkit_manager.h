@@ -33,9 +33,6 @@
 #define LOGIND_MANAGER "org.freedesktop.login1.Manager"
 #define LOGIND_DOCKED "Docked"
 
-#define NOTIFY_SERVICE "org.freedesktop.Notifications"
-#define NOTIFY_PATH "/org/freedesktop/Notifications"
-
 #define UPOWER_PATH "/org/freedesktop/UPower"
 #define UPOWER_MANAGER "org.freedesktop.UPower"
 #define UPOWER_DEVICES "/org/freedesktop/UPower/devices/"

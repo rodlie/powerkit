@@ -39,6 +39,12 @@
 //#undef Expose
 //#undef FrameFeature
 
+#define PK_SCREENSAVER_TIMER 10000
+#define PK_SCREENSAVER_MAX_INHIBIT 18000
+#define PK_SCREENSAVER_ACTIVITY "SimulateUserActivity"
+#define PK_SCREENSAVER_TIMEOUT_BLANK 300
+#define PK_SCREENSAVER_TIMEOUT_LOCK 250
+
 using namespace PowerKit;
 
 ScreenSaver::ScreenSaver(QObject *parent)
@@ -102,9 +108,9 @@ void ScreenSaver::pingPM()
 
 void ScreenSaver::Update()
 {
-    xlock = Settings::getValue(PK_SCREENSAVER_CONF_LOCK_CMD,
+    xlock = Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
                                PK_SCREENSAVER_LOCK_CMD).toString();
-    blank = Settings::getValue(PK_SCREENSAVER_CONF_TIMEOUT_BLANK,
+    blank = Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
                                PK_SCREENSAVER_TIMEOUT_BLANK).toInt();
     int exe1 = QProcess::execute("xset",
                                  QStringList() << "-dpms");
