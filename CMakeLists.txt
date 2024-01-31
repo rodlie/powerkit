@@ -5,9 +5,8 @@
 # See the LICENSE file for full details
 
 cmake_minimum_required(VERSION 3.0)
-include(GNUInstallDirs)
 
-project(powerkit VERSION 2.0.0)
+project(powerkit VERSION 2.0.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -119,9 +118,9 @@ else()
     set(XSS_INCLUDE ${X11_Xss_INCLUDE_PATH})
     set(XSS_LIB ${X11_Xss_LIB})
 endif()
-target_include_directories(${PROJECT_NAME}d PUBLIC src)
+target_include_directories(${PROJECT_NAME}d PRIVATE src)
 target_include_directories(${PROJECT_NAME}
-                           PUBLIC
+                           PRIVATE
                            src
                            ${X11_X11_INCLUDE_PATH}
                            ${X11_Xrandr_INCLUDE_PATH}
@@ -157,6 +156,7 @@ configure_file(share/settings.desktop.in
                @ONLY)
 
 # install
+include(GNUInstallDirs)
 install(TARGETS
         ${PROJECT_NAME}d
         DESTINATION
