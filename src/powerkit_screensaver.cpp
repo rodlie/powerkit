@@ -183,9 +183,7 @@ const QMap<QString, bool> ScreenSaver::GetDisplays()
                 continue;
             }
             QString output = info->name;
-            bool screenConnected = false;
-            if (info->connection == RR_Connected) { screenConnected = true; }
-            result[output] = screenConnected;
+            result[output] = (info->connection == RR_Connected);
             XRRFreeOutputInfo(info);
         }
     }

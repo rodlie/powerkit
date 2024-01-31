@@ -776,6 +776,7 @@ void SysTray::setInternalMonitor()
 {
     internalMonitor = ss->GetInternalDisplay();
     qDebug() << "internal monitor set to" << internalMonitor;
+    qDebug() << ss->GetDisplays();
 }
 
 // is "internal" monitor connected?
