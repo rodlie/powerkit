@@ -88,8 +88,8 @@ export XDG_CURRENT_DESKTOP=xfce
 powerkit requires the following dependencies:
 
  * *[X11](https://www.x.org)*
- * *[Xss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)*
- * *[Xrandr](https://www.x.org/wiki/libraries/libxrandr/)*
+ * *[libXss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)*
+ * *[libXrandr](https://www.x.org/wiki/libraries/libxrandr/)*
  * *[Qt5](https://qt.io)* *(Core/DBus/Gui/Widgets)*
  * *[D-Bus](https://www.freedesktop.org/wiki/Software/dbus/)*
  * *[logind](https://www.freedesktop.org/wiki/Software/systemd/logind/)*
