@@ -19,6 +19,25 @@
 #include "powerkit_settings.h"
 
 #include <X11/extensions/scrnsaver.h>
+#include <X11/extensions/Xrandr.h>
+
+// fix Xrandr
+#ifdef Bool
+#undef Bool
+#endif
+#ifdef Unsorted
+#undef Unsorted
+#endif
+//#undef CursorShape
+//#undef Status
+//#undef None
+//#undef KeyPress
+//#undef KeyRelease
+//#undef FocusIn
+//#undef FocusOut
+//#undef FontChange
+//#undef Expose
+//#undef FrameFeature
 
 using namespace PowerKit;
 
@@ -146,4 +165,48 @@ void ScreenSaver::UnInhibit(quint32 cookie)
     if (clients.contains(cookie)) { clients.remove(cookie); }
     timeOut();
     emit removedInhibit(cookie);
+}
+
+const QMap<QString, bool> ScreenSaver::GetDisplays()
+{
+    QMap<QString, bool> result;
+    Display *dpy;
+    if ((dpy = XOpenDisplay(nullptr)) == nullptr) { return result; }
+    XRRScreenResources *sr;
+    XRROutputInfo *info;
+    sr = XRRGetScreenResourcesCurrent(dpy, DefaultRootWindow(dpy));
+    if (sr) {
+        for (int i = 0; i < sr->noutput;++i) {
+            info = XRRGetOutputInfo(dpy, sr, sr->outputs[i]);
+            if (info == nullptr) {
+                XRRFreeOutputInfo(info);
+                continue;
+            }
+            QString output = info->name;
+            bool screenConnected = false;
+            if (info->connection == RR_Connected) { screenConnected = true; }
+            result[output] = screenConnected;
+            XRRFreeOutputInfo(info);
+        }
+    }
+    XRRFreeScreenResources(sr);
+    XCloseDisplay(dpy);
+    return result;
+}
+
+const QString ScreenSaver::GetInternalDisplay()
+{
+    QString result;
+    Display *dpy;
+    if ((dpy = XOpenDisplay(nullptr)) == nullptr) { return result; }
+    XRRScreenResources *sr;
+    sr = XRRGetScreenResourcesCurrent(dpy, DefaultRootWindow(dpy));
+    if (sr) {
+        XRROutputInfo *info = XRRGetOutputInfo(dpy, sr, sr->outputs[0]);
+        if (info) { result = info->name; }
+        XRRFreeOutputInfo(info);
+    }
+    XRRFreeScreenResources(sr);
+    XCloseDisplay(dpy);
+    return result;
 }

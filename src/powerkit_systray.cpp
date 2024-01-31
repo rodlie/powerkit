@@ -13,7 +13,6 @@
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"
 #include "powerkit_cpu.h"
-#include "powerkit_x11_screens.h"
 
 #include "InhibitAdaptor.h"
 #include "ScreenSaverAdaptor.h"
@@ -775,14 +774,14 @@ void SysTray::resetTimer()
 // set "internal" monitor
 void SysTray::setInternalMonitor()
 {
-    internalMonitor = Screens::internal();
+    internalMonitor = ss->GetInternalDisplay();
     qDebug() << "internal monitor set to" << internalMonitor;
 }
 
 // is "internal" monitor connected?
 bool SysTray::internalMonitorIsConnected()
 {
-    QMapIterator<QString, bool> i(Screens::outputs());
+    QMapIterator<QString, bool> i(ss->GetDisplays());
     while (i.hasNext()) {
         i.next();
         if (i.key() == internalMonitor) {
@@ -796,7 +795,7 @@ bool SysTray::internalMonitorIsConnected()
 // is "external" monitor(s) connected?
 bool SysTray::externalMonitorIsConnected()
 {
-    QMapIterator<QString, bool> i(Screens::outputs());
+    QMapIterator<QString, bool> i(ss->GetDisplays());
     while (i.hasNext()) {
         i.next();
         if (i.key()!=internalMonitor &&

@@ -51,6 +51,8 @@ namespace PowerKit
         quint32 Inhibit(const QString &application_name,
                         const QString &reason_for_inhibit);
         void UnInhibit(quint32 cookie);
+        static const QMap<QString, bool> GetDisplays();
+        static const QString GetInternalDisplay();
     };
 }
 
