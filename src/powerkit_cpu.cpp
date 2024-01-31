@@ -33,6 +33,12 @@
 #define LINUX_CORETEMP_LABEL "temp%1_label"
 #define LINUX_CORETEMP_MAX "temp%1_max"
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+#define QT_SKIP_EMPTY Qt::SkipEmptyParts
+#else
+#define QT_SKIP_EMPTY QString::SkipEmptyParts
+#endif
+
 using namespace PowerKit;
 
 int Cpu::getTotal()
@@ -85,7 +91,7 @@ const QStringList Cpu::getAvailableGovernors()
     if (!gov.exists()) { return result; }
     if (gov.open(QIODevice::ReadOnly|QIODevice::Text)) {
         QString value = gov.readAll().trimmed();
-        result = value.split(" ", QString::SkipEmptyParts);
+        result = value.split(" ", QT_SKIP_EMPTY);
         gov.close();
     }
     return result;
@@ -163,7 +169,7 @@ const QStringList Cpu::getAvailableFrequency()
     if (!gov.exists()) { return result; }
     if (gov.open(QIODevice::ReadOnly|QIODevice::Text)) {
         QString value = gov.readAll().trimmed();
-        result = value.split(" ", QString::SkipEmptyParts);
+        result = value.split(" ", QT_SKIP_EMPTY);
         gov.close();
     }
     return result;
