@@ -20,58 +20,6 @@
 
 #include "powerkit_device.h"
 
-#define POWERKIT_SERVICE "org.freedesktop.PowerKit"
-#define POWERKIT_PATH "/PowerKit"
-#define POWERKIT_FULL_PATH "/org/freedesktop/PowerKit"
-
-#define CONSOLEKIT_SERVICE "org.freedesktop.ConsoleKit"
-#define CONSOLEKIT_PATH "/org/freedesktop/ConsoleKit/Manager"
-#define CONSOLEKIT_MANAGER "org.freedesktop.ConsoleKit.Manager"
-
-#define LOGIND_SERVICE "org.freedesktop.login1"
-#define LOGIND_PATH "/org/freedesktop/login1"
-#define LOGIND_MANAGER "org.freedesktop.login1.Manager"
-#define LOGIND_DOCKED "Docked"
-
-#define UPOWER_PATH "/org/freedesktop/UPower"
-#define UPOWER_MANAGER "org.freedesktop.UPower"
-#define UPOWER_DEVICES "/org/freedesktop/UPower/devices/"
-#define UPOWER_DOCKED "IsDocked"
-#define UPOWER_LID_IS_PRESENT "LidIsPresent"
-#define UPOWER_LID_IS_CLOSED "LidIsClosed"
-#define UPOWER_ON_BATTERY "OnBattery"
-#define UPOWER_NOTIFY_RESUME "NotifyResume"
-#define UPOWER_NOTIFY_SLEEP "NotifySleep"
-
-#define PK_PREPARE_FOR_SUSPEND "PrepareForSuspend"
-#define PK_PREPARE_FOR_SLEEP "PrepareForSleep"
-#define PK_CAN_RESTART "CanReboot"
-#define PK_RESTART "Reboot"
-#define PK_CAN_POWEROFF "CanPowerOff"
-#define PK_POWEROFF "PowerOff"
-#define PK_CAN_SUSPEND "CanSuspend"
-#define PK_SUSPEND_ALLOWED "SuspendAllowed"
-#define PK_SUSPEND "Suspend"
-#define PK_CAN_HIBERNATE "CanHibernate"
-#define PK_HIBERNATE_ALLOWED "HibernateAllowed"
-#define PK_HIBERNATE "Hibernate"
-#define PK_CAN_HYBRIDSLEEP "CanHybridSleep"
-#define PK_HYBRIDSLEEP "HybridSleep"
-#define PK_NO_BACKEND "No backend available."
-#define PK_NO_ACTION "Action no available."
-
-#define DBUS_OK_REPLY "yes"
-#define DBUS_FAILED_CONN "Failed D-Bus connection."
-#define DBUS_OBJECT_MANAGER "org.freedesktop.DBus.ObjectManager"
-
-#define DBUS_INTROSPECTABLE "org.freedesktop.DBus.Introspectable"
-#define DBUS_JOBS "%1/jobs"
-#define DBUS_DEVICE_ADDED "DeviceAdded"
-#define DBUS_DEVICE_REMOVED "DeviceRemoved"
-#define DBUS_DEVICE_CHANGED "DeviceChanged"
-
-#define TIMEOUT_CHECK 60000
-
 namespace PowerKit
 {
     class Manager : public QObject

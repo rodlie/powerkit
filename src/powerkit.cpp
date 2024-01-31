@@ -10,7 +10,7 @@
 
 #include "powerkit_systray.h"
 #include "powerkit_dialog.h"
-#include "powerkit_manager.h"
+#include "powerkit_common.h"
 
 int main(int argc, char *argv[])
 {
