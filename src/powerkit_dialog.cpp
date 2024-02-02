@@ -568,12 +568,12 @@ void Dialog::populate()
     criticalActionBattery->clear();
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
                                    tr("None"), criticalNone);
-    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                                   tr("Suspend"), criticalSuspend);
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
                                    tr("Hibernate"), criticalHibernate);
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
                                    tr("Shutdown"), criticalShutdown);
+    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                                   tr("Suspend"), criticalSuspend);
 
     autoSleepBatteryAction->clear();
     autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
