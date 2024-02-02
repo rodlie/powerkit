@@ -4,7 +4,7 @@
 # Available under the 3-clause BSD license
 # See the LICENSE file for full details
 
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.14.3)
 
 project(powerkit VERSION 2.0.0 LANGUAGES CXX)
 
@@ -30,7 +30,7 @@ endif()
 find_package(QT NAMES Qt5 COMPONENTS Core REQUIRED)
 find_package(
     Qt${QT_VERSION_MAJOR}
-    5.6
+    5.9
     COMPONENTS
     Gui
     Widgets
@@ -43,23 +43,17 @@ find_package(X11 REQUIRED)
 if(NOT X11_Xrandr_FOUND)
     message(FATAL_ERROR "Xrandr library not found")
 endif()
-if(${CMAKE_VERSION} VERSION_LESS "3.14.3")
-    if(NOT X11_Xscreensaver_FOUND)
-        message(FATAL_ERROR "Xscreensaver library not found")
-    endif()
-else()
-    if(NOT X11_Xss_FOUND)
-        message(FATAL_ERROR "Xss library not found")
-    endif()
+if(NOT X11_Xss_FOUND)
+    message(FATAL_ERROR "Xss library not found")
 endif()
 
-# etc
+# set proper etc path
 set(DEFAULT_SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
 if(CMAKE_INSTALL_PREFIX STREQUAL "/usr")
     set(DEFAULT_SYSCONFDIR "/etc")
 endif()
 
-# service
+# powerkitd user/group
 set(SERVICE_NAME
     org.freedesktop.PowerKit)
 set(SERVICE_USER
@@ -73,8 +67,10 @@ set(SERVICE_GROUP
     STRING
     "group that have access to D-Bus service, this should be any desktop user.")
 
-# org.freedesktop.PowerManagement.Inhibit
+# setup adapters
 set(ADAPTERS)
+
+# org.freedesktop.PowerManagement.Inhibit
 qt_add_dbus_adaptor(
     ADAPTERS
     share/org.freedesktop.PowerManagement.Inhibit.xml
@@ -82,6 +78,8 @@ qt_add_dbus_adaptor(
     PowerManagement
     InhibitAdaptor
 )
+
+# org.freedesktop.ScreenSaver
 qt_add_dbus_adaptor(
     ADAPTERS
     share/org.freedesktop.ScreenSaver.xml
@@ -90,21 +88,23 @@ qt_add_dbus_adaptor(
     ScreenSaverAdaptor
 )
 
-# exe
-set(SOURCES
+# powerkitd
+set(POWERKITD_SRC
     src/${PROJECT_NAME}d.cpp
     src/${PROJECT_NAME}d_manager.cpp
     src/${PROJECT_NAME}_backlight.cpp
     src/${PROJECT_NAME}_cpu.cpp
     src/${PROJECT_NAME}_rtc.cpp)
-set(HEADERS
+set(POWERKITD_INC
     src/${PROJECT_NAME}d_manager.h
     src/${PROJECT_NAME}_backlight.h
     src/${PROJECT_NAME}_cpu.h
     src/${PROJECT_NAME}_rtc.h)
 add_executable(${PROJECT_NAME}d
-               ${SOURCES}
-               ${HEADERS})
+               ${POWERKITD_SRC}
+               ${POWERKITD_INC})
+
+# powerkit
 file(GLOB
      POWERKIT_SRC
      src/${PROJECT_NAME}.cpp
@@ -114,34 +114,25 @@ add_executable(${PROJECT_NAME}
                ${POWERKIT_SRC}
                ${ADAPTERS})
 
-# link
-if(${CMAKE_VERSION} VERSION_LESS "3.14.3")
-    set(XSS_INCLUDE ${X11_Xscreensaver_INCLUDE_PATH})
-    set(XSS_LIB ${X11_Xscreensaver_LIB})
-else()
-    set(XSS_INCLUDE ${X11_Xss_INCLUDE_PATH})
-    set(XSS_LIB ${X11_Xss_LIB})
-endif()
+# includes and libraries
 target_include_directories(${PROJECT_NAME}d PRIVATE src)
 target_include_directories(${PROJECT_NAME}
                            PRIVATE
                            src
                            ${X11_X11_INCLUDE_PATH}
                            ${X11_Xrandr_INCLUDE_PATH}
-                           ${XSS_INCLUDE})
-target_link_libraries(${PROJECT_NAME}
-                      ${X11_LIBRARIES}
-                      ${X11_Xrandr_LIB}
-                      ${XSS_LIB})
+                           ${X11_Xss_INCLUDE_PATH})
 target_link_libraries(${PROJECT_NAME}d
                       Qt${QT_VERSION_MAJOR}::Core
                       Qt${QT_VERSION_MAJOR}::DBus)
 target_link_libraries(${PROJECT_NAME}
+                      ${X11_LIBRARIES}
+                      ${X11_Xrandr_LIB}
+                      ${X11_Xss_LIB}
                       Qt${QT_VERSION_MAJOR}::Core
                       Qt${QT_VERSION_MAJOR}::DBus
                       Qt${QT_VERSION_MAJOR}::Gui
                       Qt${QT_VERSION_MAJOR}::Widgets)
-
 
 # conf
 configure_file(share/conf.in
@@ -151,7 +142,7 @@ configure_file(share/service.in
                ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
                @ONLY)
 
-# desktop
+# desktop files
 configure_file(share/autostart.desktop.in
                ${CMAKE_BINARY_DIR}/autostart/${PROJECT_NAME}.desktop
                @ONLY)
