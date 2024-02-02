@@ -81,9 +81,6 @@ namespace PowerKit
         int suspendWakeupBattery;
         int suspendWakeupAC;
 
-        bool lockScreenOnSuspend;
-        bool lockScreenOnResume;
-
     signals:
         void Update();
         void UpdatedDevices();

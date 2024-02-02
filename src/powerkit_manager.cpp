@@ -75,8 +75,6 @@ Manager::Manager(QObject *parent) : QObject(parent)
   , wakeAlarm(false)
   , suspendWakeupBattery(0)
   , suspendWakeupAC(0)
-  , lockScreenOnSuspend(true)
-  , lockScreenOnResume(false)
 {
     setup();
     timer.setInterval(TIMEOUT_CHECK);
@@ -434,7 +432,7 @@ void Manager::handleSuspend()
 {
     if (HasLogind()) { return; }
     qDebug() << "handle suspend from upower";
-    if (lockScreenOnSuspend) { LockScreen(); }
+    LockScreen();
     emit PrepareForSuspend();
 }
 
@@ -529,7 +527,7 @@ bool Manager::registerSuspendLock()
         suspendLock.reset(new QDBusUnixFileDescriptor(reply.value()));
         return true;
     } else {
-        qDebug() << reply.error();
+        qWarning() << reply.error();
     }
     return false;
 }
@@ -641,11 +639,11 @@ const QString Manager::PowerOff()
 const QString Manager::Suspend()
 {
     qDebug() << "try to suspend";
-    if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         SetWakeAlarmFromSettings();
         return executeAction(PKSuspendAction, PKLogind);
     } else if (HasUPower()) {
+        LockScreen();
         return executeAction(PKSuspendAction, PKUPower);
     }
     return QObject::tr(PK_NO_BACKEND);
@@ -654,10 +652,10 @@ const QString Manager::Suspend()
 const QString Manager::Hibernate()
 {
     qDebug() << "try to hibernate";
-    if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         return executeAction(PKHibernateAction, PKLogind);
     } else if (HasUPower()) {
+        LockScreen();
         return executeAction(PKHibernateAction, PKUPower);
     }
     return QObject::tr(PK_NO_BACKEND);
@@ -666,7 +664,6 @@ const QString Manager::Hibernate()
 const QString Manager::HybridSleep()
 {
     qDebug() << "try to hybridsleep";
-    if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
         return executeAction(PKHybridSleepAction, PKLogind);
     }
@@ -861,7 +858,7 @@ const QDateTime Manager::GetWakeAlarm()
 void Manager::ReleaseSuspendLock()
 {
     qDebug() << "release suspend lock";
-    suspendLock.reset(NULL);
+    suspendLock.reset(nullptr);
 }
 
 void Manager::SetSuspendWakeAlarmOnBattery(int value)
