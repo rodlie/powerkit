@@ -44,7 +44,8 @@ namespace PowerKit
     {
         criticalNone,
         criticalHibernate,
-        criticalShutdown
+        criticalShutdown,
+        criticalSuspend
     };
 }
 

@@ -41,7 +41,6 @@ namespace PowerKit
         void checkForExpiredClients();
         bool canInhibit();
         void timeOut();
-        void pingPM();
 
     public slots:
         void Update();

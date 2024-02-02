@@ -98,14 +98,6 @@ void ScreenSaver::timeOut()
     if (idle >= blank) { Lock(); }
 }
 
-void ScreenSaver::pingPM()
-{
-    QDBusInterface iface(PM_SERVICE, PM_PATH, PM_SERVICE,
-                         QDBusConnection::sessionBus());
-    if (!iface.isValid()) { return; }
-    iface.call(PK_SCREENSAVER_ACTIVITY);
-}
-
 void ScreenSaver::Update()
 {
     xlock = Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,

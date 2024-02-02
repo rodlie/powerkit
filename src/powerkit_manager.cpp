@@ -88,7 +88,7 @@ Manager::Manager(QObject *parent) : QObject(parent)
 Manager::~Manager()
 {
     clearDevices();
-    releaseSuspendLock();
+    ReleaseSuspendLock();
 }
 
 QMap<QString, Device *> Manager::getDevices()
@@ -440,17 +440,17 @@ void Manager::handleSuspend()
 
 void Manager::handlePrepareForSuspend(bool prepare)
 {
-    qDebug() << "handle prepare for suspend/resume from consolekit/logind" << prepare;
+    qDebug() << "handle prepare for suspend/resume from logind" << prepare;
     if (prepare) {
         qDebug() << "ZZZ...";
         LockScreen();
         emit PrepareForSuspend();
-        QTimer::singleShot(500, this, SLOT(releaseSuspendLock()));
+        QTimer::singleShot(500, this, SLOT(ReleaseSuspendLock()));
     }
     else { // resume
         qDebug() << "WAKE UP!";
         UpdateDevices();
-        if (hasWakeAlarm() &&
+        if (HasWakeAlarm() &&
              wakeAlarmDate.isValid() &&
              CanHibernate())
         {
@@ -458,13 +458,14 @@ void Manager::handlePrepareForSuspend(bool prepare)
             QDateTime currentDate = QDateTime::currentDateTime();
             if (currentDate>=wakeAlarmDate && wakeAlarmDate.secsTo(currentDate)<300) {
                 qDebug() << "wake alarm is active, that means we should hibernate";
-                clearWakeAlarm();
+                ClearWakeAlarm();
                 Hibernate();
                 return;
             }
         }
-        clearWakeAlarm();
+        ClearWakeAlarm();
         emit PrepareForResume();
+        QTimer::singleShot(500, this, SLOT(registerSuspendLock()));
     }
 }
 
@@ -533,14 +534,14 @@ bool Manager::registerSuspendLock()
     return false;
 }
 
-void Manager::setWakeAlarmFromSettings()
+void Manager::SetWakeAlarmFromSettings()
 {
     if (!CanHibernate()) { return; }
     int wmin = OnBattery()?suspendWakeupBattery:suspendWakeupAC;
     if (wmin>0) {
         qDebug() << "we need to set a wake alarm" << wmin << "min from now";
         QDateTime date = QDateTime::currentDateTime().addSecs(wmin*60);
-        setWakeAlarm(date);
+        SetWakeAlarm(date);
     }
 }
 
@@ -558,16 +559,21 @@ bool Manager::HasUPower()
                             UPOWER_MANAGER);
 }
 
-bool Manager::hasPMD()
+bool Manager::HasPowerKitd()
 {
     return availableService(PMD_SERVICE,
                             PMD_PATH,
                             PMD_MANAGER);
 }
 
-bool Manager::hasWakeAlarm()
+bool Manager::HasWakeAlarm()
 {
     return wakeAlarm;
+}
+
+bool Manager::HasSuspendLock()
+{
+    return suspendLock;
 }
 
 bool Manager::CanRestart()
@@ -614,7 +620,7 @@ bool Manager::CanHybridSleep()
     return false;
 }
 
-QString Manager::Restart()
+const QString Manager::Restart()
 {
     qDebug() << "try to restart";
     if (HasLogind()) {
@@ -623,7 +629,7 @@ QString Manager::Restart()
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString Manager::PowerOff()
+const QString Manager::PowerOff()
 {
     qDebug() << "try to poweroff";
     if (HasLogind()) {
@@ -632,12 +638,12 @@ QString Manager::PowerOff()
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString Manager::Suspend()
+const QString Manager::Suspend()
 {
     qDebug() << "try to suspend";
     if (lockScreenOnSuspend) { LockScreen(); }
     if (HasLogind()) {
-        setWakeAlarmFromSettings();
+        SetWakeAlarmFromSettings();
         return executeAction(PKSuspendAction, PKLogind);
     } else if (HasUPower()) {
         return executeAction(PKSuspendAction, PKUPower);
@@ -645,7 +651,7 @@ QString Manager::Suspend()
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString Manager::Hibernate()
+const QString Manager::Hibernate()
 {
     qDebug() << "try to hibernate";
     if (lockScreenOnSuspend) { LockScreen(); }
@@ -657,7 +663,7 @@ QString Manager::Hibernate()
     return QObject::tr(PK_NO_BACKEND);
 }
 
-QString Manager::HybridSleep()
+const QString Manager::HybridSleep()
 {
     qDebug() << "try to hybridsleep";
     if (lockScreenOnSuspend) { LockScreen(); }
@@ -667,7 +673,7 @@ QString Manager::HybridSleep()
     return QObject::tr(PK_NO_BACKEND);
 }
 
-bool Manager::setWakeAlarm(const QDateTime &date)
+bool Manager::SetWakeAlarm(const QDateTime &date)
 {
     qDebug() << "try to set wake alarm" << date;
     if (pmd && date.isValid() && CanHibernate()) {
@@ -687,7 +693,7 @@ bool Manager::setWakeAlarm(const QDateTime &date)
     return false;
 }
 
-void Manager::clearWakeAlarm()
+void Manager::ClearWakeAlarm()
 {
     wakeAlarm = false;
 }
@@ -809,7 +815,7 @@ void Manager::UpdateConfig()
     emit Update();
 }
 
-QStringList Manager::ScreenSaverInhibitors()
+const QStringList Manager::GetScreenSaverInhibitors()
 {
     QStringList result;
     QMapIterator<quint32, QString> i(ssInhibitors);
@@ -820,7 +826,7 @@ QStringList Manager::ScreenSaverInhibitors()
     return result;
 }
 
-QStringList Manager::PowerManagementInhibitors()
+const QStringList Manager::GetPowerManagementInhibitors()
 {
     QStringList result;
     QMapIterator<quint32, QString> i(pmInhibitors);
@@ -847,42 +853,30 @@ QMap<quint32, QString> Manager::GetInhibitors()
     return result;
 }
 
-const QDateTime Manager::getWakeAlarm()
+const QDateTime Manager::GetWakeAlarm()
 {
     return wakeAlarmDate;
 }
 
-void Manager::releaseSuspendLock()
+void Manager::ReleaseSuspendLock()
 {
     qDebug() << "release suspend lock";
     suspendLock.reset(NULL);
 }
 
-void Manager::setSuspendWakeAlarmOnBattery(int value)
+void Manager::SetSuspendWakeAlarmOnBattery(int value)
 {
     qDebug() << "set suspend wake alarm on battery" << value;
     suspendWakeupBattery = value;
 }
 
-void Manager::setSuspendWakeAlarmOnAC(int value)
+void Manager::SetSuspendWakeAlarmOnAC(int value)
 {
     qDebug() << "set suspend wake alarm on ac" << value;
     suspendWakeupAC = value;
 }
 
-void Manager::setLockScreenOnSuspend(bool lock)
-{
-    qDebug() << "set lock screen on suspend" << lock;
-    lockScreenOnSuspend = lock;
-}
-
-void Manager::setLockScreenOnResume(bool lock)
-{
-    qDebug() << "set lock screen on resume" << lock;
-    lockScreenOnResume = lock;
-}
-
-bool Manager::setDisplayBacklight(const QString &device, int value)
+bool Manager::SetDisplayBacklight(const QString &device, int value)
 {
     qDebug() << "PK SET DISPLAY BACKLIGHT" << device << value;
     if (!pmd) { return false; }

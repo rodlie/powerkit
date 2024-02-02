@@ -386,7 +386,7 @@ void SysTray::handleOnBattery()
         /*if (hasBacklight) {
             Common::adjustBacklight(backlightDevice, backlightBatteryValue);
         } else {*/
-            man->setDisplayBacklight(backlightDevice, backlightBatteryValue);
+            man->SetDisplayBacklight(backlightDevice, backlightBatteryValue);
         //}
     }
 }
@@ -415,7 +415,7 @@ void SysTray::handleOnAC()
         /*if (hasBacklight) {
             Common::adjustBacklight(backlightDevice, backlightACValue);
         } else {*/
-            man->setDisplayBacklight(backlightDevice, backlightACValue);
+            man->SetDisplayBacklight(backlightDevice, backlightACValue);
         //}
     }
 }
@@ -497,17 +497,11 @@ void SysTray::loadSettings()
     if (Settings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
         notifyNewInhibitor = Settings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
     }
-    if (Settings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
-        man->setLockScreenOnSuspend(Settings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool());
-    }
-    if (Settings::isValid(CONF_RESUME_LOCK_SCREEN)) {
-        man->setLockScreenOnResume(Settings::getValue(CONF_RESUME_LOCK_SCREEN).toBool());
-    }
     if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY)) {
-        man->setSuspendWakeAlarmOnBattery(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY).toInt());
+        man->SetSuspendWakeAlarmOnBattery(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY).toInt());
     }
     if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_AC)) {
-        man->setSuspendWakeAlarmOnAC(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
+        man->SetSuspendWakeAlarmOnAC(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
     }
 
     if (Settings::isValid(CONF_KERNEL_BYPASS)) {
@@ -671,6 +665,9 @@ void SysTray::handleCritical(double left)
         break;
     case criticalShutdown:
         man->PowerOff();
+        break;
+    case criticalSuspend:
+        man->Suspend();
         break;
     default: ;
     }
@@ -937,7 +934,7 @@ void SysTray::handlePrepareForSuspend()
 {
     /*qDebug() << "prepare for suspend";
     resetTimer();
-    man->releaseSuspendLock();*/
+    man->ReleaseSuspendLock();*/
     qDebug() << "do nothing";
 }
 
@@ -968,11 +965,11 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
     if (!backlightMouseWheel) { return; }
     switch (action) {
     case TrayIcon::WheelUp:
-            man->setDisplayBacklight(backlightDevice,
+            man->SetDisplayBacklight(backlightDevice,
                                      Backlight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
         break;
     case TrayIcon::WheelDown:
-            man->setDisplayBacklight(backlightDevice,
+            man->SetDisplayBacklight(backlightDevice,
                                      Backlight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
         break;
     default:;
@@ -1224,7 +1221,7 @@ void SysTray::handleBacklightSlider(int value)
     qDebug() << "BACKLIGHT SLIDER CHANGED" << value;
     if (Backlight::getCurrentBrightness(backlightDevice) != value) {
         //if (hasBacklight) { Common::adjustBacklight(backlightDevice, value); }
-        /*else {*/ man->setDisplayBacklight(backlightDevice, value); //}
+        /*else {*/ man->SetDisplayBacklight(backlightDevice, value); //}
     }
 }
 

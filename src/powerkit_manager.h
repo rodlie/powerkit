@@ -131,13 +131,14 @@ namespace PowerKit
         void handleDelInhibitPowerManagement(quint32 cookie);
 
         bool registerSuspendLock();
-        void setWakeAlarmFromSettings();
+        void SetWakeAlarmFromSettings();
 
     public slots:
         bool HasLogind();
         bool HasUPower();
-        bool hasPMD();
-        bool hasWakeAlarm();
+        bool HasPowerKitd();
+        bool HasWakeAlarm();
+        bool HasSuspendLock();
 
         bool CanRestart();
         bool CanPowerOff();
@@ -145,13 +146,13 @@ namespace PowerKit
         bool CanHibernate();
         bool CanHybridSleep();
 
-        QString Restart();
-        QString PowerOff();
-        QString Suspend();
-        QString Hibernate();
-        QString HybridSleep();
-        bool setWakeAlarm(const QDateTime &date);
-        void clearWakeAlarm();
+        const QString Restart();
+        const QString PowerOff();
+        const QString Suspend();
+        const QString Hibernate();
+        const QString HybridSleep();
+        bool SetWakeAlarm(const QDateTime &date);
+        void ClearWakeAlarm();
 
         bool IsDocked();
         bool LidIsPresent();
@@ -165,16 +166,14 @@ namespace PowerKit
         void UpdateDevices();
         void UpdateBattery();
         void UpdateConfig();
-        QStringList ScreenSaverInhibitors();
-        QStringList PowerManagementInhibitors();
+        const QStringList GetScreenSaverInhibitors();
+        const QStringList GetPowerManagementInhibitors();
         QMap<quint32, QString> GetInhibitors();
-        const QDateTime getWakeAlarm();
-        void releaseSuspendLock();
-        void setSuspendWakeAlarmOnBattery(int value);
-        void setSuspendWakeAlarmOnAC(int value);
-        void setLockScreenOnSuspend(bool lock);
-        void setLockScreenOnResume(bool lock);
-        bool setDisplayBacklight(QString const &device, int value);
+        const QDateTime GetWakeAlarm();
+        void ReleaseSuspendLock();
+        void SetSuspendWakeAlarmOnBattery(int value);
+        void SetSuspendWakeAlarmOnAC(int value);
+        bool SetDisplayBacklight(QString const &device, int value);
         bool SetPState(int min, int max);
         bool SetPStateMin(int value);
         bool SetPStateMax(int value);
