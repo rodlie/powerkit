@@ -30,7 +30,7 @@ endif()
 find_package(QT NAMES Qt5 COMPONENTS Core REQUIRED)
 find_package(
     Qt${QT_VERSION_MAJOR}
-    5.9
+    5.15
     COMPONENTS
     Gui
     Widgets
