@@ -5,17 +5,18 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
 
     steps:
     - uses: actions/checkout@v3
-    - name: Dependencies
-      run: sudo apt-get install tree cmake qtbase5-dev libxss-dev libxrandr-dev
-    - name: Build
+    - name: Install Dependencies
+      run: sudo apt update && sudo apt install cmake qtbase5-dev libxss-dev libxrandr-dev
+    - name: Build and Package
       run: |
-        export CWD=`pwd`
-        mkdir $CWD/build
-        cd $CWD/build
+        mkdir build && cd build
         cmake -DCMAKE_INSTALL_PREFIX=/usr -DSERVICE_GROUP=plugdev -DCMAKE_BUILD_TYPE=Release ..
         make -j2
         cpack -G DEB
