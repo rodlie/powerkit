@@ -70,9 +70,6 @@ namespace PowerKit
         QLabel *batteryBacklightLabel;
         QLabel *acBacklightLabel;
         QCheckBox *backlightMouseWheel;
-        QCheckBox *suspendLockScreen;
-        QCheckBox *resumeLockScreen;
-        QCheckBox *bypassKernel;
 
     private slots:
         void setupWidgets();
@@ -110,9 +107,6 @@ namespace PowerKit
         void handleNotifyNewInhibitor(bool triggered);
         void enableLid(bool enabled);
         void handleBacklightMouseWheel(bool triggered);
-        void handleSuspendLockScreen(bool triggered);
-        void handleResumeLockScreen(bool triggered);
-        void handleKernelBypass(bool triggered);
     };
 }
 

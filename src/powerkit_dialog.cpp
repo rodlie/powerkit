@@ -47,9 +47,6 @@ Dialog::Dialog(QWidget *parent,
     , batteryBacklightLabel(nullptr)
     , acBacklightLabel(nullptr)
     , backlightMouseWheel(nullptr)
-    , suspendLockScreen(nullptr)
-    , resumeLockScreen(nullptr)
-    , bypassKernel(nullptr)
 {
     // setup dialog
     if (quitOnClose) { setAttribute(Qt::WA_QuitOnClose, true); }
@@ -129,12 +126,6 @@ Dialog::Dialog(QWidget *parent,
             this, SLOT(handleNotifyNewInhibitor(bool)));
     connect(backlightMouseWheel, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightMouseWheel(bool)));
-    connect(suspendLockScreen, SIGNAL(toggled(bool)),
-            this, SLOT(handleSuspendLockScreen(bool)));
-    connect(resumeLockScreen, SIGNAL(toggled(bool)),
-            this, SLOT(handleResumeLockScreen(bool)));
-    connect(bypassKernel, SIGNAL(toggled(bool)),
-            this, SLOT(handleKernelBypass(bool)));
 }
 
 Dialog::~Dialog()
@@ -448,34 +439,15 @@ void Dialog::setupWidgets()
     backlightMouseWheel->setText(tr("Adjust backlight in system tray"));
     backlightMouseWheel->setToolTip(tr("Adjust the display backlight with the mouse wheel on the system tray icon."));
 
-    bypassKernel = new QCheckBox(this);
-    bypassKernel->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    bypassKernel->setText(tr("Ignore kernel resume check"));
-    bypassKernel->setToolTip(tr("Don't check /proc/cmdline for a valid resume=<swap_partition> before hibernate."));
-
     daemonContainerLayout->addWidget(showSystemTray);
     daemonContainerLayout->addWidget(showNotifications);
     daemonContainerLayout->addWidget(disableLidAction);
     daemonContainerLayout->addWidget(backlightMouseWheel);
-    daemonContainerLayout->addWidget(bypassKernel);
 
     // screensaver
     QGroupBox *ssContainer = new QGroupBox(this);
     ssContainer->setTitle(tr("Screensaver"));
     QVBoxLayout *ssContainerLayout = new QVBoxLayout(ssContainer);
-
-    suspendLockScreen = new QCheckBox(this);
-    suspendLockScreen->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
-    suspendLockScreen->setText(tr("Lock screen on suspend"));
-    suspendLockScreen->setToolTip(tr("Lock the screen before suspending the computer"));
-
-    resumeLockScreen = new QCheckBox(this);
-    resumeLockScreen->setIcon(QIcon::fromTheme(DEFAULT_LOCK_ICON));
-    resumeLockScreen->setText(tr("Lock screen on resume"));
-    resumeLockScreen->setToolTip(tr("Lock the screen before resuming the computer."));
-
-    ssContainerLayout->addWidget(suspendLockScreen);
-    ssContainerLayout->addWidget(resumeLockScreen);
 
     // notify
     QGroupBox *notifyContainer = new QGroupBox(this);
@@ -568,12 +540,12 @@ void Dialog::populate()
     criticalActionBattery->clear();
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
                                    tr("None"), criticalNone);
+    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                                   tr("Sleep"), criticalSuspend);
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
                                    tr("Hibernate"), criticalHibernate);
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
                                    tr("Shutdown"), criticalShutdown);
-    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                                   tr("Suspend"), criticalSuspend);
 
     autoSleepBatteryAction->clear();
     autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -703,24 +675,6 @@ void Dialog::loadSettings()
     }
     notifyNewInhibitor->setChecked(defaultNotifyNewInhibitor);
 
-    bool defaultSuspendLockScreen = true;
-    if (Settings::isValid(CONF_SUSPEND_LOCK_SCREEN)) {
-        defaultSuspendLockScreen = Settings::getValue(CONF_SUSPEND_LOCK_SCREEN).toBool();
-    }
-    suspendLockScreen->setChecked(defaultSuspendLockScreen);
-
-    bool defaultResumeLockScreen = false;
-    if (Settings::isValid(CONF_RESUME_LOCK_SCREEN)) {
-        defaultResumeLockScreen = Settings::getValue(CONF_RESUME_LOCK_SCREEN).toBool();
-    }
-    resumeLockScreen->setChecked(defaultResumeLockScreen);
-
-    bool defaultKernelBypass = false;
-    if (Settings::isValid(CONF_KERNEL_BYPASS)) {
-        defaultKernelBypass = Settings::getValue(CONF_KERNEL_BYPASS).toBool();
-    }
-    bypassKernel->setChecked(defaultKernelBypass);
-
     // check
     checkPerms();
 
@@ -775,11 +729,11 @@ void Dialog::loadSettings()
 void Dialog::saveSettings()
 {
     Settings::setValue(CONF_LID_BATTERY_ACTION,
-                       lidActionBattery->currentIndex());
+                       lidActionBattery->currentData().toInt());
     Settings::setValue(CONF_LID_AC_ACTION,
-                       lidActionAC->currentIndex());
+                       lidActionAC->currentData().toInt());
     Settings::setValue(CONF_CRITICAL_BATTERY_ACTION,
-                       criticalActionBattery->currentIndex());
+                       criticalActionBattery->currentData().toInt());
     Settings::setValue(CONF_CRITICAL_BATTERY_TIMEOUT,
                        criticalBattery->value());
     Settings::setValue(CONF_SUSPEND_BATTERY_TIMEOUT,
@@ -793,9 +747,9 @@ void Dialog::saveSettings()
     Settings::setValue(CONF_LID_DISABLE_IF_EXTERNAL,
                        disableLidAction->isChecked());
     Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
-                       autoSleepBatteryAction->currentIndex());
+                       autoSleepBatteryAction->currentData().toInt());
     Settings::setValue(CONF_SUSPEND_AC_ACTION,
-                       autoSleepACAction->currentIndex());
+                       autoSleepACAction->currentData().toInt());
     Settings::setValue(CONF_BACKLIGHT_BATTERY_ENABLE,
                        backlightBatteryCheck->isChecked());
     Settings::setValue(CONF_BACKLIGHT_AC_ENABLE,
@@ -822,10 +776,6 @@ void Dialog::saveSettings()
                        notifyNewInhibitor->isChecked());
     Settings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL,
                        backlightMouseWheel->isChecked());
-    Settings::setValue(CONF_SUSPEND_LOCK_SCREEN,
-                       suspendLockScreen->isChecked());
-    Settings::setValue(CONF_RESUME_LOCK_SCREEN,
-                       resumeLockScreen->isChecked());
 }
 
 // set default action in combobox
@@ -860,19 +810,22 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
 void Dialog::handleLidActionBattery(int index)
 {
     checkPerms();
-    Settings::setValue(CONF_LID_BATTERY_ACTION, index);
+    Settings::setValue(CONF_LID_BATTERY_ACTION,
+                       lidActionBattery->itemData(index).toInt());
 }
 
 void Dialog::handleLidActionAC(int index)
 {
     checkPerms();
-    Settings::setValue(CONF_LID_AC_ACTION, index);
+    Settings::setValue(CONF_LID_AC_ACTION,
+                       lidActionAC->itemData(index).toInt());
 }
 
 void Dialog::handleCriticalAction(int index)
 {
     checkPerms();
-    Settings::setValue(CONF_CRITICAL_BATTERY_ACTION, index);
+    Settings::setValue(CONF_CRITICAL_BATTERY_ACTION,
+                       criticalActionBattery->itemData(index).toInt());
 }
 
 void Dialog::handleCriticalBattery(int value)
@@ -908,44 +861,46 @@ void Dialog::handleDisableLidAction(bool triggered)
 void Dialog::handleAutoSleepBatteryAction(int index)
 {
     checkPerms();
-    Settings::setValue(CONF_SUSPEND_BATTERY_ACTION, index);
+    Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
+                       autoSleepBatteryAction->itemData(index).toInt());
 }
 
 void Dialog::handleAutoSleepACAction(int index)
 {
     checkPerms();
-    Settings::setValue(CONF_SUSPEND_AC_ACTION, index);
+    Settings::setValue(CONF_SUSPEND_AC_ACTION,
+                       autoSleepACAction->itemData(index).toInt());
 }
 
 void Dialog::checkPerms()
 {
     if (!Client::canHibernate(dbus)) {
         bool warnCantHibernate = false;
-        if (criticalActionBattery->currentIndex() == criticalHibernate) {
+        if (criticalActionBattery->currentData().toInt() == criticalHibernate) {
             warnCantHibernate = true;
             criticalActionBattery->setCurrentIndex(criticalShutdown);
             handleCriticalAction(criticalShutdown);
         }
-        if (lidActionAC->currentIndex() == lidHibernate ||
-            lidActionAC->currentIndex() == lidHybridSleep) {
+        if (lidActionAC->currentData().toInt() == lidHibernate ||
+            lidActionAC->currentData().toInt() == lidHybridSleep) {
             warnCantHibernate = true;
             lidActionAC->setCurrentIndex(lidSleep);
             handleLidActionAC(lidSleep);
         }
-        if (lidActionBattery->currentIndex() == lidHibernate ||
-            lidActionBattery->currentIndex() == lidHybridSleep) {
+        if (lidActionBattery->currentData().toInt() == lidHibernate ||
+            lidActionBattery->currentData().toInt() == lidHybridSleep) {
             warnCantHibernate = true;
             lidActionBattery->setCurrentIndex(lidSleep);
             handleLidActionBattery(lidSleep);
         }
-        if (autoSleepACAction->currentIndex() == suspendHibernate ||
-            autoSleepACAction->currentIndex() == suspendHybrid) {
+        if (autoSleepACAction->currentData().toInt() == suspendHibernate ||
+            autoSleepACAction->currentData().toInt() == suspendHybrid) {
             warnCantHibernate = true;
             autoSleepACAction->setCurrentIndex(suspendSleep);
             handleAutoSleepACAction(suspendSleep);
         }
-        if (autoSleepBatteryAction->currentIndex() == suspendHibernate ||
-            autoSleepBatteryAction->currentIndex() == suspendHybrid) {
+        if (autoSleepBatteryAction->currentData().toInt() == suspendHibernate ||
+            autoSleepBatteryAction->currentData().toInt() == suspendHybrid) {
             warnCantHibernate = true;
             autoSleepBatteryAction->setCurrentIndex(suspendSleep);
             handleAutoSleepBatteryAction(suspendSleep);
@@ -954,22 +909,22 @@ void Dialog::checkPerms()
     }
     if (!Client::canSuspend(dbus)) {
         bool warnCantSleep = false;
-        if (lidActionAC->currentIndex() == lidSleep) {
+        if (lidActionAC->currentData().toInt() == lidSleep) {
             warnCantSleep = true;
             lidActionAC->setCurrentIndex(lidLock);
             handleLidActionAC(lidLock);
         }
-        if (lidActionBattery->currentIndex() == lidSleep) {
+        if (lidActionBattery->currentData().toInt() == lidSleep) {
             warnCantSleep = true;
             lidActionBattery->setCurrentIndex(lidLock);
             handleLidActionBattery(lidLock);
         }
-        if (autoSleepACAction->currentIndex() == suspendSleep) {
+        if (autoSleepACAction->currentData().toInt() == suspendSleep) {
             warnCantSleep = true;
             autoSleepACAction->setCurrentIndex(suspendNone);
             handleAutoSleepACAction(suspendNone);
         }
-        if (autoSleepBatteryAction->currentIndex() == suspendSleep) {
+        if (autoSleepBatteryAction->currentData().toInt() == suspendSleep) {
             warnCantSleep = true;
             autoSleepBatteryAction->setCurrentIndex(suspendNone);
             handleAutoSleepBatteryAction(suspendNone);
@@ -1070,19 +1025,4 @@ void Dialog::enableLid(bool enabled)
 void Dialog::handleBacklightMouseWheel(bool triggered)
 {
     Settings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
-}
-
-void Dialog::handleSuspendLockScreen(bool triggered)
-{
-    Settings::setValue(CONF_SUSPEND_LOCK_SCREEN, triggered);
-}
-
-void Dialog::handleResumeLockScreen(bool triggered)
-{
-    Settings::setValue(CONF_RESUME_LOCK_SCREEN, triggered);
-}
-
-void Dialog::handleKernelBypass(bool triggered)
-{
-    Settings::setValue(CONF_KERNEL_BYPASS, triggered);
 }
