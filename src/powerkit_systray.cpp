@@ -1317,7 +1317,7 @@ void SysTray::getCpuFreq()
 
     QString temp;
     if (Cpu::hasCoreTemp()) {
-        double coretemp = Cpu::getCoreTemp();
+        double coretemp = Cpu::getCoreTemp().first;
         if (coretemp>0) {
             temp = QString(" (%1&#8451;)")
                    .arg(QString::number(coretemp/1000, 'f', 0));
