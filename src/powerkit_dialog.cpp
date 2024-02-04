@@ -869,6 +869,7 @@ void Dialog::drawBattery()
     QString batteryTime = QDateTime::fromTime_t(onBattery ? Client::timeToEmpty(dbus) : Client::timeToFull(dbus)).toUTC().toString("hh:mm");
     QColor colorBg = Qt::green;
     QColor colorFg = Qt::white;
+    QString status = QString("%1%\n%2").arg(QString::number(battery), batteryTime);
     if (onBattery) {
         if (battery >= 51) {
             colorBg = Qt::yellow;
@@ -878,14 +879,17 @@ void Dialog::drawBattery()
             colorBg = Qt::red;
         }
     } else {
-        if (battery == 100) { colorFg = Qt::green; }
+        if (battery == 100) {
+            colorFg = Qt::green;
+            status = QString("%1%").arg(QString::number(battery));
+        }
     }
     batteryStatusLabel->setPixmap(Theme::drawCircleProgress(battery,
                                                             64,
                                                             4,
                                                             4,
                                                             true,
-                                                            QString("%1%\n%2").arg(QString::number(battery), batteryTime),
+                                                            status,
                                                             colorBg,
                                                             colorFg));
 }
