@@ -59,6 +59,18 @@ qlonglong Client::timeToEmpty(QDBusInterface *iface)
     return  ok;
 }
 
+qlonglong Client::timeToFull(QDBusInterface *iface)
+{
+    if (!iface) { return -1; }
+    qDebug() << "check for time to full";
+    if (!iface->isValid()) { return false; }
+    QDBusMessage reply = iface->call("TimeToFull");
+    const auto args = reply.arguments();
+    qlonglong ok = args.last().toLongLong();
+    qDebug() << "we have time to full?" << ok;
+    return  ok;
+}
+
 bool Client::canHibernate(QDBusInterface *iface)
 {
     if (!iface) { return false; }

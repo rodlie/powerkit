@@ -20,6 +20,7 @@ namespace PowerKit
         static bool hasBattery(QDBusInterface *iface);
         static bool onBattery(QDBusInterface *iface);
         static qlonglong timeToEmpty(QDBusInterface *iface);
+        static qlonglong timeToFull(QDBusInterface *iface);
         static bool canHibernate(QDBusInterface *iface);
         static bool canSuspend(QDBusInterface *iface);
         static bool canRestart(QDBusInterface *iface);
