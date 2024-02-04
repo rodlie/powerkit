@@ -12,6 +12,7 @@
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"
 #include "powerkit_client.h"
+#include "powerkit_cpu.h"
 
 #include <QTimer>
 
@@ -22,6 +23,7 @@ using namespace PowerKit;
 Dialog::Dialog(QWidget *parent,
                bool quitOnClose)
     : QDialog(parent)
+    , cpuTimer(nullptr)
     , dbus(nullptr)
     , lidActionBattery(nullptr)
     , lidActionAC(nullptr)
@@ -47,11 +49,25 @@ Dialog::Dialog(QWidget *parent,
     , batteryBacklightLabel(nullptr)
     , acBacklightLabel(nullptr)
     , backlightMouseWheel(nullptr)
+    , batteryStatusLabel(nullptr)
+    , cpuFreqLabel(nullptr)
+    , cpuTempLabel(nullptr)
+    , hasCpuCoreTemp(false)
+    , hasBattery(false)
 {
     // setup dialog
     if (quitOnClose) { setAttribute(Qt::WA_QuitOnClose, true); }
     setWindowTitle(tr("Power Manager"));
-    setMinimumSize(QSize(390, 310));
+    setMinimumSize(QSize(390, 125));
+
+    // setup cpu timer
+    cpuTimer = new QTimer(this);
+    cpuTimer->setInterval(1000);
+    connect(cpuTimer,
+            SIGNAL(timeout()),
+            this,
+            SLOT(drawCpu()));
+    cpuTimer->start();
 
     // setup dbus
     QDBusConnection session = QDBusConnection::sessionBus();
@@ -62,70 +78,23 @@ Dialog::Dialog(QWidget *parent,
     if (!dbus->isValid()) {
         QMessageBox::warning(this,
                              tr("powerkit not running"),
-                             tr("powerkit is not running, please start powerkit before running settings."));
+                             tr("powerkit is not running, please start powerkit before running this application."));
         QTimer::singleShot(100, qApp, SLOT(quit()));
         return;
     }
 
+    // detect device changes
+    connect(dbus, SIGNAL(UpdatedDevices()),
+            this, SLOT(handleUpdatedDevices()));
+
     // trigger generation of powerkit.conf if not exists
     Settings::getConf();
 
-    // setup theme
-    Theme::setAppTheme();
-    Theme::setIconTheme();
-    setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
-
-    setupWidgets(); // setup widgets
-    populate(); // populate boxes
-    loadSettings(); // load settings
-
-    // connect widgets
-    connect(lidActionBattery, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleLidActionBattery(int)));
-    connect(lidActionAC, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleLidActionAC(int)));
-    connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleCriticalAction(int)));
-    connect(criticalBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleCriticalBattery(int)));
-    connect(autoSleepBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleAutoSleepBattery(int)));
-    connect(autoSleepAC, SIGNAL(valueChanged(int)),
-            this, SLOT(handleAutoSleepAC(int)));
-    connect(showNotifications, SIGNAL(toggled(bool)),
-            this, SLOT(handleShowNotifications(bool)));
-    connect(showSystemTray, SIGNAL(toggled(bool)),
-            this, SLOT(handleShowSystemTray(bool)));
-    connect(disableLidAction, SIGNAL(toggled(bool)),
-            this, SLOT(handleDisableLidAction(bool)));
-    connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleAutoSleepBatteryAction(int)));
-    connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
-            this, SLOT(handleAutoSleepACAction(int)));
-    connect(backlightBatteryCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightBatteryCheck(bool)));
-    connect(backlightACCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightACCheck(bool)));
-    connect(backlightSliderBattery, SIGNAL(valueChanged(int)),
-            this, SLOT(handleBacklightBatterySlider(int)));
-    connect(backlightSliderAC, SIGNAL(valueChanged(int)),
-            this, SLOT(handleBacklightACSlider(int)));
-    connect(backlightBatteryLowerCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightBatteryCheckLower(bool)));
-    connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightACCheckHigher(bool)));
-    connect(warnOnLowBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleWarnOnLowBattery(bool)));
-    connect(warnOnVeryLowBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleWarnOnVeryLowBattery(bool)));
-    connect(notifyOnBattery, SIGNAL(toggled(bool)),
-            this, SLOT(handleNotifyBattery(bool)));
-    connect(notifyOnAC, SIGNAL(toggled(bool)),
-            this, SLOT(handleNotifyAC(bool)));
-    connect(notifyNewInhibitor, SIGNAL(toggled(bool)),
-            this, SLOT(handleNotifyNewInhibitor(bool)));
-    connect(backlightMouseWheel, SIGNAL(toggled(bool)),
-            this, SLOT(handleBacklightMouseWheel(bool)));
+    setupWidgets();
+    populateWidgets();
+    loadSettings();
+    connectWidgets();
+    handleUpdatedDevices();
 }
 
 Dialog::~Dialog()
@@ -135,10 +104,41 @@ Dialog::~Dialog()
 
 void Dialog::setupWidgets()
 {
+    // setup theme
+    Theme::setAppTheme();
+    Theme::setIconTheme();
+    setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
+
     // setup widgets
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setMargin(5);
     layout->setSpacing(0);
+
+    // status widgets
+
+    const auto statusWidget = new QGroupBox(this);
+    statusWidget->setTitle(tr("Status"));
+    statusWidget->setSizePolicy(QSizePolicy::Expanding,
+                                QSizePolicy::Expanding);
+    const auto statusLayout = new QHBoxLayout(statusWidget);
+    //statusLayout->setMargin(0);
+    //statusLayout->setSpacing(0);
+
+    batteryStatusLabel = new QLabel(this);
+    batteryStatusLabel->setMaximumSize(64, 64);
+    batteryStatusLabel->setMinimumSize(64, 64);
+
+    cpuFreqLabel = new QLabel(this);
+    cpuFreqLabel->setMaximumSize(64, 64);
+    cpuFreqLabel->setMinimumSize(64, 64);
+
+    cpuTempLabel = new QLabel(this);
+    cpuTempLabel->setMaximumSize(64, 64);
+    cpuTempLabel->setMinimumSize(64, 64);
+
+    statusLayout->addWidget(batteryStatusLabel);
+    statusLayout->addWidget(cpuFreqLabel);
+    statusLayout->addWidget(cpuTempLabel);
 
     // battery
     QGroupBox *batteryContainer = new QGroupBox(this);
@@ -282,8 +282,8 @@ void Dialog::setupWidgets()
     batteryBacklightLabel->setToolTip(tr("Override brightness when switched to battery power."));
     batteryBacklightContainerLayout->addWidget(batteryBacklightIcon);
     batteryBacklightContainerLayout->addWidget(batteryBacklightLabel);
-    batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
     batteryBacklightContainerLayout->addStretch();
+    batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
     batteryBacklightContainerLayout->addWidget(batteryBacklightOptContainer);
 
     // add battery widgets to container
@@ -402,14 +402,14 @@ void Dialog::setupWidgets()
     acBacklightLabel->setToolTip(tr("Override brightness when switched to AC power."));
     acBacklightContainerLayout->addWidget(acBacklightIcon);
     acBacklightContainerLayout->addWidget(acBacklightLabel);
-    acBacklightContainerLayout->addWidget(backlightACCheck);
     acBacklightContainerLayout->addStretch();
+    acBacklightContainerLayout->addWidget(backlightACCheck);
     acBacklightContainerLayout->addWidget(acBacklightOptContainer);
 
     // add widgets to ac
     acContainerLayout->addWidget(sleepACContainer);
-    acContainerLayout->addWidget(acBacklightContainer);
     acContainerLayout->addStretch();
+    acContainerLayout->addWidget(acBacklightContainer);
 
     // common
     QGroupBox *daemonContainer = new QGroupBox(this);
@@ -496,6 +496,7 @@ void Dialog::setupWidgets()
     settingsContainerArea->setWidget(settingsWidget);
 
     // add widgets to settings
+    settingsLayout->addWidget(statusWidget);
     settingsLayout->addWidget(batteryContainer);
     settingsLayout->addWidget(acContainer);
     settingsLayout->addWidget(daemonContainer);
@@ -504,10 +505,12 @@ void Dialog::setupWidgets()
     settingsLayout->addStretch();
 
     layout->addWidget(settingsContainerArea);
+
+    handleUpdatedDevices();
 }
 
 // populate widgets with default values
-void Dialog::populate()
+void Dialog::populateWidgets()
 {
     lidActionBattery->clear();
     lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -570,6 +573,56 @@ void Dialog::populate()
                                tr("Shutdown"), suspendShutdown);
     autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
                                tr("Hybrid Sleep"), suspendHybrid);
+}
+
+void Dialog::connectWidgets()
+{
+    connect(lidActionBattery, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleLidActionBattery(int)));
+    connect(lidActionAC, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleLidActionAC(int)));
+    connect(criticalActionBattery, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleCriticalAction(int)));
+    connect(criticalBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleCriticalBattery(int)));
+    connect(autoSleepBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleAutoSleepBattery(int)));
+    connect(autoSleepAC, SIGNAL(valueChanged(int)),
+            this, SLOT(handleAutoSleepAC(int)));
+    connect(showNotifications, SIGNAL(toggled(bool)),
+            this, SLOT(handleShowNotifications(bool)));
+    connect(showSystemTray, SIGNAL(toggled(bool)),
+            this, SLOT(handleShowSystemTray(bool)));
+    connect(disableLidAction, SIGNAL(toggled(bool)),
+            this, SLOT(handleDisableLidAction(bool)));
+    connect(autoSleepBatteryAction, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleAutoSleepBatteryAction(int)));
+    connect(autoSleepACAction, SIGNAL(currentIndexChanged(int)),
+            this, SLOT(handleAutoSleepACAction(int)));
+    connect(backlightBatteryCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightBatteryCheck(bool)));
+    connect(backlightACCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightACCheck(bool)));
+    connect(backlightSliderBattery, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightBatterySlider(int)));
+    connect(backlightSliderAC, SIGNAL(valueChanged(int)),
+            this, SLOT(handleBacklightACSlider(int)));
+    connect(backlightBatteryLowerCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightBatteryCheckLower(bool)));
+    connect(backlightACHigherCheck, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightACCheckHigher(bool)));
+    connect(warnOnLowBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleWarnOnLowBattery(bool)));
+    connect(warnOnVeryLowBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleWarnOnVeryLowBattery(bool)));
+    connect(notifyOnBattery, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyBattery(bool)));
+    connect(notifyOnAC, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyAC(bool)));
+    connect(notifyNewInhibitor, SIGNAL(toggled(bool)),
+            this, SLOT(handleNotifyNewInhibitor(bool)));
+    connect(backlightMouseWheel, SIGNAL(toggled(bool)),
+            this, SLOT(handleBacklightMouseWheel(bool)));
 }
 
 // load settings and set defaults
@@ -724,6 +777,8 @@ void Dialog::loadSettings()
 
     enableBacklight(true);
     enableLid(Client::lidIsPresent(dbus));
+    hasCpuCoreTemp = Cpu::hasCoreTemp();
+    if (!hasCpuCoreTemp) { cpuTempLabel->setVisible(false); }
 }
 
 void Dialog::saveSettings()
@@ -804,6 +859,67 @@ void Dialog::setDefaultAction(QComboBox *box, QString value)
             return;
         }
     }
+}
+
+void Dialog::drawBattery()
+{
+    if (!hasBattery) { return; }
+    const auto battery = Client::getBatteryLeft(dbus);
+    const auto onBattery = Client::onBattery(dbus);
+    QString batteryTime = QDateTime::fromTime_t(onBattery ? Client::timeToEmpty(dbus) : Client::timeToFull(dbus)).toUTC().toString("hh:mm");
+    QColor color = Qt::green;
+    if (onBattery) {
+        if (battery >= 76) {
+            color = Qt::gray;
+        } else if (battery >= 51) {
+            color = Qt::yellow;
+        } else if (battery >= 26) {
+            color = QColor("orange");
+        } else {
+            color = Qt::red;
+        }
+    }
+    batteryStatusLabel->setPixmap(Theme::drawCircleProgress(battery,
+                                                            64,
+                                                            4,
+                                                            4,
+                                                            true,
+                                                            QString("%1%\n%2").arg(QString::number(battery), batteryTime),
+                                                            color,
+                                                            Qt::white));
+}
+
+void Dialog::drawCpu()
+{
+    if (cpuFreqLabel) {
+        const auto freq = Cpu::getCpuFreqLabel();
+        cpuFreqLabel->setPixmap(Theme::drawCircleProgress(freq.first,
+                                                          64,
+                                                          4,
+                                                          4,
+                                                          true,
+                                                          freq.second,
+                                                          Qt::gray,
+                                                          Qt::white));
+    }
+    if (cpuTempLabel && hasCpuCoreTemp) {
+        const auto temp = Cpu::getCpuTempLabel();
+        cpuTempLabel->setPixmap(Theme::drawCircleProgress(temp.first,
+                                                          64,
+                                                          4,
+                                                          4,
+                                                          true,
+                                                          temp.second,
+                                                          Qt::gray,
+                                                          Qt::white));
+    }
+}
+
+void Dialog::handleUpdatedDevices()
+{
+    hasBattery = Client::hasBattery(dbus);
+    batteryStatusLabel->setVisible(hasBattery);
+    drawBattery();
 }
 
 // save current value and update power manager

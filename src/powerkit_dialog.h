@@ -27,6 +27,7 @@
 #include <QGroupBox>
 #include <QDateTime>
 #include <QScrollArea>
+#include <QTimer>
 
 namespace PowerKit
 {
@@ -40,6 +41,7 @@ namespace PowerKit
        ~Dialog();
 
     private:
+       QTimer *cpuTimer;
         QDBusInterface *dbus;
         QComboBox *lidActionBattery;
         QComboBox *lidActionAC;
@@ -71,14 +73,29 @@ namespace PowerKit
         QLabel *acBacklightLabel;
         QCheckBox *backlightMouseWheel;
 
+        QLabel *batteryStatusLabel;
+        QLabel *cpuFreqLabel;
+        QLabel *cpuTempLabel;
+
+        bool hasCpuCoreTemp;
+        bool hasBattery;
+
     private slots:
         void setupWidgets();
-        void populate();
+        void populateWidgets();
+        void connectWidgets();
         void loadSettings();
         void saveSettings();
+
         void setDefaultAction(QComboBox *box, int action);
         void setDefaultAction(QSpinBox *box, int action);
         void setDefaultAction(QComboBox *box, QString value);
+
+        void drawBattery();
+        void drawCpu();
+
+        void handleUpdatedDevices();
+
         void handleLidActionBattery(int index);
         void handleLidActionAC(int index);
         void handleCriticalAction(int index);
