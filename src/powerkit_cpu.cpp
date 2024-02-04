@@ -369,9 +369,9 @@ bool Cpu::hasCoreTemp()
     return QFile::exists(QString(LINUX_CORETEMP).arg(0));
 }
 
-int Cpu::getCoreTemp()
+QPair<double, double> Cpu::getCoreTemp()
 {
-    double temp = 0.0;
+    QPair<double, double> temp = {0.0, 0.0};
     if (!hasCoreTemp()) { return temp; }
 
     int temps = 1;
@@ -386,17 +386,61 @@ int Cpu::getCoreTemp()
             file.close();
         }
         if (foundPackage) {
-            QFile file(QString("%1/%2").arg(QString(LINUX_CORETEMP).arg(hwmon),
-                                            QString(LINUX_CORETEMP_INPUT).arg(temps)));
-            if (file.open(QIODevice::ReadOnly|QIODevice::Text)) {
-                double ctemp = file.readAll().trimmed().toDouble();
+            QFile fileInput(QString("%1/%2").arg(QString(LINUX_CORETEMP).arg(hwmon),
+                                                 QString(LINUX_CORETEMP_INPUT).arg(temps)));
+            if (fileInput.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                double ctemp = fileInput.readAll().trimmed().toDouble();
                 file.close();
-                if (ctemp > temp) {
-                    temp = ctemp;
-                    break;
+                if (ctemp > temp.first) {
+                    temp.first = ctemp;
                 }
             }
+            QFile fileMax(QString("%1/%2").arg(QString(LINUX_CORETEMP).arg(hwmon),
+                                               QString(LINUX_CORETEMP_MAX).arg(temps)));
+            if (fileMax.open(QIODevice::ReadOnly|QIODevice::Text)) {
+                double mtemp = fileMax.readAll().trimmed().toDouble();
+                file.close();
+                if (mtemp > temp.second) {
+                    temp.second = mtemp;
+                }
+            }
+            if (temp.first > 0.0 && temp.second > 0.0) { break; }
         }
     }
     return temp;
+}
+
+const QPair<int, QString> Cpu::getCpuFreqLabel()
+{
+    QStringList freqs = getFrequencies();
+    int currentCpuFreq = 0;
+    double currentFancyFreq = 0.;
+    for (int i=0; i < freqs.size(); ++i) {
+        auto freq = freqs.at(i).toLong();
+        if (freq > currentCpuFreq) {
+            currentCpuFreq = freq;
+            currentFancyFreq = freqs.at(i).toDouble();
+        }
+    }
+
+    QPair<int, QString> result;
+
+    int freqMin = Cpu::getMinFrequency();
+    int freqMax = Cpu::getMaxFrequency();
+    int progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
+
+    result.first = progress;
+    result.second = QString("%1\nGhz").arg(QString::number(currentFancyFreq / 1000000, 'f', 2));
+    return result;
+}
+
+const QPair<int, QString> Cpu::getCpuTempLabel()
+{
+    QPair<int, QString> result;
+    const auto temps = getCoreTemp();
+    int progress = (temps.first * 100) / temps.second;
+
+    result.first = progress;
+    result.second = QString("%1°C").arg(QString::number(temps.first / 1000, 'f', 0));
+    return result;
 }

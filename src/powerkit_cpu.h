@@ -10,6 +10,7 @@
 #define POWERKIT_CPU_H
 
 #include <QStringList>
+#include <QPair>
 
 namespace PowerKit
 {
@@ -45,7 +46,10 @@ namespace PowerKit
         static bool setPState(int min, int max);
 
         static bool hasCoreTemp();
-        static int getCoreTemp();
+        static QPair<double, double> getCoreTemp();
+
+        static const QPair<int, QString> getCpuFreqLabel();
+        static const QPair<int, QString> getCpuTempLabel();
     };
 }
 
