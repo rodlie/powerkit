@@ -11,13 +11,14 @@
 
 #include <QPixmap>
 #include <QColor>
+#include <QPalette>
 
 namespace PowerKit
 {
     class Theme
     {
     public:
-        static void setAppTheme();
+        static void setAppTheme(bool darker = false);
         static void setIconTheme();
         static const QPixmap drawCircleProgress(const int &progress,
                                                 const int &dimension,
@@ -26,7 +27,8 @@ namespace PowerKit
                                                 const bool dash,
                                                 const QString &text,
                                                 const QColor &color1 = Qt::red,
-                                                const QColor &color2 = Qt::white);
+                                                const QColor &color2 = Qt::white,
+                                                const QColor &color3 = Qt::white);
     };
 }
 

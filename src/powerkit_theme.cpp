@@ -22,27 +22,33 @@
 
 using namespace PowerKit;
 
-void Theme::setAppTheme()
+void Theme::setAppTheme(bool darker)
 {
     bool native = Settings::getValue(CONF_NATIVE_THEME, false).toBool();
     if (native) { return; }
     qApp->setStyle("Fusion");
     QPalette palette;
-    palette.setColor(QPalette::Window, QColor(53,53,53));
+    palette.setColor(QPalette::Window, QColor(40, 40, 47));
     palette.setColor(QPalette::WindowText, Qt::white);
-    palette.setColor(QPalette::Base, QColor(15,15,15));
-    palette.setColor(QPalette::AlternateBase, QColor(53,53,53));
+    palette.setColor(QPalette::Base, QColor(33, 33, 38));
+    palette.setColor(QPalette::AlternateBase, QColor(40, 40, 47));
     palette.setColor(QPalette::Link, Qt::white);
     palette.setColor(QPalette::LinkVisited, Qt::white);
-    palette.setColor(QPalette::ToolTipText, Qt::black);
+    palette.setColor(QPalette::ToolTipText, Qt::white);
+    palette.setColor(QPalette::ToolTipBase, Qt::black);
     palette.setColor(QPalette::Text, Qt::white);
-    palette.setColor(QPalette::Button, QColor(53,53,53));
+    palette.setColor(QPalette::Button, QColor(33, 33, 38));
     palette.setColor(QPalette::ButtonText, Qt::white);
     palette.setColor(QPalette::BrightText, Qt::red);
-    palette.setColor(QPalette::Highlight, QColor(196,110,33));
+    palette.setColor(QPalette::Highlight, QColor(177, 16, 20));
     palette.setColor(QPalette::HighlightedText, Qt::white);
     palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
     palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
+    if (darker) {
+        palette.setColor(QPalette::Window, QColor(33, 33, 38));
+        palette.setColor(QPalette::Base, QColor(33, 33, 38));
+        palette.setColor(QPalette::Button, QColor(33, 33, 38));
+    }
     qApp->setPalette(palette);
 }
 
@@ -98,7 +104,8 @@ const QPixmap Theme::drawCircleProgress(const int &progress,
                                         const bool dash,
                                         const QString &text,
                                         const QColor &color1,
-                                        const QColor &color2)
+                                        const QColor &color2,
+                                        const QColor &color3)
 {
     double value = (double)progress / 100;
     if (value < 0.) { value = 0.; }
@@ -122,12 +129,15 @@ const QPixmap Theme::drawCircleProgress(const int &progress,
     pen.setWidth(width);
     pen.setCapStyle(Qt::FlatCap);
     pen.setColor(color1);
-    if (dash) { pen.setDashPattern(QVector<qreal>{0.5, 1.105}); }
+    if (dash) { pen.setStyle(Qt::DashLine); }
 
     QPen pen2;
     pen2.setWidth(width);
     pen2.setColor(color2);
     pen2.setCapStyle(Qt::FlatCap);
+
+    QPen pen3;
+    pen3.setColor(color3);
 
     p.setPen(pen);
     p.drawArc(circle, startAngle, 360 * 16);
@@ -136,6 +146,7 @@ const QPixmap Theme::drawCircleProgress(const int &progress,
     p.drawArc(circle, startAngle, spanAngle);
 
     if (!text.isEmpty()) {
+        p.setPen(pen3);
         int textPadding = padding * 4;
         p.drawText(QRectF(textPadding / 2,
                           textPadding / 2,
