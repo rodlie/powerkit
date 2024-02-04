@@ -8,22 +8,17 @@ powerkit *`[--config]`*
 
 # DESCRIPTION
 
-**NOTE:** powerkit version 2 is under heavy development, it may break at any time!
-
 powerkit is an desktop independent Linux power manager for alternative X11 desktop environments and window managers.
 
- * Implements *[org.freedesktop.ScreenSaver](https://people.freedesktop.org/~hadess/idle-inhibition-spec/re01.html)* service
- * Implements *[org.freedesktop.PowerManagement](https://www.freedesktop.org/wiki/Specifications/power-management-spec/)* service
+ * Implements *``org.freedesktop.ScreenSaver``* service and screen saver
+ * Implements *``org.freedesktop.PowerManagement.Inhibit``* service
  * Automatically suspend on idle
- * Automatically lock screen on idle
- * Automatically hibernate or shutdown on critical battery
- * Inhibit actions if external monitor(s) is connected
+ * Automatically suspend or shutdown on critical battery
+ * Inhibit lid action if external monitor connected
  * Screen locking support
  * Screen backlight support
- * RTC wake alarm support
- * CPU frequency scaling support
- * Thermal support
- * Notification support
+ * RTC wake support
+ * Notification support (can use *``org.freedesktop.Notifications``* if available)
 
 # USAGE
 
@@ -32,7 +27,7 @@ powerkit should be started during the X11 user session. Consult the documentatio
  * In *Fluxbox* add *``powerkit &``* to the *``~/.fluxbox/startup``* file
  * In *Openbox* add *``powerkit &``* to the *``~/.config/openbox/autostart``* file.
 
-**Do not run powerkit if your desktop environment already has a power manager!**
+**Do use powerkit if your desktop environment or window manager already has a power manager or screen saver service running.**
 
 ## CONFIGURATION
 
@@ -44,21 +39,23 @@ powerkit implements a basic screen saver to handle screen blanking, poweroff and
 
 Locking feature depends on ``xsecurelock``.
 
+You can override the lock command with *``screensaver_lock_cmd=<command>``* in *`~/.config/powerkit/powerkit.conf`*. Note that the command must not contain spaces.
+
 ## BACKLIGHT
 
 The current display brightness (on laptops and supported displays) can be adjusted with the mouse wheel on the system tray icon or through the system tray menu.
 
 ## HIBERNATE
 
-If hibernate *"just works"* depends on your system, worst case a swap partition (or file) is needed by the kernel to support hibernate, just add *``resume=<swap_partition>``* to the kernel command line in the boot loader.
+If hibernate works depends on your system, a swap partition (or file) is needed by the kernel to support hibernate.
 
 ***Consult your system documentation regarding hibernation***.
 
 ## ICONS
 
-powerkit will use the existing icon theme from the running desktop environment. You should have (a proper version) of Adwaita installed as a fallback.
+powerkit will use the existing icon theme from the running desktop environment or window manager.
 
-You can override the icon theme in the *`~/.config/powerkit/powerkit.conf`* file, see *``icon_theme=<theme_name>``*.
+You can override the icon theme in the *`~/.config/powerkit/powerkit.conf`* file, use *``icon_theme=<theme_name>``*.
 
 # FAQ
 
@@ -74,7 +71,7 @@ The preferred way to inhibit suspend actions from an application is to use the *
 
 Common use cases are audio playback, downloading, rendering and similar.
 
-## Google Chrome/Chromium does not inhibit the screen saver!?
+## Google Chrome/Chromium does not inhibit the screen saver or power manager!?
 
 *[Chrome](https://chrome.google.com)* does not use *org.freedesktop.ScreenSaver* or *org.freedesktop.PowerManagement* until it detects a supported desktop environment. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a supported desktop environment:
 
@@ -90,10 +87,9 @@ powerkit requires the following dependencies:
  * *[X11](https://www.x.org)*
  * *[libXss](https://www.x.org/archive//X11R7.7/doc/man/man3/Xss.3.xhtml)*
  * *[libXrandr](https://www.x.org/wiki/libraries/libxrandr/)*
- * *[Qt5](https://qt.io)* *(Core/DBus/Gui/Widgets)*
- * *[D-Bus](https://www.freedesktop.org/wiki/Software/dbus/)*
- * *[logind](https://www.freedesktop.org/wiki/Software/systemd/logind/)*
- * *[UPower](https://upower.freedesktop.org/)*
+ * *[Qt](https://qt.io)* 5.15 *(Core/DBus/Gui/Widgets)*
+ * *[logind](https://www.freedesktop.org/wiki/Software/systemd/logind/)* *(or compatible service)*
+ * *[UPower](https://upower.freedesktop.org/)* *(or compatible service)*
  * *[xsecurelock](https://github.com/google/xsecurelock)*
 
 # BUILD
@@ -103,11 +99,12 @@ First make sure you have the required dependencies installed, then review the mo
  * *``CMAKE_INSTALL_PREFIX=</usr/local>``* - Install target. *``/usr``* recommended.
  * *``CMAKE_BUILD_TYPE=<Release/Debug>``* - Build type. *``Release``* recommended
  * *``SERVICE_USER=<root>``* - powerkitd owner, needs write access to /sys. Usually the *``root``* user.
- * *``SERVICE_GROUP=<power>``* - Group that can access the powerkitd service, this should be any desktop user that can change screen brightness, CPU performance and RTC wake alarm. Usually the *``power``* group or similar. Consult your system documentation.
+ * *``SERVICE_GROUP=<power>``* - Group that can access the powerkitd service, this should be any desktop user. Consult your system documentation for the preferred user group.
 
 Now configure powerkit with CMake and build (*example for packaging purposes*).
+
 ```
-cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DSERVICE_GROUP=plugdev -DCMAKE_BUILD_TYPE=Release ..
 make
 make DESTDIR=<package> install
 ```
@@ -154,9 +151,9 @@ pkg
  * Added screen saver in powerkit
  * Easier to use (minimal setup)
  * New UI
- * RTC wake alarm support
+ * RTC wake alarm support (not used for anything yet)
    * Hibernate computer while suspended for X amount of time
- * CPU frequency scaling and thermal support
+ * CPU frequency scaling and thermal support (not used for anything yet)
    * Intel PState
  * powerkitd
    * Service for unprivileged users (needed for CPU/RTC/brightness)
