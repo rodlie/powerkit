@@ -6,39 +6,20 @@
 # See the LICENSE file for full details
 */
 
-#ifndef SYSTRAY_H
-#define SYSTRAY_H
+#ifndef POWERKIT_APP_H
+#define POWERKIT_APP_H
 
 #include <QObject>
 #include <QSystemTrayIcon>
 #include <QTimer>
-#include <QIcon>
-#include <QMenu>
-#include <QAction>
-#include <QDebug>
-#include <QSettings>
-#include <QPainter>
-#include <QMap>
-#include <QMapIterator>
 #include <QProcess>
-#include <QMap>
 #include <QFileSystemWatcher>
 #include <QEvent>
 #include <QWheelEvent>
-#include <QMenu>
-#include <QLabel>
-#include <QFrame>
-#include <QWidgetAction>
-#include <QSlider>
-#include <QCheckBox>
 
 #include "powerkit_freedesktop_pm.h"
 #include "powerkit_screensaver.h"
 #include "powerkit_manager.h"
-
-//#define DEVICE_UUID Qt::UserRole+1
-//#define DEVICE_TYPE Qt::UserRole+2
-#define MAX_WIDTH 150
 
 class TrayIcon : public QSystemTrayIcon
 {
@@ -109,29 +90,6 @@ private:
     bool backlightMouseWheel;
     bool ignoreKernelResume;
 
-    QMenu *powerMenu;
-    QMenu *inhibitorsMenu;
-    QActionGroup *inhibitorsGroup;
-    QAction *actSettings;
-    QAction *actPowerOff;
-    QAction *actRestart;
-    QAction *actSuspend;
-    QAction *actHibernate;
-    QAction *actAbout;
-    QAction *actQuit;
-    QLabel *labelBatteryStatus;
-    QLabel *labelBatteryIcon;
-    QFrame *menuFrame;
-    QWidgetAction *menuHeader;
-    QSlider *backlightSlider;
-    QLabel *backlightLabel;
-    QFileSystemWatcher *backlightWatcher;
-
-    QLabel *cpuFreqLabel;
-    QSlider *pstateMinSlider;
-    QSlider *pstateMaxSlider;
-    QCheckBox *pstateTurboCheckbox;
-
 private slots:
     void trayActivated(QSystemTrayIcon::ActivationReason reason);
     void checkDevices();
@@ -170,15 +128,7 @@ private slots:
     void switchInternalMonitor(bool toggle);
     void handleTrayWheel(TrayIcon::WheelAction action);
     void handleDeviceChanged(const QString &path);
-    void populateMenu();
-    void updateMenu();
-    void updateBacklight(QString file);
-    void handleBacklightSlider(int value);
-    void handlePStateMinSlider(int value);
-    void handlePStateMaxSlider(int value);
-    void getInhibitors();
     void openSettings();
-    void getCpuFreq();
 };
 
-#endif // SYSTRAY_H
+#endif // POWERKIT_APP_H

@@ -446,8 +446,8 @@ void Dialog::setupWidgets()
 
     // screensaver
     QGroupBox *ssContainer = new QGroupBox(this);
-    ssContainer->setTitle(tr("Screensaver"));
-    QVBoxLayout *ssContainerLayout = new QVBoxLayout(ssContainer);
+    ssContainer->setTitle(tr("Screen saver"));
+    //QVBoxLayout *ssContainerLayout = new QVBoxLayout(ssContainer);
 
     // notify
     QGroupBox *notifyContainer = new QGroupBox(this);
@@ -871,9 +871,7 @@ void Dialog::drawBattery()
     QColor colorFg = Qt::white;
     QString status = QString("%1%\n%2").arg(QString::number(battery), batteryTime);
     if (onBattery) {
-        if (battery >= 51) {
-            colorBg = Qt::yellow;
-        } else if (battery >= 26) {
+        if (battery >= 26) {
             colorBg = QColor("orange");
         } else {
             colorBg = Qt::red;
@@ -898,24 +896,29 @@ void Dialog::drawCpu()
 {
     if (cpuFreqLabel) {
         const auto freq = Cpu::getCpuFreqLabel();
+        QColor color = Qt::gray;
+        if (freq.first >= 50) { color = QColor("orange"); }
         cpuFreqLabel->setPixmap(Theme::drawCircleProgress(freq.first,
                                                           64,
                                                           4,
                                                           4,
                                                           true,
                                                           freq.second,
-                                                          Qt::gray,
+                                                          color,
                                                           Qt::white));
     }
     if (cpuTempLabel && hasCpuCoreTemp) {
         const auto temp = Cpu::getCpuTempLabel();
+        QColor color = Qt::gray;
+        if (temp.first >= 75) { color = Qt::red; }
+        else if (temp.first >= 50) { color = QColor("orange"); }
         cpuTempLabel->setPixmap(Theme::drawCircleProgress(temp.first,
                                                           64,
                                                           4,
                                                           4,
                                                           true,
                                                           temp.second,
-                                                          Qt::gray,
+                                                          color,
                                                           Qt::white));
     }
 }

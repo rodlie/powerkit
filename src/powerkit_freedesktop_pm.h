@@ -34,7 +34,6 @@ signals:
     void removedInhibit(quint32 cookie);
 
 private slots:
-    int randInt(int low, int high);
     quint32 genCookie();
     void checkForExpiredClients();
     bool canInhibit();

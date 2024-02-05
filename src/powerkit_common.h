@@ -49,10 +49,6 @@ namespace PowerKit
     };
 }
 
-#define VIRTUAL_MONITOR "VIRTUAL"
-#define TURN_OFF_MONITOR "xrandr --output %1 --off"
-#define TURN_ON_MONITOR "xrandr --output %1 --auto "
-
 #define LID_BATTERY_DEFAULT PowerKit::lidSleep
 #define LID_AC_DEFAULT PowerKit::lidLock
 #define CRITICAL_DEFAULT PowerKit::criticalNone

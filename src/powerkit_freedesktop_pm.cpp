@@ -11,6 +11,7 @@
 #include <QDBusConnection>
 #include <QCoreApplication>
 #include <QProcess>
+#include <QRandomGenerator>
 #include <QDebug>
 
 #include "powerkit_common.h"
@@ -23,21 +24,12 @@ PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
     timer.start();
 }
 
-int PowerManagement::randInt(int low, int high)
-{
-    QTime time = QTime::currentTime();
-    qsrand((uint)time.msec());
-    return qrand() % ((high + 1) - low) + low;
-}
-
 quint32 PowerManagement::genCookie()
 {
-    int low = 0;
-    int high = 1000;
-    quint32 cookie = (quint32)randInt(low, high);
-    while(!clients.contains(cookie)) {
+    quint32 cookie = QRandomGenerator::global()->generate();
+    while (!clients.contains(cookie)) {
         if (!clients.contains(cookie)) { clients[cookie] = QTime::currentTime(); }
-        else { cookie = (quint32)randInt(low, high); }
+        else { cookie = QRandomGenerator::global()->generate(); }
     }
     return cookie;
 }

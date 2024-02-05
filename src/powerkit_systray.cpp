@@ -12,7 +12,6 @@
 #include "powerkit_notify.h"
 #include "powerkit_settings.h"
 #include "powerkit_backlight.h"
-#include "powerkit_cpu.h"
 
 #include "InhibitAdaptor.h"
 #include "ScreenSaverAdaptor.h"
@@ -21,7 +20,10 @@
 #include <QApplication>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QProcess>
+#include <QDebug>
+#include <QMapIterator>
+
+#define VIRTUAL_MONITOR "VIRTUAL"
 
 using namespace PowerKit;
 
@@ -65,27 +67,6 @@ SysTray::SysTray(QObject *parent)
     , notifyNewInhibitor(true)
     , backlightMouseWheel(true)
     , ignoreKernelResume(false)
-    , powerMenu(nullptr)
-    , inhibitorsMenu(nullptr)
-    , inhibitorsGroup(nullptr)
-    , actSettings(nullptr)
-    , actPowerOff(nullptr)
-    , actRestart(nullptr)
-    , actSuspend(nullptr)
-    , actHibernate(nullptr)
-    , actAbout(nullptr)
-    , actQuit(nullptr)
-    , labelBatteryStatus(nullptr)
-    , labelBatteryIcon(nullptr)
-    , menuFrame(nullptr)
-    , menuHeader(nullptr)
-    , backlightSlider(nullptr)
-    , backlightLabel(nullptr)
-    , backlightWatcher(nullptr)
-    , cpuFreqLabel(nullptr)
-    , pstateMinSlider(nullptr)
-    , pstateMaxSlider(nullptr)
-    , pstateTurboCheckbox(nullptr)
 {
     // setup tray
     tray = new TrayIcon(this);
@@ -140,10 +121,6 @@ SysTray::SysTray(QObject *parent)
             SIGNAL(Update()),
             this,
             SLOT(loadSettings()));
-    connect(man,
-            SIGNAL(UpdatedInhibitors()),
-            this,
-            SLOT(getInhibitors()));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement(this);
@@ -203,18 +180,12 @@ SysTray::SysTray(QObject *parent)
     Theme::setAppTheme();
     Theme::setIconTheme();
     if (tray->icon().isNull()) {
-        tray->setIcon(QIcon::fromTheme(DEFAULT_BATTERY_ICON));
+        tray->setIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
     }
 
     // load settings and register service
     loadSettings();
     registerService();
-
-    // setup backlight
-    backlightWatcher = new QFileSystemWatcher(this);
-    backlightWatcher->addPath(QString("%1/brightness").arg(backlightDevice));
-    connect(backlightWatcher, SIGNAL(fileChanged(QString)),
-            this, SLOT(updateBacklight(QString)));
 
     // device check
     QTimer::singleShot(10000,
@@ -223,9 +194,6 @@ SysTray::SysTray(QObject *parent)
     QTimer::singleShot(1000,
                        this,
                        SLOT(setInternalMonitor()));
-
-    // menu
-    populateMenu();
 
     // setup watcher
     watcher = new QFileSystemWatcher(this);
@@ -243,9 +211,6 @@ SysTray::SysTray(QObject *parent)
 
 SysTray::~SysTray()
 {
-    menuFrame->deleteLater();
-    menuHeader->deleteLater();
-    powerMenu->deleteLater();
 }
 
 // what to do when user clicks systray
@@ -253,8 +218,7 @@ void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
 
-    updateMenu();
-    powerMenu->exec(QCursor::pos());
+    openSettings();
 }
 
 void SysTray::checkDevices()
@@ -265,12 +229,6 @@ void SysTray::checkDevices()
         showTray) { tray->show(); }
     if (!showTray &&
         tray->isVisible()) { tray->hide(); }
-
-    // update menu items
-    updateMenu();
-
-    // update power devices
-    //updatePowerDevices();
 
     // get battery left and add tooltip
     double batteryLeft = man->BatteryLeft();
@@ -690,14 +648,27 @@ void SysTray::drawBattery(double left)
         return;
     }
 
+    QColor colorBg = Qt::green;
+    QColor colorFg = Qt::white;
+    int pixelSize = 22;
+    if (man->OnBattery()) {
+        if (left >= 26) {
+            colorBg = QColor("orange");
+        } else {
+            colorBg = Qt::red;
+        }
+    } else {
+        if (left == 100) { colorFg = Qt::green; }
+    }
+
     tray->setIcon(Theme::drawCircleProgress(left,
-                                            22,
+                                            pixelSize,
                                             4,
                                             4,
                                             false,
                                             QString(),
-                                            Qt::red,
-                                            man->OnBattery() ? Qt::white : Qt::green));
+                                            colorBg,
+                                            colorFg));
 }
 
 // timeout, check if idle
@@ -800,40 +771,38 @@ void SysTray::handleNewInhibitScreenSaver(const QString &application,
                                           const QString &reason,
                                           quint32 cookie)
 {
+    Q_UNUSED(cookie)
     if (notifyNewInhibitor) {
-        showMessage(tr("New screen inhibitor (%1)").arg(cookie),
+        showMessage(tr("New screen inhibitor"),
                     QString("%1: %2").arg(application, reason));
     }
 
     checkDevices();
-    getInhibitors();
 }
 
 void SysTray::handleNewInhibitPowerManagement(const QString &application,
                                               const QString &reason,
                                               quint32 cookie)
 {
+    Q_UNUSED(cookie)
     if (notifyNewInhibitor) {
-        showMessage(tr("New power inhibitor (%1)").arg(cookie),
+        showMessage(tr("New power inhibitor"),
                     QString("%1: %2").arg(application, reason));
     }
 
     checkDevices();
-    getInhibitors();
 }
 
 void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
 {
     qDebug() << "SS INHIBITOR REMOVED" << cookie;
     checkDevices();
-    getInhibitors();
 }
 
 void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
 {
     qDebug() << "PM INHIBITOR REMOVED" << cookie;
     checkDevices();
-    getInhibitors();
 }
 
 // show notifications
@@ -948,15 +917,13 @@ void SysTray::handlePrepareForResume()
 }
 
 // turn off/on monitor using xrandr
-// optional "hidden" feature (should be handled by a display manager)
 void SysTray::switchInternalMonitor(bool toggle)
 {
     if (!lidXrandr) { return; }
     qDebug() << "using xrandr to turn on/off internal monitor" << toggle;
-    QProcess xrandr;
-    xrandr.start(QString(toggle?TURN_ON_MONITOR:TURN_OFF_MONITOR).arg(internalMonitor));
-    xrandr.waitForFinished();
-    xrandr.close();
+    QStringList args;
+    args << "--output" << internalMonitor << (toggle ? "--auto" : "--off");
+    QProcess::startDetached("xrandr", args);
 }
 
 // adjust backlight on wheel event (on systray)
@@ -984,317 +951,6 @@ void SysTray::handleDeviceChanged(const QString &path)
     checkDevices();
 }
 
-void SysTray::populateMenu()
-{
-    qDebug() << "populate menu";
-
-    powerMenu  = new QMenu(NULL);
-    tray->setContextMenu(powerMenu);
-
-    menuFrame = new QFrame(NULL);
-
-    inhibitorsMenu = new QMenu(powerMenu);
-    inhibitorsMenu->setTitle(tr("Inhibitors"));
-    inhibitorsMenu->setToolTip(tr("List of active applications that inhibits screen and/or power."));
-    inhibitorsGroup = new QActionGroup(this);
-
-    QWidget *cpuWidget = new QWidget(menuFrame);
-    QWidget *cpuHeaderWidget = new QWidget(menuFrame);
-    QWidget *batteryWidget = new QWidget(menuFrame);
-    QWidget *backlightWidget = new QWidget(menuFrame);
-
-    QVBoxLayout *cpuContainerLayout = new QVBoxLayout(cpuWidget);
-    QHBoxLayout *cpuHeaderLayout = new QHBoxLayout(cpuHeaderWidget);
-    QVBoxLayout *menuContainerLayout = new QVBoxLayout(menuFrame);
-    QHBoxLayout *batteryContainerLayout = new QHBoxLayout(batteryWidget);
-    QHBoxLayout *backlightContainerLayout = new QHBoxLayout(backlightWidget);
-
-    cpuWidget->setContentsMargins(0,0,0,0);
-    cpuContainerLayout->setContentsMargins(0,0,0,0);
-    cpuContainerLayout->setSpacing(0);
-
-    cpuHeaderWidget->setContentsMargins(0,0,0,0);
-    cpuHeaderLayout->setContentsMargins(0,0,0,0);
-    cpuHeaderLayout->setSpacing(0);
-
-    batteryWidget->setContentsMargins(0,0,0,0);
-    batteryContainerLayout->setContentsMargins(0,0,0,0);
-    batteryContainerLayout->setSpacing(0);
-
-    backlightWidget->setContentsMargins(0,0,0,0);
-    backlightContainerLayout->setContentsMargins(0,0,0,0);
-    backlightContainerLayout->setSpacing(0);
-
-    //QLabel *cpuFreqIcon = new QLabel(cpuHeaderWidget);
-    //cpuFreqIcon->setPixmap(QIcon::fromTheme(DEFAULT_APP_ICON)
-      //                     .pixmap(32, 32));
-
-    cpuFreqLabel = new QLabel(cpuHeaderWidget);
-    cpuFreqLabel->setMaximumSize(QSize(64, 64));
-    cpuFreqLabel->setMinimumSize(QSize(64, 64));
-
-    labelBatteryIcon = new QLabel(batteryWidget);
-    labelBatteryIcon->setMaximumSize(QSize(64, 64));
-    labelBatteryIcon->setMinimumSize(QSize(64, 64));
-
-    //labelBatteryIcon->setMinimumSize(32, 32);
-    //labelBatteryIcon->setMaximumSize(32, 32);
-    //labelBatteryStatus = new QLabel(batteryWidget);
-
-
-    QLabel *backlightLabel = new QLabel(menuFrame);
-    backlightLabel->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
-                              .pixmap(32, 32));
-
-    backlightSlider = new QSlider(menuFrame);
-    backlightSlider->setMinimumWidth(100);
-    backlightSlider->setMinimum(1);
-    backlightSlider->setMaximum(Backlight::getMaxBrightness(backlightDevice));
-    backlightSlider->setSingleStep(1);
-    backlightSlider->setOrientation(Qt::Horizontal);
-    backlightSlider->setToolTip(tr("Adjust the display brightness."));
-    connect(backlightSlider, SIGNAL(valueChanged(int)),
-                this, SLOT(handleBacklightSlider(int)));
-
-    cpuContainerLayout->addWidget(cpuHeaderWidget);
-   // cpuHeaderLayout->addWidget(cpuFreqIcon);
-
-    /*if (Cpu::hasPState()) {
-        pstateMinSlider = new QSlider(menuFrame);
-        pstateMaxSlider = new QSlider(menuFrame);
-        pstateMinSlider->setRange(0, 100);
-        pstateMaxSlider->setRange(0,100);
-        pstateMinSlider->setOrientation(Qt::Horizontal);
-        pstateMaxSlider->setOrientation(Qt::Horizontal);
-        pstateMinSlider->setValue(Cpu::getPStateMin());
-        pstateMaxSlider->setValue(Cpu::getPStateMax());
-
-        connect(pstateMinSlider, SIGNAL(valueChanged(int)),
-                this, SLOT(handlePStateMinSlider(int)));
-        connect(pstateMaxSlider, SIGNAL(valueChanged(int)),
-                this, SLOT(handlePStateMaxSlider(int)));
-
-        pstateTurboCheckbox = new QCheckBox(menuFrame);
-        pstateTurboCheckbox->setText(tr("Turbo Boost"));
-        pstateTurboCheckbox->setCheckable(true);
-        pstateTurboCheckbox->setChecked(Cpu::hasPStateTurbo());
-
-        QLabel *pstateMinLabel = new QLabel(menuFrame);
-        QLabel *pstateMaxLabel = new QLabel(menuFrame);
-        pstateMinLabel->setText(tr("Min"));
-        pstateMaxLabel->setText(tr("Max"));
-
-        QWidget *pstateMinWidget = new QWidget(menuFrame);
-        QWidget *pstateMaxWidget = new QWidget(menuFrame);
-
-        QHBoxLayout *pstateMinLayout = new QHBoxLayout(pstateMinWidget);
-        QHBoxLayout *pstateMaxLayout = new QHBoxLayout(pstateMaxWidget);
-
-        pstateMinLayout->addWidget(pstateMinLabel);
-        pstateMinLayout->addWidget(pstateMinSlider);
-
-        pstateMaxLayout->addWidget(pstateMaxLabel);
-        pstateMaxLayout->addWidget(pstateMaxSlider);
-
-        cpuContainerLayout->addWidget(pstateMinWidget);
-        cpuContainerLayout->addWidget(pstateMaxWidget);
-        cpuContainerLayout->addWidget(pstateTurboCheckbox);
-    }*/
-
-    const auto statusWidget = new QWidget(menuFrame);
-    const auto statusLayout = new QHBoxLayout(statusWidget);
-
-    statusLayout->addWidget(labelBatteryIcon);
-    statusLayout->addWidget(cpuFreqLabel);
-
-    batteryContainerLayout->addWidget(statusWidget);
-    //batteryContainerLayout->addWidget(labelBatteryStatus);
-    backlightContainerLayout->addWidget(backlightLabel);
-    backlightContainerLayout->addWidget(backlightSlider);
-
-    menuContainerLayout->addWidget(batteryWidget);
-    menuContainerLayout->addSpacing(2);
-    menuContainerLayout->addSpacing(2);
-    menuContainerLayout->addWidget(backlightWidget);
-    menuContainerLayout->addSpacing(2);
-    menuContainerLayout->addWidget(cpuWidget);
-
-    menuHeader = new QWidgetAction(this);
-    menuHeader->setDefaultWidget(menuFrame);
-
-    powerMenu->addAction(menuHeader);
-    powerMenu->addSeparator();
-
-    //actRestart = new QAction(this);
-    //actSuspend = new QAction(this);
-    //actPowerOff = new QAction(this);
-    actSettings = new QAction(this);
-    //actHibernate = new QAction(this);
-    //actAbout = new QAction(this);
-
-    //actRestart->setText(tr("Restart"));
-    //actSuspend->setText(tr("Suspend"));
-    //actPowerOff->setText(tr("Shutdown"));
-    actSettings->setText(tr("Settings"));
-    //actHibernate->setText(tr("Hibernate"));
-    //actAbout->setText(tr("About"));
-
-    connect(actSettings, SIGNAL(triggered(bool)), this, SLOT(openSettings()));
-
-    //actRestart->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
-    //actSuspend->setIcon(QIcon::fromTheme(DEFAULT_SUSPEND_ICON));
-    //actPowerOff->setIcon(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON));
-    actSettings->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    //actHibernate->setIcon(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON));
-
-    inhibitorsMenu->setIcon(QIcon::fromTheme(DEFAULT_INHIBITOR_ICON));
-    //actAbout->setIcon(QIcon::fromTheme(DEFAULT_HELP_ICON));
-
-    powerMenu->addMenu(inhibitorsMenu);
-    //powerMenu->addSeparator();
-    //powerMenu->addAction(actSuspend);
-    //powerMenu->addAction(actHibernate);
-    //powerMenu->addSeparator();
-    //powerMenu->addAction(actRestart);
-    //powerMenu->addAction(actPowerOff);
-    powerMenu->addSeparator();
-    powerMenu->addAction(actSettings);
-    //powerMenu->addSeparator();
-    //powerMenu->addAction(actAbout);
-
-    updateBacklight(QString());
-    updateMenu();
-}
-
-void SysTray::updateMenu()
-{
-    qDebug() << "update menu";
-
-    if (labelBatteryIcon) {
-        if (!man->HasBattery()) { labelBatteryIcon->clear(); }
-        else {
-            double battery = man->BatteryLeft();
-            if (battery < 0) { battery = 0; }
-            if (battery > 100) { battery = 100; }
-            QString batteryTime = QDateTime::fromTime_t(man->OnBattery()?man->TimeToEmpty():man->TimeToFull()).toUTC().toString("hh:mm");
-            labelBatteryIcon->setPixmap(Theme::drawCircleProgress(battery,
-                                                                  64,
-                                                                  4,
-                                                                  4,
-                                                                  true,
-                                                                  QString("%1% \n%2").arg(QString::number(battery),
-                                                                                          batteryTime)));
-        }
-    }
-
-    inhibitorsMenu->setEnabled(man->GetInhibitors().size()>0);
-
-    /*qDebug() << "has pstate?" << PowerCpu::hasPState();
-    qDebug() << "pstate turbo?" << PowerCpu::hasPStateTurbo();
-    qDebug() << "pstate min?" << PowerCpu::getPStateMin();
-    qDebug() << "pstate max?" << PowerCpu::getPStateMax();
-    qDebug() << "cpu freq?" << PowerCpu::getFrequencies();
-    //qDebug() << "cpu freq avail?" << PowerCpu::getAvailableFrequency();
-    qDebug() << "cpu freq min?" << PowerCpu::getMinFrequency();
-    qDebug() << "cpu freq max?" << PowerCpu::getMaxFrequency();
-    qDebug() << "cpu total?" << PowerCpu::getTotal();
-    qDebug() << "cpu gov?" << PowerCpu::getGovernors();
-    qDebug() << "cpu gov avail?" << PowerCpu::getAvailableGovernors();
-    qDebug() << "cpu temp?" << PowerCpu::getCoreTemp();
-    qDebug() << "battery left" << man->BatteryLeft();*/
-
-    getCpuFreq();
-}
-
-void SysTray::updateBacklight(QString file)
-{
-    qDebug() << "BACKLIGHT SLIDER UPDATE" << file;
-    Q_UNUSED(file);
-    int value = Backlight::getCurrentBrightness(backlightDevice);
-    if (value != backlightSlider->value()) {
-        backlightSlider->setValue(value);
-    }
-}
-
-void SysTray::handleBacklightSlider(int value)
-{
-    qDebug() << "BACKLIGHT SLIDER CHANGED" << value;
-    if (Backlight::getCurrentBrightness(backlightDevice) != value) {
-        //if (hasBacklight) { Common::adjustBacklight(backlightDevice, value); }
-        /*else {*/ man->SetDisplayBacklight(backlightDevice, value); //}
-    }
-}
-
-void SysTray::handlePStateMinSlider(int value)
-{
-    man->SetPStateMin(value);
-    if (pstateMinSlider) {
-        pstateMinSlider->blockSignals(true);
-        pstateMinSlider->setValue(Cpu::getPStateMin());
-        pstateMinSlider->blockSignals(false);
-    }
-    getCpuFreq();
-}
-
-void SysTray::handlePStateMaxSlider(int value)
-{
-    man->SetPStateMax(value);
-    if (pstateMaxSlider) {
-        pstateMaxSlider->blockSignals(true);
-        pstateMaxSlider->setValue(Cpu::getPStateMax());
-        pstateMaxSlider->blockSignals(false);
-    }
-    getCpuFreq();
-}
-
-void SysTray::getInhibitors()
-{
-    qDebug() << "GET INHIBITORS" << man->GetInhibitors();
-
-    inhibitorsMenu->setEnabled(man->GetInhibitors().size()>0);
-    if (inhibitorsMenu->actions().size()>0) {
-        inhibitorsMenu->clear();
-    }
-
-    QMapIterator<quint32, QString> i(man->GetInhibitors());
-    while (i.hasNext()) {
-        i.next();
-        inhibitorsGroup->actions();
-        bool hasAction = false;
-        for (int y=0;y<inhibitorsGroup->actions().size();++y) {
-            QAction *action = inhibitorsGroup->actions().at(y);
-            if (!action) { continue; }
-            if (action->data().toFloat() == i.key()) {
-                qDebug() << "FOUND INHIBITOR!" << i.key() << i.value();
-                hasAction = true;
-                continue;
-            }
-        }
-        if (hasAction) { continue; }
-        qDebug() << "ADD INHIBIT ACT" << i.key() << i.value();
-        QAction *action = new QAction(inhibitorsGroup);
-        action->setText(i.value());
-        action->setData(i.key());
-        action->setIcon(QIcon::fromTheme(DEFAULT_APP_ICON));
-        inhibitorsGroup->addAction(action);
-    }
-    for (int y=0;y<inhibitorsGroup->actions().size();++y) {
-        QAction *action = inhibitorsGroup->actions().at(y);
-        if (!action) { continue; }
-        if (!man->GetInhibitors().contains(action->data().toFloat())) {
-            qDebug() << "REMOVE ACTION, INHIBIT IS GONE";// << i.key() << i.value();
-            //inhibitorsGroup->removeAction(action);
-            action->deleteLater();
-        }
-    }
-
-    if (inhibitorsMenu->isEnabled()) {
-        inhibitorsMenu->addActions(inhibitorsGroup->actions());
-    }
-
-    //updateMenu();
-}
-
 void SysTray::openSettings()
 {
     QProcess proc;
@@ -1302,54 +958,18 @@ void SysTray::openSettings()
                        QStringList() << "--config");
 }
 
-void SysTray::getCpuFreq()
-{
-    QStringList freqs = Cpu::getFrequencies();
-    int currentCpuFreq = 0;
-    double currentFancyFreq = 0.;
-    for (int i=0; i < freqs.size(); ++i) {
-        auto freq = freqs.at(i).toLong();
-        if (freq > currentCpuFreq) {
-            currentCpuFreq = freq;
-            currentFancyFreq = freqs.at(i).toDouble();
-        }
-    }
-
-    QString temp;
-    if (Cpu::hasCoreTemp()) {
-        double coretemp = Cpu::getCoreTemp().first;
-        if (coretemp>0) {
-            temp = QString(" (%1&#8451;)")
-                   .arg(QString::number(coretemp/1000, 'f', 0));
-        }
-    }
-
-    int freqMin = Cpu::getMinFrequency();
-    int freqMax = Cpu::getMaxFrequency();
-    int progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
-
-    if (cpuFreqLabel) {
-        cpuFreqLabel->setPixmap(Theme::drawCircleProgress(progress,
-                                                          64,
-                                                          4,
-                                                          4,
-                                                          true,
-                                                          QString("%1\nGhz").arg(QString::number(currentFancyFreq/1000000, 'f', 2))));
-    }
-}
-
 // catch wheel events
 bool TrayIcon::event(QEvent *e)
 {
     if (e->type() == QEvent::Wheel) {
         QWheelEvent *w = (QWheelEvent*)e;
-        if (w->orientation() == Qt::Vertical) {
-            wheel_delta += w->delta();
-            if (abs(wheel_delta)>=120) {
-                emit wheel(wheel_delta>0?TrayIcon::WheelUp:TrayIcon::WheelDown);
+        //if (w->orientation() == Qt::Vertical) {
+            wheel_delta += w->angleDelta().y();
+            if (abs(wheel_delta) >= 120) {
+                emit wheel(wheel_delta > 0 ? TrayIcon::WheelUp : TrayIcon::WheelDown);
                 wheel_delta = 0;
             }
-        }
+        //}
         return true;
     }
     return QSystemTrayIcon::event(e);
