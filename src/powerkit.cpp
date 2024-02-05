@@ -8,7 +8,7 @@
 
 #include <QApplication>
 
-#include "powerkit_systray.h"
+#include "powerkit_app.h"
 #include "powerkit_dialog.h"
 #include "powerkit_common.h"
 
@@ -35,6 +35,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SysTray powerkit(a.parent());
+    PowerKit::App powerkit(a.parent());
     return a.exec();
 }

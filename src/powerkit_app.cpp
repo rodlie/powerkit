@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "powerkit_systray.h"
+#include "powerkit_app.h"
 #include "powerkit_common.h"
 #include "powerkit_theme.h"
 #include "powerkit_notify.h"
@@ -27,7 +27,7 @@
 
 using namespace PowerKit;
 
-SysTray::SysTray(QObject *parent)
+App::App(QObject *parent)
     : QObject(parent)
     , tray(nullptr)
     , man(nullptr)
@@ -209,19 +209,19 @@ SysTray::SysTray(QObject *parent)
             SLOT(handleConfChanged(QString)));
 }
 
-SysTray::~SysTray()
+App::~App()
 {
 }
 
 // what to do when user clicks systray
-void SysTray::trayActivated(QSystemTrayIcon::ActivationReason reason)
+void App::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
 
     openSettings();
 }
 
-void SysTray::checkDevices()
+void App::checkDevices()
 {
     // show/hide tray
     if (tray->isSystemTrayAvailable() &&
@@ -273,7 +273,7 @@ void SysTray::checkDevices()
 }
 
 // what to do when user close lid
-void SysTray::handleClosedLid()
+void App::handleClosedLid()
 {
     qDebug() << "lid closed";
     lidWasClosed = true;
@@ -314,7 +314,7 @@ void SysTray::handleClosedLid()
 }
 
 // what to do when user open lid
-void SysTray::handleOpenedLid()
+void App::handleOpenedLid()
 {
     qDebug() << "lid is now open";
     lidWasClosed = false;
@@ -324,7 +324,7 @@ void SysTray::handleOpenedLid()
 }
 
 // do something when switched to battery power
-void SysTray::handleOnBattery()
+void App::handleOnBattery()
 {
     if (notifyOnBattery) {
         showMessage(tr("On Battery"),
@@ -350,7 +350,7 @@ void SysTray::handleOnBattery()
 }
 
 // do something when switched to ac power
-void SysTray::handleOnAC()
+void App::handleOnAC()
 {
     if (notifyOnAC) {
         showMessage(tr("On AC"),
@@ -379,7 +379,7 @@ void SysTray::handleOnAC()
 }
 
 // load default settings
-void SysTray::loadSettings()
+void App::loadSettings()
 {
     qDebug() << "(re)load settings...";
 
@@ -494,7 +494,7 @@ void SysTray::loadSettings()
 }
 
 // register session services
-void SysTray::registerService()
+void App::registerService()
 {
     if (hasService) { return; }
     if (!QDBusConnection::sessionBus().isConnected()) {
@@ -573,12 +573,12 @@ void SysTray::registerService()
 }
 
 // dbus session inhibit status handler
-void SysTray::handleHasInhibitChanged(bool has_inhibit)
+void App::handleHasInhibitChanged(bool has_inhibit)
 {
     if (has_inhibit) { resetTimer(); }
 }
 
-void SysTray::handleLow(double left)
+void App::handleLow(double left)
 {
     if (!warnOnLowBattery) { return; }
     double batteryLow = (double)(lowBatteryValue+critBatteryValue);
@@ -594,7 +594,7 @@ void SysTray::handleLow(double left)
     }
 }
 
-void SysTray::handleVeryLow(double left)
+void App::handleVeryLow(double left)
 {
     if (!warnOnVeryLowBattery) { return; }
     double batteryVeryLow = (double)(critBatteryValue+1);
@@ -611,7 +611,7 @@ void SysTray::handleVeryLow(double left)
 }
 
 // handle critical battery
-void SysTray::handleCritical(double left)
+void App::handleCritical(double left)
 {
     if (left<=0 ||
         left>(double)critBatteryValue ||
@@ -632,7 +632,7 @@ void SysTray::handleCritical(double left)
 }
 
 // draw battery tray icon
-void SysTray::drawBattery(double left)
+void App::drawBattery(double left)
 {
     if (!showTray &&
         tray->isVisible()) {
@@ -673,7 +673,7 @@ void SysTray::drawBattery(double left)
 
 // timeout, check if idle
 // timeouts and xss must be >= user value and service has to be empty before suspend
-void SysTray::timeout()
+void App::timeout()
 {
     if (!showTray &&
         tray->isVisible()) { tray->hide(); }
@@ -724,13 +724,13 @@ void SysTray::timeout()
 }
 
 // reset the idle timer
-void SysTray::resetTimer()
+void App::resetTimer()
 {
     timeouts = 0;
 }
 
 // set "internal" monitor
-void SysTray::setInternalMonitor()
+void App::setInternalMonitor()
 {
     internalMonitor = ss->GetInternalDisplay();
     qDebug() << "internal monitor set to" << internalMonitor;
@@ -738,7 +738,7 @@ void SysTray::setInternalMonitor()
 }
 
 // is "internal" monitor connected?
-bool SysTray::internalMonitorIsConnected()
+bool App::internalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(ss->GetDisplays());
     while (i.hasNext()) {
@@ -752,7 +752,7 @@ bool SysTray::internalMonitorIsConnected()
 }
 
 // is "external" monitor(s) connected?
-bool SysTray::externalMonitorIsConnected()
+bool App::externalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(ss->GetDisplays());
     while (i.hasNext()) {
@@ -767,9 +767,9 @@ bool SysTray::externalMonitorIsConnected()
 }
 
 // handle new inhibits
-void SysTray::handleNewInhibitScreenSaver(const QString &application,
-                                          const QString &reason,
-                                          quint32 cookie)
+void App::handleNewInhibitScreenSaver(const QString &application,
+                                      const QString &reason,
+                                      quint32 cookie)
 {
     Q_UNUSED(cookie)
     if (notifyNewInhibitor) {
@@ -780,9 +780,9 @@ void SysTray::handleNewInhibitScreenSaver(const QString &application,
     checkDevices();
 }
 
-void SysTray::handleNewInhibitPowerManagement(const QString &application,
-                                              const QString &reason,
-                                              quint32 cookie)
+void App::handleNewInhibitPowerManagement(const QString &application,
+                                          const QString &reason,
+                                          quint32 cookie)
 {
     Q_UNUSED(cookie)
     if (notifyNewInhibitor) {
@@ -793,41 +793,41 @@ void SysTray::handleNewInhibitPowerManagement(const QString &application,
     checkDevices();
 }
 
-void SysTray::handleDelInhibitScreenSaver(quint32 cookie)
+void App::handleDelInhibitScreenSaver(quint32 cookie)
 {
     qDebug() << "SS INHIBITOR REMOVED" << cookie;
     checkDevices();
 }
 
-void SysTray::handleDelInhibitPowerManagement(quint32 cookie)
+void App::handleDelInhibitPowerManagement(quint32 cookie)
 {
     qDebug() << "PM INHIBITOR REMOVED" << cookie;
     checkDevices();
 }
 
 // show notifications
-void SysTray::showMessage(const QString &title,
-                          const QString &msg,
-                          bool critical)
+void App::showMessage(const QString &title,
+                      const QString &msg,
+                      bool critical)
 {
-    if (showNotifications) {
-        SystemNotification notifier;
-        if (notifier.valid) {
-            notifier.sendMessage(title, msg, critical);
-        } else if (tray->isVisible()) {
-            if (critical) {
-                tray->showMessage(title, msg,
-                        QSystemTrayIcon::Critical,
-                        900000);
-            } else {
-                tray->showMessage(title, msg);
-            }
+    if (!showNotifications) { return; }
+    SystemNotification notifier;
+    if (notifier.valid) {
+        notifier.sendMessage(title, msg, critical);
+    } else if (tray->isVisible()) {
+        if (critical) {
+            tray->showMessage(title,
+                              msg,
+                              QSystemTrayIcon::Critical,
+                              900000);
+        } else {
+            tray->showMessage(title, msg);
         }
     }
 }
 
 // reload settings if conf changed
-void SysTray::handleConfChanged(const QString &file)
+void App::handleConfChanged(const QString &file)
 {
     Q_UNUSED(file)
     qDebug() << "CONFIG CHANGED" << file;
@@ -835,7 +835,7 @@ void SysTray::handleConfChanged(const QString &file)
 }
 
 // disable hibernate if enabled
-void SysTray::disableHibernate()
+void App::disableHibernate()
 {
     if (criticalAction == criticalHibernate) {
         qWarning() << "reset critical action to shutdown";
@@ -870,7 +870,7 @@ void SysTray::disableHibernate()
 }
 
 // disable suspend if enabled
-void SysTray::disableSuspend()
+void App::disableSuspend()
 {
     if (lidActionBattery == lidSleep) {
         qWarning() << "reset lid battery action to lock";
@@ -899,7 +899,7 @@ void SysTray::disableSuspend()
 }
 
 // prepare for suspend
-void SysTray::handlePrepareForSuspend()
+void App::handlePrepareForSuspend()
 {
     /*qDebug() << "prepare for suspend";
     resetTimer();
@@ -908,7 +908,7 @@ void SysTray::handlePrepareForSuspend()
 }
 
 // prepare for resume
-void SysTray::handlePrepareForResume()
+void App::handlePrepareForResume()
 {
     qDebug() << "prepare for resume ...";
     resetTimer();
@@ -917,7 +917,7 @@ void SysTray::handlePrepareForResume()
 }
 
 // turn off/on monitor using xrandr
-void SysTray::switchInternalMonitor(bool toggle)
+void App::switchInternalMonitor(bool toggle)
 {
     if (!lidXrandr) { return; }
     qDebug() << "using xrandr to turn on/off internal monitor" << toggle;
@@ -927,7 +927,7 @@ void SysTray::switchInternalMonitor(bool toggle)
 }
 
 // adjust backlight on wheel event (on systray)
-void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
+void App::handleTrayWheel(TrayIcon::WheelAction action)
 {
     if (!backlightMouseWheel) { return; }
     switch (action) {
@@ -944,14 +944,14 @@ void SysTray::handleTrayWheel(TrayIcon::WheelAction action)
 }
 
 // check devices if changed
-void SysTray::handleDeviceChanged(const QString &path)
+void App::handleDeviceChanged(const QString &path)
 {
     Q_UNUSED(path)
     qDebug() << "DEVICE CHANGED" << path;
     checkDevices();
 }
 
-void SysTray::openSettings()
+void App::openSettings()
 {
     QProcess proc;
     proc.startDetached(qApp->applicationFilePath(),
