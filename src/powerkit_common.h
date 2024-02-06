@@ -114,6 +114,7 @@ namespace PowerKit
 #define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
 #define DBUS_DEVICE "Device"
 #define DBUS_CHANGED "Changed"
+#define DBUS_PROPERTIES_CHANGED "PropertiesChanged"
 
 // config keys
 #define CONF_DIALOG_GEOMETRY "dialog_geometry"

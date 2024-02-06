@@ -265,7 +265,8 @@ void Manager::setup()
                        DBUS_DEVICE_REMOVED,
                        this,
                        SLOT(deviceRemoved(QString)));
-        system.connect(UPOWER_SERVICE,
+        // not used anymore?
+        /*system.connect(UPOWER_SERVICE,
                        UPOWER_PATH,
                        UPOWER_SERVICE,
                        DBUS_CHANGED,
@@ -276,7 +277,13 @@ void Manager::setup()
                        UPOWER_SERVICE,
                        DBUS_DEVICE_CHANGED,
                        this,
-                       SLOT(deviceChanged()));
+                       SLOT(deviceChanged()));*/
+        system.connect(UPOWER_SERVICE,
+                       UPOWER_PATH,
+                       DBUS_PROPERTIES,
+                       DBUS_PROPERTIES_CHANGED,
+                       this,
+                       SLOT(propertiesChanged()));
         system.connect(UPOWER_SERVICE,
                        UPOWER_PATH,
                        UPOWER_SERVICE,
@@ -289,13 +296,6 @@ void Manager::setup()
                        UPOWER_NOTIFY_SLEEP,
                        this,
                        SLOT(handleSuspend()));
-        // DONT WORK ANYMORE! WHY?
-        /*system.connect(LOGIND_SERVICE,
-                       LOGIND_PATH,
-                       LOGIND_MANAGER,
-                       PK_PREPARE_FOR_SUSPEND,
-                       this,
-                       SLOT(handlePrepareForSuspend(bool)));*/
         if (upower == NULL) {
             upower = new QDBusInterface(UPOWER_SERVICE,
                                         UPOWER_PATH,
@@ -327,6 +327,7 @@ void Manager::setup()
                     SLOT(handlePrepareForSuspend(bool)));
         }
         if (!suspendLock) { registerSuspendLock(); }
+        if (!lidLock) { registerLidLock(); }
         scan();
     } else { qWarning() << "Failed to connect to system bus"; }
 }
@@ -338,6 +339,7 @@ void Manager::check()
         return;
     }
     if (!suspendLock) { registerSuspendLock(); }
+    if (!lidLock) { registerLidLock(); }
     if (!upower->isValid()) { scan(); }
 }
 
@@ -393,31 +395,48 @@ void Manager::deviceRemoved(const QString &path)
 
 void Manager::deviceChanged()
 {
-    if (wasLidClosed != LidIsClosed()) {
-        if (!wasLidClosed && LidIsClosed()) {
+    qDebug() << "a device changed, tell the world!";
+    emit UpdatedDevices();
+}
+
+void Manager::propertiesChanged()
+{
+    bool isLidClosed = LidIsClosed();
+    bool isOnBattery = OnBattery();
+
+    qDebug() << "properties changed:"
+             << "lid closed?" << wasLidClosed << isLidClosed
+             << "on battery?" << wasOnBattery << isOnBattery;
+
+    if (wasLidClosed != isLidClosed) {
+        if (!wasLidClosed && isLidClosed) {
+            qDebug() << "lid changed status to closed";
             emit LidClosed();
-        } else if (wasLidClosed && !LidIsClosed()) {
+        } else if (wasLidClosed && !isLidClosed) {
+            qDebug() << "lid changed status to open";
             emit LidOpened();
         }
     }
-    wasLidClosed = LidIsClosed();
+    wasLidClosed = isLidClosed;
 
-    if (wasOnBattery != OnBattery()) {
-        if (!wasOnBattery && OnBattery()) {
+    if (wasOnBattery != isOnBattery) {
+        if (!wasOnBattery && isOnBattery) {
+            qDebug() << "switched to battery power";
             emit SwitchedToBattery();
-        } else if (wasOnBattery && !OnBattery()) {
+        } else if (wasOnBattery && !isOnBattery) {
+            qDebug() << "switched to ac power";
             emit SwitchedToAC();
         }
     }
     wasOnBattery = OnBattery();
 
-    emit UpdatedDevices();
+    deviceChanged();
 }
 
 void Manager::handleDeviceChanged(const QString &device)
 {
+    Q_UNUSED(device)
     qDebug() << "device changed" << device;
-    if (device.isEmpty()) { return; }
     deviceChanged();
 }
 
@@ -525,6 +544,28 @@ bool Manager::registerSuspendLock()
     }
     if (reply.isValid()) {
         suspendLock.reset(new QDBusUnixFileDescriptor(reply.value()));
+        return true;
+    } else {
+        qWarning() << reply.error();
+    }
+    return false;
+}
+
+bool Manager::registerLidLock()
+{
+    if (lidLock) { return false; }
+    qDebug() << "register lid lock";
+    QDBusReply<QDBusUnixFileDescriptor> reply;
+    if (HasLogind() && logind && logind->isValid()) {
+        reply = logind->call("Inhibit",
+                             "handle-lid-switch",
+                             "powerkit",
+                             "Custom lid handler",
+                             "block");
+    }
+    if (reply.isValid()) {
+        lidLock.reset(new QDBusUnixFileDescriptor(reply.value()));
+        qDebug() << "lidLock" << lidLock->fileDescriptor();
         return true;
     } else {
         qWarning() << reply.error();
@@ -859,6 +900,12 @@ void Manager::ReleaseSuspendLock()
 {
     qDebug() << "release suspend lock";
     suspendLock.reset(nullptr);
+}
+
+void Manager::ReleaseLidLock()
+{
+    qDebug() << "release lid lock";
+    lidLock.reset(nullptr);
 }
 
 void Manager::SetSuspendWakeAlarmOnBattery(int value)

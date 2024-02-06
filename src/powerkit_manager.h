@@ -77,6 +77,7 @@ namespace PowerKit
         QDateTime wakeAlarmDate;
 
         QScopedPointer<QDBusUnixFileDescriptor> suspendLock;
+        QScopedPointer<QDBusUnixFileDescriptor> lidLock;
 
         int suspendWakeupBattery;
         int suspendWakeupAC;
@@ -113,6 +114,7 @@ namespace PowerKit
         void deviceRemoved(const QDBusObjectPath &obj);
         void deviceRemoved(const QString &path);
         void deviceChanged();
+        void propertiesChanged();
         void handleDeviceChanged(const QString &device);
         void handleResume();
         void handleSuspend();
@@ -128,6 +130,8 @@ namespace PowerKit
         void handleDelInhibitPowerManagement(quint32 cookie);
 
         bool registerSuspendLock();
+        bool registerLidLock();
+
         void SetWakeAlarmFromSettings();
 
     public slots:
@@ -168,6 +172,7 @@ namespace PowerKit
         QMap<quint32, QString> GetInhibitors();
         const QDateTime GetWakeAlarm();
         void ReleaseSuspendLock();
+        void ReleaseLidLock();
         void SetSuspendWakeAlarmOnBattery(int value);
         void SetSuspendWakeAlarmOnAC(int value);
         bool SetDisplayBacklight(QString const &device, int value);
