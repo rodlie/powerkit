@@ -94,74 +94,22 @@ QMap<QString, Device *> Manager::getDevices()
     return devices;
 }
 
-bool Manager::availableService(const QString &service,
-                          const QString &path,
-                          const QString &interface)
+bool Manager::canLogind(const QString &method)
 {
-    QDBusInterface iface(service,
-                         path,
-                         interface,
-                         QDBusConnection::systemBus());
-    if (iface.isValid()) { return true; }
-    return false;
-}
-
-bool Manager::availableAction(const Manager::PKMethod &method,
-                               const Manager::PKBackend &backend)
-{
-    QString service, path, interface, cmd;
-    switch (backend) {
-    case PKLogind:
-        service = LOGIND_SERVICE;
-        path = LOGIND_PATH;
-        interface = LOGIND_MANAGER;
-        break;
-    case PKUPower:
-        service = UPOWER_SERVICE;
-        path = UPOWER_PATH;
-        interface = UPOWER_MANAGER;
-        break;
-    default:
-        return false;
-    }
-    switch (method) {
-    case PKCanRestart:
-        cmd = PK_CAN_RESTART;
-        break;
-    case PKCanPowerOff:
-        cmd = PK_CAN_POWEROFF;
-        break;
-    case PKCanSuspend:
-        cmd = PK_CAN_SUSPEND;
-        break;
-    case PKCanHibernate:
-        cmd = PK_CAN_HIBERNATE;
-        break;
-    case PKCanHybridSleep:
-        cmd = PK_CAN_HYBRIDSLEEP;
-        break;
-    case PKSuspendAllowed:
-        cmd = PK_SUSPEND_ALLOWED;
-        break;
-    case PKHibernateAllowed:
-        cmd = PK_HIBERNATE_ALLOWED;
-        break;
-    default:
-        return false;
-    }
-    QDBusInterface iface(service, path, interface,
-                         QDBusConnection::systemBus());
-    if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call(cmd);
+    if (!logind->isValid() || method.isEmpty()) { return false; }
+    QDBusMessage reply = logind->call(method);
     const auto args = reply.arguments();
     if (args.first().toString() == DBUS_OK_REPLY) { return true; }
     bool result = args.first().toBool();
-    if (!reply.errorMessage().isEmpty()) { result = false; }
+    if (!reply.errorMessage().isEmpty()) {
+        result = false;
+        emit Warning(reply.errorMessage());
+    }
     return result;
 }
 
 QString Manager::executeAction(const Manager::PKAction &action,
-                                const Manager::PKBackend &backend)
+                               const Manager::PKBackend &backend)
 {
     QString service, path, interface, cmd;
     switch (backend) {
@@ -217,7 +165,7 @@ QStringList Manager::find()
                                                        "Introspect");
     QDBusPendingReply<QString> reply = QDBusConnection::systemBus().call(call);
     if (reply.isError()) {
-        qWarning() << "powerkit find devices failed, check the upower service!!!";
+        emit Warning(tr("Find devices failed, check the upower service!"));
         return result;
     }
     QList<QDBusObjectPath> objects;
@@ -240,112 +188,87 @@ QStringList Manager::find()
 void Manager::setup()
 {
     QDBusConnection system = QDBusConnection::systemBus();
-    if (system.isConnected()) {
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       DBUS_DEVICE_ADDED,
-                       this,
-                       SLOT(deviceAdded(QDBusObjectPath)));
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       DBUS_DEVICE_ADDED,
-                       this,
-                       SLOT(deviceAdded(QString)));
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       DBUS_DEVICE_REMOVED,
-                       this,
-                       SLOT(deviceRemoved(QDBusObjectPath)));
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       DBUS_DEVICE_REMOVED,
-                       this,
-                       SLOT(deviceRemoved(QString)));
-        // not used anymore?
-        /*system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       DBUS_CHANGED,
-                       this,
-                       SLOT(deviceChanged()));
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       DBUS_DEVICE_CHANGED,
-                       this,
-                       SLOT(deviceChanged()));*/
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       DBUS_PROPERTIES,
-                       DBUS_PROPERTIES_CHANGED,
-                       this,
-                       SLOT(propertiesChanged()));
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       UPOWER_NOTIFY_RESUME,
-                       this,
-                       SLOT(handleResume()));
-        system.connect(UPOWER_SERVICE,
-                       UPOWER_PATH,
-                       UPOWER_SERVICE,
-                       UPOWER_NOTIFY_SLEEP,
-                       this,
-                       SLOT(handleSuspend()));
-        if (upower == NULL) {
-            upower = new QDBusInterface(UPOWER_SERVICE,
-                                        UPOWER_PATH,
-                                        UPOWER_MANAGER,
-                                        system,
-                                        this);
-            qDebug() << "upower" << upower->isValid();
-        }
-        if (logind == NULL) {
-            logind = new QDBusInterface(LOGIND_SERVICE,
-                                        LOGIND_PATH,
-                                        LOGIND_MANAGER,
-                                        system,
-                                        this);
-            qDebug() << "logind" << logind->isValid();
-        }
-        if (pmd == NULL) {
-            pmd = new QDBusInterface(PMD_SERVICE,
-                                     PMD_PATH,
-                                     PMD_MANAGER,
-                                     system,
-                                     this);
-            qDebug() << "powerkitd" << pmd->isValid();
-        }
-        if (logind->isValid()) {
-            connect(logind,
-                    SIGNAL(PrepareForSleep(bool)),
-                    this,
-                    SLOT(handlePrepareForSuspend(bool)));
-            emit Error(tr("Failed to connect to logind"));
-        }
-        if (!suspendLock) { registerSuspendLock(); }
-        if (!lidLock) { registerLidLock(); }
-        scan();
-    } else {
+    if (!system.isConnected()) {
         emit Error(tr("Failed to connect to the system bus"));
+        return;
     }
+
+    system.connect(UPOWER_SERVICE,
+                   UPOWER_PATH,
+                   UPOWER_SERVICE,
+                   DBUS_DEVICE_ADDED,
+                   this,
+                   SLOT(deviceAdded(QDBusObjectPath)));
+    system.connect(UPOWER_SERVICE,
+                   UPOWER_PATH,
+                   UPOWER_SERVICE,
+                   DBUS_DEVICE_ADDED,
+                   this,
+                   SLOT(deviceAdded(QString)));
+    system.connect(UPOWER_SERVICE,
+                   UPOWER_PATH,
+                   UPOWER_SERVICE,
+                   DBUS_DEVICE_REMOVED,
+                   this,
+                   SLOT(deviceRemoved(QDBusObjectPath)));
+    system.connect(UPOWER_SERVICE,
+                   UPOWER_PATH,
+                   UPOWER_SERVICE,
+                   DBUS_DEVICE_REMOVED,
+                   this,
+                   SLOT(deviceRemoved(QString)));
+    system.connect(UPOWER_SERVICE,
+                   UPOWER_PATH,
+                   DBUS_PROPERTIES,
+                   DBUS_PROPERTIES_CHANGED,
+                   this,
+                   SLOT(propertiesChanged()));
+
+    upower = new QDBusInterface(UPOWER_SERVICE,
+                                UPOWER_PATH,
+                                UPOWER_MANAGER,
+                                system,
+                                this);
+    logind = new QDBusInterface(LOGIND_SERVICE,
+                                LOGIND_PATH,
+                                LOGIND_MANAGER,
+                                system,
+                                this);
+    pmd = new QDBusInterface(PMD_SERVICE,
+                             PMD_PATH,
+                             PMD_MANAGER,
+                             system,
+                             this);
+
+    if (!upower->isValid()) {
+        emit Error(tr("Failed to connect to upower"));
+        return;
+    }
+    if (!logind->isValid()) {
+        emit Error(tr("Failed to connect to logind"));
+        return;
+    }
+    if (!pmd->isValid()) { emit Warning(tr("Failed to connect to powerkitd")); }
+
+    wasDocked = IsDocked();
+    wasLidClosed = LidIsClosed();
+    wasOnBattery = OnBattery();
+
+    connect(logind,
+            SIGNAL(PrepareForSleep(bool)),
+            this,
+            SLOT(handlePrepareForSuspend(bool)));
+
+    if (!suspendLock) { registerSuspendLock(); }
+    if (!lidLock) { registerLidLock(); }
+
+    scan();
 }
 
 void Manager::check()
 {
-    if (!QDBusConnection::systemBus().isConnected() ||
-        !upower ||
-        !logind) {
-        setup();
-        return;
-    }
     if (!suspendLock) { registerSuspendLock(); }
     if (!lidLock) { registerLidLock(); }
-    if (!upower->isValid()) { scan(); }
 }
 
 void Manager::scan()
@@ -444,25 +367,11 @@ void Manager::handleDeviceChanged(const QString &device)
     deviceChanged();
 }
 
-void Manager::handleResume()
-{
-    if (HasLogind()) { return; }
-    qDebug() << "handle resume from upower";
-    handlePrepareForSuspend(false);
-}
-
-void Manager::handleSuspend()
-{
-    if (HasLogind()) { return; }
-    qDebug() << "handle suspend from upower";
-    handlePrepareForSuspend(true);
-}
-
 void Manager::handlePrepareForSuspend(bool prepare)
 {
-    qDebug() << "handle prepare for suspend/resume from logind" << prepare;
+    qDebug() << "handle prepare for suspend/resume" << prepare;
     if (prepare) {
-        qDebug() << "ZZZ...";
+        qDebug() << "ZZZ";
         LockScreen();
         emit PrepareForSuspend();
         QTimer::singleShot(500, this, SLOT(ReleaseSuspendLock()));
@@ -542,7 +451,7 @@ bool Manager::registerSuspendLock()
     if (suspendLock) { return false; }
     qDebug() << "register suspend lock";
     QDBusReply<QDBusUnixFileDescriptor> reply;
-    if (HasLogind() && logind && logind->isValid()) {
+    if (logind->isValid()) {
         reply = logind->call("Inhibit",
                              "sleep",
                              "powerkit",
@@ -563,7 +472,7 @@ bool Manager::registerLidLock()
     if (lidLock) { return false; }
     qDebug() << "register lid lock";
     QDBusReply<QDBusUnixFileDescriptor> reply;
-    if (HasLogind() && logind && logind->isValid()) {
+    if (logind->isValid()) {
         reply = logind->call("Inhibit",
                              "handle-lid-switch",
                              "powerkit",
@@ -572,7 +481,6 @@ bool Manager::registerLidLock()
     }
     if (reply.isValid()) {
         lidLock.reset(new QDBusUnixFileDescriptor(reply.value()));
-        qDebug() << "lidLock" << lidLock->fileDescriptor();
         return true;
     } else {
         emit Warning(tr("Failed to set lid lock: %1").arg(reply.error().message()));
@@ -591,27 +499,6 @@ void Manager::SetWakeAlarmFromSettings()
     }
 }
 
-bool Manager::HasLogind()
-{
-    return availableService(LOGIND_SERVICE,
-                            LOGIND_PATH,
-                            LOGIND_MANAGER);
-}
-
-bool Manager::HasUPower()
-{
-    return availableService(UPOWER_SERVICE,
-                            UPOWER_PATH,
-                            UPOWER_MANAGER);
-}
-
-bool Manager::HasPowerKitd()
-{
-    return availableService(PMD_SERVICE,
-                            PMD_PATH,
-                            PMD_MANAGER);
-}
-
 bool Manager::HasWakeAlarm()
 {
     return wakeAlarm;
@@ -624,52 +511,38 @@ bool Manager::HasSuspendLock()
 
 bool Manager::CanRestart()
 {
-    if (HasLogind()) {
-        return availableAction(PKCanRestart, PKLogind);
-    }
+    if (logind->isValid()) { return canLogind(PK_CAN_RESTART); }
     return false;
 }
 
 bool Manager::CanPowerOff()
 {
-    if (HasLogind()) {
-        return availableAction(PKCanPowerOff, PKLogind);
-    }
+    if (logind->isValid()) { return canLogind(PK_CAN_POWEROFF); }
     return false;
 }
 
 bool Manager::CanSuspend()
 {
-    if (HasLogind()) {
-        return availableAction(PKCanSuspend, PKLogind);
-    } else if (HasUPower()) {
-        return availableAction(PKSuspendAllowed, PKUPower);
-    }
+    if (logind->isValid()) { return canLogind(PK_CAN_SUSPEND); }
     return false;
 }
 
 bool Manager::CanHibernate()
 {
-    if (HasLogind()) {
-        return availableAction(PKCanHibernate, PKLogind);
-    } else if (HasUPower()) {
-        return availableAction(PKHibernateAllowed, PKUPower);
-    }
+    if (logind->isValid()) { return canLogind(PK_CAN_HIBERNATE); }
     return false;
 }
 
 bool Manager::CanHybridSleep()
 {
-    if (HasLogind()) {
-        return availableAction(PKCanHybridSleep, PKLogind);
-    }
+    if (logind->isValid()) { return canLogind(PK_CAN_HYBRIDSLEEP); }
     return false;
 }
 
 const QString Manager::Restart()
 {
     qDebug() << "try to restart";
-    if (HasLogind()) {
+    if (logind->isValid()) {
         return executeAction(PKRestartAction, PKLogind);
     }
     return QObject::tr(PK_NO_BACKEND);
@@ -678,7 +551,7 @@ const QString Manager::Restart()
 const QString Manager::PowerOff()
 {
     qDebug() << "try to poweroff";
-    if (HasLogind()) {
+    if (logind->isValid()) {
         return executeAction(PKPowerOffAction, PKLogind);
     }
     return QObject::tr(PK_NO_BACKEND);
@@ -687,10 +560,10 @@ const QString Manager::PowerOff()
 const QString Manager::Suspend()
 {
     qDebug() << "try to suspend";
-    if (HasLogind()) {
+    if (logind->isValid()) {
         SetWakeAlarmFromSettings();
         return executeAction(PKSuspendAction, PKLogind);
-    } else if (HasUPower()) {
+    } else if (upower->isValid()) {
         LockScreen();
         return executeAction(PKSuspendAction, PKUPower);
     }
@@ -700,9 +573,9 @@ const QString Manager::Suspend()
 const QString Manager::Hibernate()
 {
     qDebug() << "try to hibernate";
-    if (HasLogind()) {
+    if (logind->isValid()) {
         return executeAction(PKHibernateAction, PKLogind);
-    } else if (HasUPower()) {
+    } else if (upower->isValid()) {
         LockScreen();
         return executeAction(PKHibernateAction, PKUPower);
     }
@@ -712,7 +585,7 @@ const QString Manager::Hibernate()
 const QString Manager::HybridSleep()
 {
     qDebug() << "try to hybridsleep";
-    if (HasLogind()) {
+    if (logind->isValid()) {
         return executeAction(PKHybridSleepAction, PKLogind);
     }
     return QObject::tr(PK_NO_BACKEND);
@@ -721,8 +594,9 @@ const QString Manager::HybridSleep()
 bool Manager::SetWakeAlarm(const QDateTime &date)
 {
     qDebug() << "try to set wake alarm" << date;
-    if (pmd && date.isValid() && CanHibernate()) {
-        if (!pmd->isValid()) { return false; }
+    if (pmd->isValid() &&
+        date.isValid() &&
+        CanHibernate()) {
         QDBusMessage reply = pmd->call("SetWakeAlarm",
                                        date.toString("yyyy-MM-dd HH:mm:ss"));
         const auto args = reply.arguments();
@@ -746,7 +620,6 @@ void Manager::ClearWakeAlarm()
 bool Manager::IsDocked()
 {
     if (logind->isValid()) { return logind->property(LOGIND_DOCKED).toBool(); }
-    if (upower->isValid()) { return upower->property(UPOWER_DOCKED).toBool(); }
     return false;
 }
 

@@ -967,14 +967,14 @@ void App::openSettings()
 
 void App::handleError(const QString &message)
 {
-    qWarning() << "error" << message;
+    qWarning() << "ERROR:" << message;
     showMessage(tr("Error"), message, true);
     QTimer::singleShot(5000, qApp, SLOT(quit()));
 }
 
 void App::handleWarning(const QString &message)
 {
-    qWarning() << "warning" << message;
+    qWarning() << "WARNING:" << message;
     showMessage(tr("Warning"), message, true);
 }
 

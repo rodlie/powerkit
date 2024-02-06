@@ -98,11 +98,7 @@ namespace PowerKit
         void Warning(const QString &message);
 
     private slots:
-        bool availableService(const QString &service,
-                              const QString &path,
-                              const QString &interface);
-        bool availableAction(const PKMethod &method,
-                             const PKBackend &backend);
+        bool canLogind(const QString &method);
         QString executeAction(const PKAction &action,
                               const PKBackend &backend);
 
@@ -118,8 +114,6 @@ namespace PowerKit
         void deviceChanged();
         void propertiesChanged();
         void handleDeviceChanged(const QString &device);
-        void handleResume();
-        void handleSuspend();
         void handlePrepareForSuspend(bool prepare);
         void clearDevices();
         void handleNewInhibitScreenSaver(const QString &application,
@@ -137,9 +131,6 @@ namespace PowerKit
         void SetWakeAlarmFromSettings();
 
     public slots:
-        bool HasLogind();
-        bool HasUPower();
-        bool HasPowerKitd();
         bool HasWakeAlarm();
         bool HasSuspendLock();
 
