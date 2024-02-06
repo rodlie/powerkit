@@ -99,7 +99,11 @@ Dialog::Dialog(QWidget *parent,
 
 Dialog::~Dialog()
 {
-    Settings::setValue(CONF_DIALOG, saveGeometry());
+    const auto lastGeo = Settings::getValue(CONF_DIALOG).toByteArray();
+    const auto newGeo = saveGeometry();
+    if (lastGeo != newGeo) {
+        Settings::setValue(CONF_DIALOG, newGeo);
+    }
 }
 
 void Dialog::setupWidgets()
@@ -928,6 +932,7 @@ void Dialog::handleUpdatedDevices()
     hasBattery = Client::hasBattery(dbus);
     batteryStatusLabel->setVisible(hasBattery);
     drawBattery();
+    drawCpu();
 }
 
 // save current value and update power manager

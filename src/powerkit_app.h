@@ -131,6 +131,8 @@ namespace PowerKit
         void handleTrayWheel(TrayIcon::WheelAction action);
         void handleDeviceChanged(const QString &path);
         void openSettings();
+        void handleError(const QString &message);
+        void handleWarning(const QString &message);
     };
 }
 

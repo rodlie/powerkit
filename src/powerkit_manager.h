@@ -94,6 +94,8 @@ namespace PowerKit
         void DeviceWasRemoved(const QString &path);
         void DeviceWasAdded(const QString &path);
         void UpdatedInhibitors();
+        void Error(const QString &message);
+        void Warning(const QString &message);
 
     private slots:
         bool availableService(const QString &service,

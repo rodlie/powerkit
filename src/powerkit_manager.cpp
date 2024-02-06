@@ -325,16 +325,21 @@ void Manager::setup()
                     SIGNAL(PrepareForSleep(bool)),
                     this,
                     SLOT(handlePrepareForSuspend(bool)));
+            emit Error(tr("Failed to connect to logind"));
         }
         if (!suspendLock) { registerSuspendLock(); }
         if (!lidLock) { registerLidLock(); }
         scan();
-    } else { qWarning() << "Failed to connect to system bus"; }
+    } else {
+        emit Error(tr("Failed to connect to the system bus"));
+    }
 }
 
 void Manager::check()
 {
-    if (!QDBusConnection::systemBus().isConnected()) {
+    if (!QDBusConnection::systemBus().isConnected() ||
+        !upower ||
+        !logind) {
         setup();
         return;
     }
@@ -395,7 +400,6 @@ void Manager::deviceRemoved(const QString &path)
 
 void Manager::deviceChanged()
 {
-    qDebug() << "a device changed, tell the world!";
     emit UpdatedDevices();
 }
 
@@ -410,10 +414,10 @@ void Manager::propertiesChanged()
 
     if (wasLidClosed != isLidClosed) {
         if (!wasLidClosed && isLidClosed) {
-            qDebug() << "lid changed status to closed";
+            qDebug() << "lid changed to closed";
             emit LidClosed();
         } else if (wasLidClosed && !isLidClosed) {
-            qDebug() << "lid changed status to open";
+            qDebug() << "lid changed to open";
             emit LidOpened();
         }
     }
@@ -451,8 +455,7 @@ void Manager::handleSuspend()
 {
     if (HasLogind()) { return; }
     qDebug() << "handle suspend from upower";
-    LockScreen();
-    emit PrepareForSuspend();
+    handlePrepareForSuspend(true);
 }
 
 void Manager::handlePrepareForSuspend(bool prepare)
@@ -496,17 +499,21 @@ void Manager::clearDevices()
     devices.clear();
 }
 
-void Manager::handleNewInhibitScreenSaver(const QString &application, const QString &reason, quint32 cookie)
+void Manager::handleNewInhibitScreenSaver(const QString &application,
+                                          const QString &reason,
+                                          quint32 cookie)
 {
-    qDebug() << "PK HANDLE NEW SCREEN SAVER INHIBITOR" << application << reason << cookie;
+    qDebug() << "new screensaver cookie" << application << reason << cookie;
     Q_UNUSED(reason)
     ssInhibitors[cookie] = application;
     emit UpdatedInhibitors();
 }
 
-void Manager::handleNewInhibitPowerManagement(const QString &application, const QString &reason, quint32 cookie)
+void Manager::handleNewInhibitPowerManagement(const QString &application,
+                                              const QString &reason,
+                                              quint32 cookie)
 {
-    qDebug() << "PK HANDLE NEW POWER INHIBITOR" << application << reason << cookie;
+    qDebug() << "new power cookie" << application << reason << cookie;
     Q_UNUSED(reason)
     pmInhibitors[cookie] = application;
     emit UpdatedInhibitors();
@@ -514,7 +521,7 @@ void Manager::handleNewInhibitPowerManagement(const QString &application, const 
 
 void Manager::handleDelInhibitScreenSaver(quint32 cookie)
 {
-    qDebug() << "PK HANDLE REMOVE SCREEN SAVER COOKIE" << cookie;
+    qDebug() << "remove screensaver cookie" << cookie;
     if (ssInhibitors.contains(cookie)) {
         ssInhibitors.remove(cookie);
         emit UpdatedInhibitors();
@@ -523,7 +530,7 @@ void Manager::handleDelInhibitScreenSaver(quint32 cookie)
 
 void Manager::handleDelInhibitPowerManagement(quint32 cookie)
 {
-    qDebug() << "PK HANDLE REMOVE POWER COOKIE" << cookie;
+    qDebug() << "remove power cookie" << cookie;
     if (pmInhibitors.contains(cookie)) {
         pmInhibitors.remove(cookie);
         emit UpdatedInhibitors();
@@ -546,7 +553,7 @@ bool Manager::registerSuspendLock()
         suspendLock.reset(new QDBusUnixFileDescriptor(reply.value()));
         return true;
     } else {
-        qWarning() << reply.error();
+        emit Warning(tr("Failed to set suspend lock: %1").arg(reply.error().message()));
     }
     return false;
 }
@@ -568,7 +575,7 @@ bool Manager::registerLidLock()
         qDebug() << "lidLock" << lidLock->fileDescriptor();
         return true;
     } else {
-        qWarning() << reply.error();
+        emit Warning(tr("Failed to set lid lock: %1").arg(reply.error().message()));
     }
     return false;
 }

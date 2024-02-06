@@ -121,6 +121,14 @@ App::App(QObject *parent)
             SIGNAL(Update()),
             this,
             SLOT(loadSettings()));
+    connect(man,
+            SIGNAL(Error(QString)),
+            this,
+            SLOT(handleError(QString)));
+    connect(man,
+            SIGNAL(Warning(QString)),
+            this,
+            SLOT(handleWarning(QString)));
 
     // setup org.freedesktop.PowerManagement
     pm = new PowerManagement(this);
@@ -570,6 +578,8 @@ void App::registerService()
     qWarning() << "Enabled org.freedesktop.PowerKit" << hasDesktopPK;
 
     if (!hasDesktopPK || !hasDesktopPM || !hasScreenSaver) { hasService = false; }
+
+    if (!hasService) { handleWarning(tr("Failed to setup and/or connect required services!")); }
 }
 
 // dbus session inhibit status handler
@@ -795,13 +805,13 @@ void App::handleNewInhibitPowerManagement(const QString &application,
 
 void App::handleDelInhibitScreenSaver(quint32 cookie)
 {
-    qDebug() << "SS INHIBITOR REMOVED" << cookie;
+    Q_UNUSED(cookie)
     checkDevices();
 }
 
 void App::handleDelInhibitPowerManagement(quint32 cookie)
 {
-    qDebug() << "PM INHIBITOR REMOVED" << cookie;
+    Q_UNUSED(cookie)
     checkDevices();
 }
 
@@ -830,7 +840,6 @@ void App::showMessage(const QString &title,
 void App::handleConfChanged(const QString &file)
 {
     Q_UNUSED(file)
-    qDebug() << "CONFIG CHANGED" << file;
     loadSettings();
 }
 
@@ -876,25 +885,25 @@ void App::disableSuspend()
         qWarning() << "reset lid battery action to lock";
         lidActionBattery = lidLock;
         Settings::setValue(CONF_LID_BATTERY_ACTION,
-                                  lidActionBattery);
+                           lidActionBattery);
     }
     if (lidActionAC == lidSleep) {
         qWarning() << "reset lid ac action to lock";
         lidActionAC = lidLock;
         Settings::setValue(CONF_LID_AC_ACTION,
-                                  lidActionAC);
+                           lidActionAC);
     }
     if (autoSuspendBatteryAction == suspendSleep) {
         qWarning() << "reset auto suspend battery action to none";
         autoSuspendBatteryAction = suspendNone;
         Settings::setValue(CONF_SUSPEND_BATTERY_ACTION,
-                                  autoSuspendBatteryAction);
+                           autoSuspendBatteryAction);
     }
     if (autoSuspendACAction == suspendSleep) {
         qWarning() << "reset auto suspend ac action to none";
         autoSuspendACAction = suspendNone;
         Settings::setValue(CONF_SUSPEND_AC_ACTION,
-                                  autoSuspendACAction);
+                           autoSuspendACAction);
     }
 }
 
@@ -912,7 +921,6 @@ void App::handlePrepareForResume()
 {
     qDebug() << "prepare for resume ...";
     resetTimer();
-    tray->showMessage(QString(), QString());
     ss->SimulateUserActivity();
 }
 
@@ -920,7 +928,7 @@ void App::handlePrepareForResume()
 void App::switchInternalMonitor(bool toggle)
 {
     if (!lidXrandr) { return; }
-    qDebug() << "using xrandr to turn on/off internal monitor" << toggle;
+    qDebug() << "using xrandr to turn on/off internal monitor" << internalMonitor << toggle;
     QStringList args;
     args << "--output" << internalMonitor << (toggle ? "--auto" : "--off");
     QProcess::startDetached("xrandr", args);
@@ -953,9 +961,21 @@ void App::handleDeviceChanged(const QString &path)
 
 void App::openSettings()
 {
-    QProcess proc;
-    proc.startDetached(qApp->applicationFilePath(),
-                       QStringList() << "--config");
+    QProcess::startDetached(qApp->applicationFilePath(),
+                            QStringList() << "--config");
+}
+
+void App::handleError(const QString &message)
+{
+    qWarning() << "error" << message;
+    showMessage(tr("Error"), message, true);
+    QTimer::singleShot(5000, qApp, SLOT(quit()));
+}
+
+void App::handleWarning(const QString &message)
+{
+    qWarning() << "warning" << message;
+    showMessage(tr("Warning"), message, true);
 }
 
 // catch wheel events
