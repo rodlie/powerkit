@@ -428,7 +428,7 @@ void Manager::propertiesChanged()
             emit SwitchedToAC();
         }
     }
-    wasOnBattery = OnBattery();
+    wasOnBattery = isOnBattery;
 
     deviceChanged();
 }
