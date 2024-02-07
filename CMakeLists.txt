@@ -120,7 +120,7 @@ target_link_libraries(${PROJECT_NAME}
                       Qt${QT_VERSION_MAJOR}::Widgets)
 
 # desktop files
-configure_file(share/settings.desktop.in
+configure_file(share/${PROJECT_NAME}.desktop
                ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
                @ONLY)
 
