@@ -19,14 +19,9 @@
 #include <QDebug>
 #include <QDBusReply>
 
-#define LOGIND_SERVICE "org.freedesktop.login1"
 #define LOGIND_PATH "/org/freedesktop/login1"
-#define LOGIND_PATH_SESSION "/org/freedesktop/login1/session/self"
 #define LOGIND_MANAGER "org.freedesktop.login1.Manager"
-#define LOGIND_SESSION "org.freedesktop.login1.Session"
 #define LOGIND_DOCKED "Docked"
-#define LOGIND_BRIGHTNESS "SetBrightness"
-#define LOGIND_BACKLIGHT "backlight"
 
 #define UPOWER_PATH "/org/freedesktop/UPower"
 #define UPOWER_MANAGER "org.freedesktop.UPower"
@@ -683,28 +678,4 @@ void Manager::ReleaseLidLock()
 {
     qDebug() << "release lid lock";
     lidLock.reset(nullptr);
-}
-
-bool Manager::SetDisplayBacklight(const QString &device, int value)
-{
-    qDebug() << "PK SET DISPLAY BACKLIGHT" << device << value;
-    /*if (!pmd) { return false; }
-    if (!pmd->isValid()) { return false; }
-    QDBusMessage reply = pmd->call("SetDisplayBacklight",
-                                   device,
-                                   value);
-    const auto args = reply.arguments();
-    bool backlight = args.first().toBool() && reply.errorMessage().isEmpty();
-    qDebug() << "BACKLIGHT OK?" << backlight << reply.errorMessage();
-    return backlight;*/
-    QDBusInterface iface(LOGIND_SERVICE,
-                         LOGIND_PATH_SESSION,
-                         LOGIND_SESSION,
-                         QDBusConnection::systemBus());
-    if (!iface.isValid()) { return false; }
-    QDBusMessage reply = iface.call(LOGIND_BRIGHTNESS,
-                                    LOGIND_BACKLIGHT,
-                                    device.split("/").takeLast(),
-                                    (quint32)value);
-    return reply.errorMessage().isEmpty();
 }

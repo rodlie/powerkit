@@ -129,7 +129,6 @@ namespace PowerKit
         QMap<quint32, QString> GetInhibitors();
         void ReleaseSuspendLock();
         void ReleaseLidLock();
-        bool SetDisplayBacklight(QString const &device, int value);
     };
 }
 

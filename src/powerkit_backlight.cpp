@@ -7,11 +7,17 @@
 */
 
 #include "powerkit_backlight.h"
+#include "powerkit_common.h"
 
 #include <QFile>
 #include <QDir>
 #include <QDirIterator>
+#include <QDBusInterface>
+#include <QDBusMessage>
 #include <QDebug>
+
+#define LOGIND_SESSION "org.freedesktop.login1.Session"
+#define LOGIND_PATH_SESSION "/org/freedesktop/login1/session/self"
 
 using namespace PowerKit;
 
@@ -95,4 +101,24 @@ bool Backlight::setCurrentBrightness(const QString &device, int value)
 bool Backlight::setCurrentBrightness(int value)
 {
     return setCurrentBrightness(getDevice(), value);
+}
+
+bool Backlight::setBrightness(const QString &device,
+                              int value)
+{
+    QDBusInterface iface(LOGIND_SERVICE,
+                         LOGIND_PATH_SESSION,
+                         LOGIND_SESSION,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return false; }
+    QDBusMessage reply = iface.call("SetBrightness",
+                                    "backlight",
+                                    device.split("/").takeLast(),
+                                    (quint32)value);
+    return reply.errorMessage().isEmpty();
+}
+
+bool Backlight::setBrightness(int value)
+{
+    return setBrightness(getDevice(), value);
 }

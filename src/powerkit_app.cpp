@@ -355,7 +355,7 @@ void App::handleOnBattery()
         /*if (hasBacklight) {
             Common::adjustBacklight(backlightDevice, backlightBatteryValue);
         } else {*/
-            man->SetDisplayBacklight(backlightDevice, backlightBatteryValue);
+        Backlight::setBrightness(backlightDevice, backlightBatteryValue);
         //}
     }
 }
@@ -384,7 +384,7 @@ void App::handleOnAC()
         /*if (hasBacklight) {
             Common::adjustBacklight(backlightDevice, backlightACValue);
         } else {*/
-            man->SetDisplayBacklight(backlightDevice, backlightACValue);
+        Backlight::setBrightness(backlightDevice, backlightACValue);
         //}
     }
 }
@@ -946,12 +946,12 @@ void App::handleTrayWheel(TrayIcon::WheelAction action)
     if (!backlightMouseWheel) { return; }
     switch (action) {
     case TrayIcon::WheelUp:
-            man->SetDisplayBacklight(backlightDevice,
-                                     Backlight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
+        Backlight::setBrightness(backlightDevice,
+                                 Backlight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
         break;
     case TrayIcon::WheelDown:
-            man->SetDisplayBacklight(backlightDevice,
-                                     Backlight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
+        Backlight::setBrightness(backlightDevice,
+                                 Backlight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
         break;
     default:;
     }

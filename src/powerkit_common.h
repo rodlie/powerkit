@@ -112,6 +112,8 @@ namespace PowerKit
 #define PM_SERVICE_INHIBIT "org.freedesktop.PowerManagement.Inhibit"
 #define PM_FULL_PATH_INHIBIT "/org/freedesktop/PowerManagement/Inhibit"
 
+#define LOGIND_SERVICE "org.freedesktop.login1"
+
 #define UPOWER_SERVICE "org.freedesktop.UPower"
 #define DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
 #define DBUS_DEVICE "Device"

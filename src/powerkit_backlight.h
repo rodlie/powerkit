@@ -23,8 +23,10 @@ namespace PowerKit
         static int getMaxBrightness();
         static int getCurrentBrightness(const QString &device);
         static int getCurrentBrightness();
-        static bool setCurrentBrightness(const QString &device, int value);
-        static bool setCurrentBrightness(int value);
+        static bool setCurrentBrightness(const QString &device, int value); // deprecated
+        static bool setCurrentBrightness(int value); // deprecated
+        static bool setBrightness(const QString &device, int value);
+        static bool setBrightness(int value);
     };
 }
 
