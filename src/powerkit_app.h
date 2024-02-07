@@ -17,7 +17,7 @@
 #include <QEvent>
 #include <QWheelEvent>
 
-#include "powerkit_freedesktop_pm.h"
+#include "powerkit_powermanagement.h"
 #include "powerkit_screensaver.h"
 #include "powerkit_manager.h"
 

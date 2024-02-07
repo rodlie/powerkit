@@ -6,7 +6,7 @@
 # See the LICENSE file for full details
 */
 
-#include "powerkit_freedesktop_pm.h"
+#include "powerkit_powermanagement.h"
 #include <QMapIterator>
 #include <QDBusConnection>
 #include <QCoreApplication>

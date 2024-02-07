@@ -54,7 +54,7 @@ set(ADAPTERS)
 qt_add_dbus_adaptor(
     ADAPTERS
     share/org.freedesktop.PowerManagement.Inhibit.xml
-    powerkit_freedesktop_pm.h
+    ${PROJECT_NAME}_powermanagement.h
     PowerManagement
     InhibitAdaptor
 )
@@ -63,7 +63,7 @@ qt_add_dbus_adaptor(
 qt_add_dbus_adaptor(
     ADAPTERS
     share/org.freedesktop.ScreenSaver.xml
-    powerkit_screensaver.h
+    ${PROJECT_NAME}_screensaver.h
     PowerKit::ScreenSaver
     ScreenSaverAdaptor
 )
@@ -77,9 +77,9 @@ set(SOURCES
     src/${PROJECT_NAME}_cpu.cpp
     src/${PROJECT_NAME}_device.cpp
     src/${PROJECT_NAME}_dialog.cpp
-    src/${PROJECT_NAME}_freedesktop_pm.cpp
     src/${PROJECT_NAME}_manager.cpp
     src/${PROJECT_NAME}_notify.cpp
+    src/${PROJECT_NAME}_powermanagement.cpp
     src/${PROJECT_NAME}_screensaver.cpp
     src/${PROJECT_NAME}_settings.cpp
     src/${PROJECT_NAME}_theme.cpp
@@ -92,9 +92,9 @@ set(HEADERS
     src/${PROJECT_NAME}_cpu.h
     src/${PROJECT_NAME}_device.h
     src/${PROJECT_NAME}_dialog.h
-    src/${PROJECT_NAME}_freedesktop_pm.h
     src/${PROJECT_NAME}_manager.h
     src/${PROJECT_NAME}_notify.h
+    src/${PROJECT_NAME}_powermanagement.h
     src/${PROJECT_NAME}_screensaver.h
     src/${PROJECT_NAME}_settings.h
     src/${PROJECT_NAME}_theme.h
