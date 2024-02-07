@@ -6,5 +6,4 @@ Exec=@PROJECT_NAME@ --config
 Terminal=false
 Type=Application
 Categories=Settings;
-OnlyShowIn=Lumina;Draco;
 StartupNotify=false

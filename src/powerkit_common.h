@@ -27,7 +27,8 @@ namespace PowerKit
         suspendSleep,
         suspendHibernate,
         suspendShutdown,
-        suspendHybrid
+        suspendHybrid,
+        suspendSleepHibernate
     };
 
     enum lidAction
@@ -37,7 +38,8 @@ namespace PowerKit
         lidSleep,
         lidHibernate,
         lidShutdown,
-        lidHybridSleep
+        lidHybridSleep,
+        lidSleepHibernate
     };
 
     enum criticalAction

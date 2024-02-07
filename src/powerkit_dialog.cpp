@@ -16,7 +16,7 @@
 
 #include <QTimer>
 
-#define MAX_WIDTH 150
+#define MAX_WIDTH 175
 
 using namespace PowerKit;
 
@@ -529,6 +529,8 @@ void Dialog::populateWidgets()
                               tr("Shutdown"), lidShutdown);
     lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
                               tr("Hybrid Sleep"), lidHybridSleep);
+    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                              tr("Sleep then Hibernate"), lidSleepHibernate);
 
     lidActionAC->clear();
     lidActionAC->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -543,6 +545,8 @@ void Dialog::populateWidgets()
                          tr("Shutdown"), lidShutdown);
     lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
                          tr("Hybrid Sleep"), lidHybridSleep);
+    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                         tr("Sleep then Hibernate"), lidSleepHibernate);
 
     criticalActionBattery->clear();
     criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -565,6 +569,8 @@ void Dialog::populateWidgets()
                                     tr("Shutdown"), suspendShutdown);
     autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
                                     tr("Hybrid Sleep"), suspendHybrid);
+    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                                    tr("Sleep then Hibernate"), suspendSleepHibernate);
 
     autoSleepACAction->clear();
     autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
@@ -577,6 +583,8 @@ void Dialog::populateWidgets()
                                tr("Shutdown"), suspendShutdown);
     autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
                                tr("Hybrid Sleep"), suspendHybrid);
+    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
+                               tr("Sleep then Hibernate"), suspendSleepHibernate);
 }
 
 void Dialog::connectWidgets()

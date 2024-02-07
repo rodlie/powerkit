@@ -14,6 +14,7 @@
 #include <QMap>
 #include <QDBusInterface>
 #include <QDBusObjectPath>
+#include <QDBusMessage>
 #include <QTimer>
 #include <QDateTime>
 #include <QDBusUnixFileDescriptor>
@@ -27,33 +28,6 @@ namespace PowerKit
         Q_OBJECT
 
     public:
-        enum PKBackend {
-            PKNoBackend,
-            PKConsoleKit,
-            PKLogind,
-            PKUPower
-        };
-
-        enum PKAction {
-            PKNoAction,
-            PKRestartAction,
-            PKPowerOffAction,
-            PKSuspendAction,
-            PKHibernateAction,
-            PKHybridSleepAction
-        };
-
-        enum PKMethod {
-            PKNoMethod,
-            PKCanRestart,
-            PKCanPowerOff,
-            PKCanSuspend,
-            PKCanHibernate,
-            PKCanHybridSleep,
-            PKSuspendAllowed,
-            PKHibernateAllowed
-        };
-
         explicit Manager(QObject *parent = 0);
         ~Manager();
         QMap<QString, Device*> getDevices();
@@ -65,7 +39,6 @@ namespace PowerKit
 
         QDBusInterface *upower;
         QDBusInterface *logind;
-        QDBusInterface *pmd;
 
         QTimer timer;
 
@@ -73,14 +46,8 @@ namespace PowerKit
         bool wasLidClosed;
         bool wasOnBattery;
 
-        bool wakeAlarm;
-        QDateTime wakeAlarmDate;
-
         QScopedPointer<QDBusUnixFileDescriptor> suspendLock;
         QScopedPointer<QDBusUnixFileDescriptor> lidLock;
-
-        int suspendWakeupBattery;
-        int suspendWakeupAC;
 
     signals:
         void Update();
@@ -99,8 +66,7 @@ namespace PowerKit
 
     private slots:
         bool canLogind(const QString &method);
-        QString executeAction(const PKAction &action,
-                              const PKBackend &backend);
+        const QDBusMessage callLogind(const QString &method);
 
         QStringList find();
         void setup();
@@ -128,25 +94,23 @@ namespace PowerKit
         bool registerSuspendLock();
         bool registerLidLock();
 
-        void SetWakeAlarmFromSettings();
-
     public slots:
-        bool HasWakeAlarm();
         bool HasSuspendLock();
+        bool HasLidLock();
 
         bool CanRestart();
         bool CanPowerOff();
         bool CanSuspend();
         bool CanHibernate();
         bool CanHybridSleep();
+        bool CanSuspendThenHibernate();
 
         const QString Restart();
         const QString PowerOff();
         const QString Suspend();
         const QString Hibernate();
         const QString HybridSleep();
-        bool SetWakeAlarm(const QDateTime &date);
-        void ClearWakeAlarm();
+        const QString SuspendThenHibernate();
 
         bool IsDocked();
         bool LidIsPresent();
@@ -163,15 +127,9 @@ namespace PowerKit
         const QStringList GetScreenSaverInhibitors();
         const QStringList GetPowerManagementInhibitors();
         QMap<quint32, QString> GetInhibitors();
-        const QDateTime GetWakeAlarm();
         void ReleaseSuspendLock();
         void ReleaseLidLock();
-        void SetSuspendWakeAlarmOnBattery(int value);
-        void SetSuspendWakeAlarmOnAC(int value);
         bool SetDisplayBacklight(QString const &device, int value);
-        bool SetPState(int min, int max);
-        bool SetPStateMin(int value);
-        bool SetPStateMax(int value);
     };
 }
 

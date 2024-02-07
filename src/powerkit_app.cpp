@@ -317,7 +317,10 @@ void App::handleClosedLid()
     case lidHybridSleep:
         man->HybridSleep();
         break;
-    default: ;
+    case lidSleepHibernate:
+        man->SuspendThenHibernate();
+        break;
+    default:;
     }
 }
 
@@ -463,12 +466,12 @@ void App::loadSettings()
     if (Settings::isValid(CONF_NOTIFY_NEW_INHIBITOR)) {
         notifyNewInhibitor = Settings::getValue(CONF_NOTIFY_NEW_INHIBITOR).toBool();
     }
-    if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY)) {
+    /*if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY)) {
         man->SetSuspendWakeAlarmOnBattery(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_BATTERY).toInt());
     }
     if (Settings::isValid(CONF_SUSPEND_WAKEUP_HIBERNATE_AC)) {
         man->SetSuspendWakeAlarmOnAC(Settings::getValue(CONF_SUSPEND_WAKEUP_HIBERNATE_AC).toInt());
-    }
+    }*/
 
     if (Settings::isValid(CONF_KERNEL_BYPASS)) {
         ignoreKernelResume = Settings::getValue(CONF_KERNEL_BYPASS).toBool();
@@ -728,7 +731,10 @@ void App::timeout()
         case suspendHybrid:
             man->HybridSleep();
             break;
-        default: break;
+        case suspendSleepHibernate:
+            man->SuspendThenHibernate();
+            break;
+        default:;
         }
     }
 }

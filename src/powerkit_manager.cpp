@@ -21,8 +21,12 @@
 
 #define LOGIND_SERVICE "org.freedesktop.login1"
 #define LOGIND_PATH "/org/freedesktop/login1"
+#define LOGIND_PATH_SESSION "/org/freedesktop/login1/session/self"
 #define LOGIND_MANAGER "org.freedesktop.login1.Manager"
+#define LOGIND_SESSION "org.freedesktop.login1.Session"
 #define LOGIND_DOCKED "Docked"
+#define LOGIND_BRIGHTNESS "SetBrightness"
+#define LOGIND_BACKLIGHT "backlight"
 
 #define UPOWER_PATH "/org/freedesktop/UPower"
 #define UPOWER_MANAGER "org.freedesktop.UPower"
@@ -58,6 +62,8 @@
 #define PK_HIBERNATE "Hibernate"
 #define PK_CAN_HYBRIDSLEEP "CanHybridSleep"
 #define PK_HYBRIDSLEEP "HybridSleep"
+#define PK_CAN_SUSPEND_THEN_HIBERNATE "CanSuspendThenHibernate"
+#define PK_SUSPEND_THEN_HIBERNATE "SuspendThenHibernate"
 #define PK_NO_BACKEND "No backend available."
 #define PK_NO_ACTION "Action no available."
 
@@ -68,13 +74,9 @@ using namespace PowerKit;
 Manager::Manager(QObject *parent) : QObject(parent)
   , upower(nullptr)
   , logind(nullptr)
-  , pmd(nullptr)
   , wasDocked(false)
   , wasLidClosed(false)
   , wasOnBattery(false)
-  , wakeAlarm(false)
-  , suspendWakeupBattery(0)
-  , suspendWakeupAC(0)
 {
     setup();
     timer.setInterval(TIMEOUT_CHECK);
@@ -108,52 +110,13 @@ bool Manager::canLogind(const QString &method)
     return result;
 }
 
-QString Manager::executeAction(const Manager::PKAction &action,
-                               const Manager::PKBackend &backend)
+const QDBusMessage Manager::callLogind(const QString &method)
 {
-    QString service, path, interface, cmd;
-    switch (backend) {
-    case PKLogind:
-        service = LOGIND_SERVICE;
-        path = LOGIND_PATH;
-        interface = LOGIND_MANAGER;
-        break;
-    case PKUPower:
-        service = UPOWER_SERVICE;
-        path = UPOWER_PATH;
-        interface = UPOWER_MANAGER;
-        break;
-    default:
-        return QObject::tr(PK_NO_BACKEND);
-    }
-    switch (action) {
-    case PKRestartAction:
-        cmd = PK_RESTART;
-        break;
-    case PKPowerOffAction:
-        cmd = PK_POWEROFF;
-        break;
-    case PKSuspendAction:
-        cmd = PK_SUSPEND;
-        break;
-    case PKHibernateAction:
-        cmd = PK_HIBERNATE;
-        break;
-    case PKHybridSleepAction:
-        cmd = PK_HYBRIDSLEEP;
-        break;
-    default:
-        return QObject::tr(PK_NO_ACTION);
-    }
-    QDBusInterface iface(service, path, interface,
-                         QDBusConnection::systemBus());
-    if (!iface.isValid()) { return QObject::tr(DBUS_FAILED_CONN); }
-
     QDBusMessage reply;
-    if (backend == PKUPower) { reply = iface.call(cmd); }
-    else { reply = iface.call(cmd, true); }
-
-    return reply.errorMessage();
+    if (logind->isValid() && !method.isEmpty()) {
+        reply = logind->call(method, true);
+    }
+    return reply;
 }
 
 QStringList Manager::find()
@@ -234,11 +197,6 @@ void Manager::setup()
                                 LOGIND_MANAGER,
                                 system,
                                 this);
-    pmd = new QDBusInterface(PMD_SERVICE,
-                             PMD_PATH,
-                             PMD_MANAGER,
-                             system,
-                             this);
 
     if (!upower->isValid()) {
         emit Error(tr("Failed to connect to upower"));
@@ -248,7 +206,6 @@ void Manager::setup()
         emit Error(tr("Failed to connect to logind"));
         return;
     }
-    if (!pmd->isValid()) { emit Warning(tr("Failed to connect to powerkitd")); }
 
     wasDocked = IsDocked();
     wasLidClosed = LidIsClosed();
@@ -376,23 +333,9 @@ void Manager::handlePrepareForSuspend(bool prepare)
         emit PrepareForSuspend();
         QTimer::singleShot(500, this, SLOT(ReleaseSuspendLock()));
     }
-    else { // resume
+    else {
         qDebug() << "WAKE UP!";
         UpdateDevices();
-        if (HasWakeAlarm() &&
-             wakeAlarmDate.isValid() &&
-             CanHibernate())
-        {
-            qDebug() << "we may have a wake alarm" << wakeAlarmDate;
-            QDateTime currentDate = QDateTime::currentDateTime();
-            if (currentDate>=wakeAlarmDate && wakeAlarmDate.secsTo(currentDate)<300) {
-                qDebug() << "wake alarm is active, that means we should hibernate";
-                ClearWakeAlarm();
-                Hibernate();
-                return;
-            }
-        }
-        ClearWakeAlarm();
         emit PrepareForResume();
         QTimer::singleShot(500, this, SLOT(registerSuspendLock()));
     }
@@ -488,25 +431,14 @@ bool Manager::registerLidLock()
     return false;
 }
 
-void Manager::SetWakeAlarmFromSettings()
-{
-    if (!CanHibernate()) { return; }
-    int wmin = OnBattery()?suspendWakeupBattery:suspendWakeupAC;
-    if (wmin>0) {
-        qDebug() << "we need to set a wake alarm" << wmin << "min from now";
-        QDateTime date = QDateTime::currentDateTime().addSecs(wmin*60);
-        SetWakeAlarm(date);
-    }
-}
-
-bool Manager::HasWakeAlarm()
-{
-    return wakeAlarm;
-}
-
 bool Manager::HasSuspendLock()
 {
     return suspendLock;
+}
+
+bool Manager::HasLidLock()
+{
+    return lidLock;
 }
 
 bool Manager::CanRestart()
@@ -539,82 +471,52 @@ bool Manager::CanHybridSleep()
     return false;
 }
 
+bool Manager::CanSuspendThenHibernate()
+{
+    if (logind->isValid()) { return canLogind(PK_CAN_SUSPEND_THEN_HIBERNATE); }
+    return false;
+}
+
 const QString Manager::Restart()
 {
-    qDebug() << "try to restart";
-    if (logind->isValid()) {
-        return executeAction(PKRestartAction, PKLogind);
-    }
-    return QObject::tr(PK_NO_BACKEND);
+    const auto reply = callLogind(PK_RESTART);
+    qDebug() << "restart reply" << reply;
+    return reply.errorMessage();
 }
 
 const QString Manager::PowerOff()
 {
-    qDebug() << "try to poweroff";
-    if (logind->isValid()) {
-        return executeAction(PKPowerOffAction, PKLogind);
-    }
-    return QObject::tr(PK_NO_BACKEND);
+    const auto reply = callLogind(PK_POWEROFF);
+    qDebug() << "poweroff reply" << reply;
+    return reply.errorMessage();
 }
 
 const QString Manager::Suspend()
 {
-    qDebug() << "try to suspend";
-    if (logind->isValid()) {
-        SetWakeAlarmFromSettings();
-        return executeAction(PKSuspendAction, PKLogind);
-    } else if (upower->isValid()) {
-        LockScreen();
-        return executeAction(PKSuspendAction, PKUPower);
-    }
-    return QObject::tr(PK_NO_BACKEND);
+    const auto reply = callLogind(PK_SUSPEND);
+    qDebug() << "suspend reply" << reply;
+    return reply.errorMessage();
 }
 
 const QString Manager::Hibernate()
 {
-    qDebug() << "try to hibernate";
-    if (logind->isValid()) {
-        return executeAction(PKHibernateAction, PKLogind);
-    } else if (upower->isValid()) {
-        LockScreen();
-        return executeAction(PKHibernateAction, PKUPower);
-    }
-    return QObject::tr(PK_NO_BACKEND);
+    const auto reply = callLogind(PK_HIBERNATE);
+    qDebug() << "hibernate reply" << reply;
+    return reply.errorMessage();
 }
 
 const QString Manager::HybridSleep()
 {
-    qDebug() << "try to hybridsleep";
-    if (logind->isValid()) {
-        return executeAction(PKHybridSleepAction, PKLogind);
-    }
-    return QObject::tr(PK_NO_BACKEND);
+    const auto reply = callLogind(PK_HYBRIDSLEEP);
+    qDebug() << "hybridsleep reply" << reply;
+    return reply.errorMessage();
 }
 
-bool Manager::SetWakeAlarm(const QDateTime &date)
+const QString Manager::SuspendThenHibernate()
 {
-    qDebug() << "try to set wake alarm" << date;
-    if (pmd->isValid() &&
-        date.isValid() &&
-        CanHibernate()) {
-        QDBusMessage reply = pmd->call("SetWakeAlarm",
-                                       date.toString("yyyy-MM-dd HH:mm:ss"));
-        const auto args = reply.arguments();
-        bool alarm = args.first().toBool() && reply.errorMessage().isEmpty();
-        qDebug() << "WAKE OK?" << alarm;
-        wakeAlarm = alarm;
-        if (alarm) {
-            qDebug() << "wake alarm was set to" << date;
-            wakeAlarmDate = date;
-        }
-        return alarm;
-    }
-    return false;
-}
-
-void Manager::ClearWakeAlarm()
-{
-    wakeAlarm = false;
+    const auto reply = callLogind(PK_SUSPEND_THEN_HIBERNATE);
+    qDebug() << "suspend then hibernate reply" << reply;
+    return reply.errorMessage();
 }
 
 bool Manager::IsDocked()
@@ -771,11 +673,6 @@ QMap<quint32, QString> Manager::GetInhibitors()
     return result;
 }
 
-const QDateTime Manager::GetWakeAlarm()
-{
-    return wakeAlarmDate;
-}
-
 void Manager::ReleaseSuspendLock()
 {
     qDebug() << "release suspend lock";
@@ -788,22 +685,10 @@ void Manager::ReleaseLidLock()
     lidLock.reset(nullptr);
 }
 
-void Manager::SetSuspendWakeAlarmOnBattery(int value)
-{
-    qDebug() << "set suspend wake alarm on battery" << value;
-    suspendWakeupBattery = value;
-}
-
-void Manager::SetSuspendWakeAlarmOnAC(int value)
-{
-    qDebug() << "set suspend wake alarm on ac" << value;
-    suspendWakeupAC = value;
-}
-
 bool Manager::SetDisplayBacklight(const QString &device, int value)
 {
     qDebug() << "PK SET DISPLAY BACKLIGHT" << device << value;
-    if (!pmd) { return false; }
+    /*if (!pmd) { return false; }
     if (!pmd->isValid()) { return false; }
     QDBusMessage reply = pmd->call("SetDisplayBacklight",
                                    device,
@@ -811,43 +696,15 @@ bool Manager::SetDisplayBacklight(const QString &device, int value)
     const auto args = reply.arguments();
     bool backlight = args.first().toBool() && reply.errorMessage().isEmpty();
     qDebug() << "BACKLIGHT OK?" << backlight << reply.errorMessage();
-    return backlight;
-}
-
-bool Manager::SetPState(int min, int max)
-{
-    qDebug() << "PK SET PSTATE" << min << max;
-    if (!pmd) { return false; }
-    if (!pmd->isValid()) { return false; }
-    QDBusMessage reply = pmd->call("SetPState",
-                                   min,
-                                   max);
-    const auto args = reply.arguments();
-    bool pstate = args.first().toBool() && reply.errorMessage().isEmpty();
-    qDebug() << "PSTATE OK?" << pstate << reply.errorMessage();
-    return pstate;
-}
-
-bool Manager::SetPStateMin(int value)
-{
-    qDebug() << "PK SET PSTATE" << value;
-    if (!pmd) { return false; }
-    if (!pmd->isValid()) { return false; }
-    QDBusMessage reply = pmd->call("SetPStateMin", value);
-    const auto args = reply.arguments();
-    bool pstate = args.first().toBool() && reply.errorMessage().isEmpty();
-    qDebug() << "PSTATE OK?" << pstate << reply.errorMessage();
-    return pstate;
-}
-
-bool Manager::SetPStateMax(int value)
-{
-    qDebug() << "PK SET PSTATE" << value;
-    if (!pmd) { return false; }
-    if (!pmd->isValid()) { return false; }
-    QDBusMessage reply = pmd->call("SetPStateMax", value);
-    const auto args = reply.arguments();
-    bool pstate = args.first().toBool() && reply.errorMessage().isEmpty();
-    qDebug() << "PSTATE OK?" << pstate << reply.errorMessage();
-    return pstate;
+    return backlight;*/
+    QDBusInterface iface(LOGIND_SERVICE,
+                         LOGIND_PATH_SESSION,
+                         LOGIND_SESSION,
+                         QDBusConnection::systemBus());
+    if (!iface.isValid()) { return false; }
+    QDBusMessage reply = iface.call(LOGIND_BRIGHTNESS,
+                                    LOGIND_BACKLIGHT,
+                                    device.split("/").takeLast(),
+                                    (quint32)value);
+    return reply.errorMessage().isEmpty();
 }

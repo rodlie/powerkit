@@ -47,26 +47,6 @@ if(NOT X11_Xss_FOUND)
     message(FATAL_ERROR "Xss library not found")
 endif()
 
-# set proper etc path
-set(DEFAULT_SYSCONFDIR "${CMAKE_INSTALL_PREFIX}/etc")
-if(CMAKE_INSTALL_PREFIX STREQUAL "/usr")
-    set(DEFAULT_SYSCONFDIR "/etc")
-endif()
-
-# powerkitd user/group
-set(SERVICE_NAME
-    org.freedesktop.PowerKit)
-set(SERVICE_USER
-    "root"
-    CACHE
-    STRING
-    "D-Bus service user with access to /sys.")
-set(SERVICE_GROUP
-    "users"
-    CACHE
-    STRING
-    "group that have access to D-Bus service, this should be any desktop user.")
-
 # setup adapters
 set(ADAPTERS)
 
@@ -88,43 +68,48 @@ qt_add_dbus_adaptor(
     ScreenSaverAdaptor
 )
 
-# powerkitd
-set(POWERKITD_SRC
-    src/${PROJECT_NAME}d.cpp
-    src/${PROJECT_NAME}d_manager.cpp
-    src/${PROJECT_NAME}_backlight.cpp
-    src/${PROJECT_NAME}_cpu.cpp
-    src/${PROJECT_NAME}_rtc.cpp)
-set(POWERKITD_INC
-    src/${PROJECT_NAME}d_manager.h
-    src/${PROJECT_NAME}_backlight.h
-    src/${PROJECT_NAME}_cpu.h
-    src/${PROJECT_NAME}_rtc.h)
-add_executable(${PROJECT_NAME}d
-               ${POWERKITD_SRC}
-               ${POWERKITD_INC})
-
 # powerkit
-file(GLOB
-     POWERKIT_SRC
-     src/${PROJECT_NAME}.cpp
-     "src/${PROJECT_NAME}_*.h"
-     "src/${PROJECT_NAME}_*.cpp")
+set(SOURCES
+    src/${PROJECT_NAME}.cpp
+    src/${PROJECT_NAME}_app.cpp
+    src/${PROJECT_NAME}_backlight.cpp
+    src/${PROJECT_NAME}_client.cpp
+    src/${PROJECT_NAME}_cpu.cpp
+    src/${PROJECT_NAME}_device.cpp
+    src/${PROJECT_NAME}_dialog.cpp
+    src/${PROJECT_NAME}_freedesktop_pm.cpp
+    src/${PROJECT_NAME}_manager.cpp
+    src/${PROJECT_NAME}_notify.cpp
+    src/${PROJECT_NAME}_screensaver.cpp
+    src/${PROJECT_NAME}_settings.cpp
+    src/${PROJECT_NAME}_theme.cpp
+)
+set(HEADERS
+    src/${PROJECT_NAME}_app.h
+    src/${PROJECT_NAME}_backlight.h
+    src/${PROJECT_NAME}_client.h
+    src/${PROJECT_NAME}_common.h
+    src/${PROJECT_NAME}_cpu.h
+    src/${PROJECT_NAME}_device.h
+    src/${PROJECT_NAME}_dialog.h
+    src/${PROJECT_NAME}_freedesktop_pm.h
+    src/${PROJECT_NAME}_manager.h
+    src/${PROJECT_NAME}_notify.h
+    src/${PROJECT_NAME}_screensaver.h
+    src/${PROJECT_NAME}_settings.h
+    src/${PROJECT_NAME}_theme.h
+)
 add_executable(${PROJECT_NAME}
-               ${POWERKIT_SRC}
-               ${ADAPTERS})
-
-# includes and libraries
-target_include_directories(${PROJECT_NAME}d PRIVATE src)
+               ${SOURCES}
+               ${HEADERS}
+               ${ADAPTERS}
+)
 target_include_directories(${PROJECT_NAME}
                            PRIVATE
                            src
                            ${X11_X11_INCLUDE_PATH}
                            ${X11_Xrandr_INCLUDE_PATH}
                            ${X11_Xss_INCLUDE_PATH})
-target_link_libraries(${PROJECT_NAME}d
-                      Qt${QT_VERSION_MAJOR}::Core
-                      Qt${QT_VERSION_MAJOR}::DBus)
 target_link_libraries(${PROJECT_NAME}
                       ${X11_LIBRARIES}
                       ${X11_Xrandr_LIB}
@@ -134,59 +119,27 @@ target_link_libraries(${PROJECT_NAME}
                       Qt${QT_VERSION_MAJOR}::Gui
                       Qt${QT_VERSION_MAJOR}::Widgets)
 
-# conf
-configure_file(share/conf.in
-               ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.conf
-               @ONLY)
-configure_file(share/service.in
-               ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
-               @ONLY)
-
 # desktop files
-configure_file(share/autostart.desktop.in
-               ${CMAKE_BINARY_DIR}/autostart/${PROJECT_NAME}.desktop
-               @ONLY)
 configure_file(share/settings.desktop.in
-               ${CMAKE_BINARY_DIR}/settings/${PROJECT_NAME}.desktop
+               ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
                @ONLY)
 
 # install
 include(GNUInstallDirs)
 install(TARGETS
-        ${PROJECT_NAME}d
-        DESTINATION
-        ${CMAKE_INSTALL_LIBEXECDIR})
-install(TARGETS
         ${PROJECT_NAME}
         DESTINATION
         ${CMAKE_INSTALL_BINDIR})
-install(FILES
-        ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.conf
-        DESTINATION
-        ${DEFAULT_SYSCONFDIR}/dbus-1/system.d)
-install(FILES
-        ${CMAKE_BINARY_DIR}/${SERVICE_NAME}.service
-        DESTINATION
-        ${CMAKE_INSTALL_DATAROOTDIR}/dbus-1/system-services)
 install(FILES
         share/${PROJECT_NAME}.1
         DESTINATION
         ${CMAKE_INSTALL_MANDIR}/man1)
 install(FILES
-        share/${PROJECT_NAME}d.8
-        DESTINATION
-        ${CMAKE_INSTALL_MANDIR}/man8)
-install(FILES
-        ${CMAKE_BINARY_DIR}/settings/${PROJECT_NAME}.desktop
+        ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.desktop
         DESTINATION
         ${CMAKE_INSTALL_DATAROOTDIR}/applications)
 install(FILES
-        ${CMAKE_BINARY_DIR}/autostart/${PROJECT_NAME}.desktop
-        DESTINATION
-        ${DEFAULT_SYSCONFDIR}/xdg/autostart)
-install(FILES
         LICENSE
-        docs/README.md
         DESTINATION
         ${CMAKE_INSTALL_DOCDIR}/${PROJECT_NAME}-${PROJECT_VERSION})
 
