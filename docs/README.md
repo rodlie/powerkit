@@ -1,6 +1,6 @@
 # NAME
 
-*powerkit* - desktop independent Linux power manager
+*powerkit* - Desktop independent Linux power manager
 
 # SYNOPSIS
 
@@ -8,16 +8,20 @@ powerkit *`[--config]`*
 
 # DESCRIPTION
 
-powerkit is an desktop independent Linux power manager for alternative X11 desktop environments and window managers.
+Desktop independent Linux power manager for alternative X11 desktop environments and window managers.
 
- * Implements *``org.freedesktop.ScreenSaver``* service and screen saver
+ * Implements *``org.freedesktop.ScreenSaver``* service
  * Implements *``org.freedesktop.PowerManagement.Inhibit``* service
- * Automatically suspend on idle
- * Automatically suspend or shutdown on critical battery
- * Inhibit lid action if external monitor connected
+ * Automatic actions on lid, idle and low battery
+   * Sleep
+   * Hibernate
+   * HybridSleep
+   * Suspend then Hibernate
+   * Shutdown
+ * Screen saver support
+ * Screen lid support
  * Screen locking support
  * Screen backlight support
- * RTC wake support
  * Notification support (can use *``org.freedesktop.Notifications``* if available)
 
 # USAGE
@@ -31,7 +35,7 @@ powerkit should be started during the X11 user session. Consult the documentatio
 
 ## CONFIGURATION
 
-The most common options are available directly from the system tray icon, for more advanced options open *``Settings``* from the system tray menu or run *``powerkit --config``*. You should also be able to lauch the powerkit settings from your desktop application menu (if available).
+Settings are available directly from the system tray icon  or run *``powerkit --config``*. You should also be able to lauch the powerkit settings from your desktop application menu (if available).
 
 ## SCREEN SAVER
 
@@ -98,46 +102,24 @@ First make sure you have the required dependencies installed, then review the mo
 
  * *``CMAKE_INSTALL_PREFIX=</usr/local>``* - Install target. *``/usr``* recommended.
  * *``CMAKE_BUILD_TYPE=<Release/Debug>``* - Build type. *``Release``* recommended
- * *``SERVICE_USER=<root>``* - powerkitd owner, needs write access to /sys. Usually the *``root``* user.
- * *``SERVICE_GROUP=<power>``* - Group that can access the powerkitd service, this should be any desktop user. Consult your system documentation for the preferred user group.
 
 Now configure powerkit with CMake and build (*example for packaging purposes*).
 
 ```
-cmake -DCMAKE_INSTALL_PREFIX=/usr -DSERVICE_GROUP=plugdev -DCMAKE_BUILD_TYPE=Release ..
-make
-make DESTDIR=<package> install
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
+make -j4
 ```
-```
-pkg
-|-- etc
-|   |-- dbus-1
-|   |   `-- system.d
-|   |       `-- org.freedesktop.PowerKit.conf
-|   `-- xdg
-|       `-- autostart
-|           `-- powerkit.desktop
-`-- usr
-    |-- bin
-    |   `-- powerkit
-    |-- libexec
-    |   `-- powerkitd
-    `-- share
-        |-- applications
-        |   `-- powerkit.desktop
-        |-- dbus-1
-        |   `-- system-services
-        |       `-- org.freedesktop.PowerKit.service
-        |-- doc
-        |   `-- powerkit-VERSION
-        |       |-- LICENSE
-        |       `-- README.md
-        `-- man
-            |-- man1
-            |   `-- powerkit.1
-            `-- man8
-                `-- powerkitd.8
 
+```
+make DESTDIR=<package_directory> install
+```
+or
+
+```
+cpack -G DEB
+```
+```
+cpack -G RPM
 ```
 
 # CHANGELOG
@@ -145,20 +127,13 @@ pkg
 ## 2.0.0 (TBA)
 
  * Recommended locker is ``xsecurelock``
- * Improved support for logind
+ * Added support for "modern" logind
  * Removed support for ConsoleKit
  * Removed support for XScreenSaver
- * Added screen saver in powerkit
- * Easier to use (minimal setup)
+ * Added basic screen saver
+ * Easier to use (minimal/no setup)
  * New UI
- * RTC wake alarm support (not used for anything yet)
-   * Hibernate computer while suspended for X amount of time
- * CPU frequency scaling and thermal support (not used for anything yet)
-   * Intel PState
- * powerkitd
-   * Service for unprivileged users (needed for CPU/RTC/brightness)
-
-May change at any time during development.
+ * Major code changes
 
 # OPTIONS
 
@@ -172,7 +147,7 @@ May change at any time during development.
 
 # SEE ALSO
 
-**``xsecurelock``**(1), **``UPower``**(7), **``powerkitd``**(8)
+**``xsecurelock``**(1), **``UPower``**(7)
 
 # BUGS
 

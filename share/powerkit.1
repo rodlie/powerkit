@@ -2,30 +2,39 @@
 .\"
 .TH "POWERKIT" "1" "February 2024" "Version 2.0.0" "PowerKit Documentation"
 .SH NAME
-\f[I]powerkit\f[R] - desktop independent Linux power manager
+\f[I]powerkit\f[R] - Desktop independent Linux power manager
 .SH SYNOPSIS
 powerkit \f[I]\f[CI][--config]\f[I]\f[R]
 .SH DESCRIPTION
-powerkit is an desktop independent Linux power manager for alternative
-X11 desktop environments and window managers.
+Desktop independent Linux power manager for alternative X11 desktop
+environments and window managers.
 .IP \[bu] 2
-Implements \f[I]\f[CI]org.freedesktop.ScreenSaver\f[I]\f[R] service and
-screen saver
+Implements \f[I]\f[CI]org.freedesktop.ScreenSaver\f[I]\f[R] service
 .IP \[bu] 2
 Implements \f[I]\f[CI]org.freedesktop.PowerManagement.Inhibit\f[I]\f[R]
 service
 .IP \[bu] 2
-Automatically suspend on idle
+Automatic actions on lid, idle and low battery
+.RS 2
 .IP \[bu] 2
-Automatically suspend or shutdown on critical battery
+Sleep
 .IP \[bu] 2
-Inhibit lid action if external monitor connected
+Hibernate
+.IP \[bu] 2
+HybridSleep
+.IP \[bu] 2
+Suspend then Hibernate
+.IP \[bu] 2
+Shutdown
+.RE
+.IP \[bu] 2
+Screen saver support
+.IP \[bu] 2
+Screen lid support
 .IP \[bu] 2
 Screen locking support
 .IP \[bu] 2
 Screen backlight support
-.IP \[bu] 2
-RTC wake support
 .IP \[bu] 2
 Notification support (can use
 \f[I]\f[CI]org.freedesktop.Notifications\f[I]\f[R] if available)
@@ -43,9 +52,8 @@ In \f[I]Openbox\f[R] add \f[I]\f[CI]powerkit &\f[I]\f[R] to the
 \f[B]Do use powerkit if your desktop environment or window manager
 already has a power manager or screen saver service running.\f[R]
 .SS CONFIGURATION
-The most common options are available directly from the system tray
-icon, for more advanced options open \f[I]\f[CI]Settings\f[I]\f[R] from
-the system tray menu or run \f[I]\f[CI]powerkit --config\f[I]\f[R].
+Settings are available directly from the system tray icon or run
+\f[I]\f[CI]powerkit --config\f[I]\f[R].
 You should also be able to lauch the powerkit settings from your desktop
 application menu (if available).
 .SS SCREEN SAVER
@@ -131,90 +139,46 @@ review the most common build options:
 .IP \[bu] 2
 \f[I]\f[CI]CMAKE_BUILD_TYPE=<Release/Debug>\f[I]\f[R] - Build type.
 \f[I]\f[CI]Release\f[I]\f[R] recommended
-.IP \[bu] 2
-\f[I]\f[CI]SERVICE_USER=<root>\f[I]\f[R] - powerkitd owner, needs write
-access to /sys.
-Usually the \f[I]\f[CI]root\f[I]\f[R] user.
-.IP \[bu] 2
-\f[I]\f[CI]SERVICE_GROUP=<power>\f[I]\f[R] - Group that can access the
-powerkitd service, this should be any desktop user.
-Consult your system documentation for the preferred user group.
 .PP
 Now configure powerkit with CMake and build (\f[I]example for packaging
 purposes\f[R]).
 .IP
 .EX
-cmake -DCMAKE_INSTALL_PREFIX=/usr -DSERVICE_GROUP=plugdev -DCMAKE_BUILD_TYPE=Release ..
-make
-make DESTDIR=<package> install
+cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
+make -j4
 .EE
 .IP
 .EX
-pkg
-|-- etc
-|   |-- dbus-1
-|   |   \[ga]-- system.d
-|   |       \[ga]-- org.freedesktop.PowerKit.conf
-|   \[ga]-- xdg
-|       \[ga]-- autostart
-|           \[ga]-- powerkit.desktop
-\[ga]-- usr
-    |-- bin
-    |   \[ga]-- powerkit
-    |-- libexec
-    |   \[ga]-- powerkitd
-    \[ga]-- share
-        |-- applications
-        |   \[ga]-- powerkit.desktop
-        |-- dbus-1
-        |   \[ga]-- system-services
-        |       \[ga]-- org.freedesktop.PowerKit.service
-        |-- doc
-        |   \[ga]-- powerkit-VERSION
-        |       |-- LICENSE
-        |       \[ga]-- README.md
-        \[ga]-- man
-            |-- man1
-            |   \[ga]-- powerkit.1
-            \[ga]-- man8
-                \[ga]-- powerkitd.8
+make DESTDIR=<package_directory> install
+.EE
+.PP
+or
+.IP
+.EX
+cpack -G DEB
+.EE
+.IP
+.EX
+cpack -G RPM
 .EE
 .SH CHANGELOG
 .SS 2.0.0 (TBA)
 .IP \[bu] 2
 Recommended locker is \f[CR]xsecurelock\f[R]
 .IP \[bu] 2
-Improved support for logind
+Added support for \[lq]modern\[rq] logind
 .IP \[bu] 2
 Removed support for ConsoleKit
 .IP \[bu] 2
 Removed support for XScreenSaver
 .IP \[bu] 2
-Added screen saver in powerkit
+Added basic screen saver
 .IP \[bu] 2
-Easier to use (minimal setup)
+Easier to use (minimal/no setup)
 .IP \[bu] 2
 New UI
 .IP \[bu] 2
-RTC wake alarm support (not used for anything yet)
-.RS 2
-.IP \[bu] 2
-Hibernate computer while suspended for X amount of time
-.RE
-.IP \[bu] 2
-CPU frequency scaling and thermal support (not used for anything yet)
-.RS 2
-.IP \[bu] 2
-Intel PState
-.RE
-.IP \[bu] 2
-powerkitd
-.RS 2
-.IP \[bu] 2
-Service for unprivileged users (needed for CPU/RTC/brightness)
-.RE
-.PP
-May change at any time during development.
+Major code changes
 .SH OPTIONS
 .TP
 \f[I]\f[CI]--config\f[I]\f[R]
@@ -224,8 +188,7 @@ Launch configuration.
 \f[I]\f[CI]\[ti]/.config/powerkit/powerkit.conf\f[I]\f[R]
 Per user configuration file.
 .SH SEE ALSO
-\f[B]\f[CB]xsecurelock\f[B]\f[R](1), \f[B]\f[CB]UPower\f[B]\f[R](7),
-\f[B]\f[CB]powerkitd\f[B]\f[R](8)
+\f[B]\f[CB]xsecurelock\f[B]\f[R](1), \f[B]\f[CB]UPower\f[B]\f[R](7)
 .SH BUGS
 See \f[B]https://github.com/rodlie/powerkit/issues\f[R].
 .SH COPYRIGHT
