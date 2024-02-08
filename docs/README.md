@@ -57,6 +57,13 @@ powerkit also supports the following commands that can be used for global shortc
 *`powerkit --set-brightness-down`*
 : Set default display brightness down.
 
+On Fluxbox you can add the commands to the *`~/.fluxbox/keys`* file:
+
+```
+XF86MonBrightnessUp :Exec powerkit --set-brightness-up
+XF86MonBrightnessDown :Exec powerkit --set-brightness-down
+```
+
 ## HIBERNATE
 
 If hibernate works depends on your system, a swap partition (or file) is needed by the kernel to support hibernate.

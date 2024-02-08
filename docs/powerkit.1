@@ -81,6 +81,14 @@ Set default display brightness up.
 .TP
 \f[I]\f[CI]powerkit --set-brightness-down\f[I]\f[R]
 Set default display brightness down.
+.PP
+On Fluxbox you can add the commands to the
+\f[I]\f[CI]\[ti]/.fluxbox/keys\f[I]\f[R] file:
+.IP
+.EX
+XF86MonBrightnessUp :Exec powerkit --set-brightness-up
+XF86MonBrightnessDown :Exec powerkit --set-brightness-down
+.EE
 .SS HIBERNATE
 If hibernate works depends on your system, a swap partition (or file) is
 needed by the kernel to support hibernate.
