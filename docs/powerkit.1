@@ -5,6 +5,8 @@
 \f[I]powerkit\f[R] - Desktop independent Linux power manager
 .SH SYNOPSIS
 powerkit \f[I]\f[CI][--config]\f[I]\f[R]
+\f[I]\f[CI][--set-brightness-up]\f[I]\f[R]
+\f[I]\f[CI][--set-brightness-down]\f[I]\f[R]
 .SH DESCRIPTION
 Desktop independent Linux power manager for alternative X11 desktop
 environments and window managers.
@@ -70,6 +72,15 @@ Note that the command must not contain spaces.
 The current display brightness (on laptops and supported displays) can
 be adjusted with the mouse wheel on the system tray icon or through the
 system tray menu.
+.PP
+powerkit also supports the following commands that can be used for
+global shortcuts, scripts etc:
+.TP
+\f[I]\f[CI]powerkit --set-brightness-up\f[I]\f[R]
+Set default display brightness up.
+.TP
+\f[I]\f[CI]powerkit --set-brightness-down\f[I]\f[R]
+Set default display brightness down.
 .SS HIBERNATE
 If hibernate works depends on your system, a swap partition (or file) is
 needed by the kernel to support hibernate.
@@ -183,6 +194,12 @@ Major code changes
 .TP
 \f[I]\f[CI]--config\f[I]\f[R]
 Launch configuration.
+.TP
+\f[I]\f[CI]--set-brightness-up\f[I]\f[R]
+Set default display brightness up.
+.TP
+\f[I]\f[CI]--set-brightness-down\f[I]\f[R]
+Set default display brightness down.
 .SH FILES
 .TP
 \f[I]\f[CI]\[ti]/.config/powerkit/powerkit.conf\f[I]\f[R]

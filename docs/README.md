@@ -4,7 +4,7 @@
 
 # SYNOPSIS
 
-powerkit *`[--config]`*
+powerkit *`[--config]`* *`[--set-brightness-up]`* *`[--set-brightness-down]`*
 
 # DESCRIPTION
 
@@ -48,6 +48,14 @@ You can override the lock command with *``screensaver_lock_cmd=<command>``* in *
 ## BACKLIGHT
 
 The current display brightness (on laptops and supported displays) can be adjusted with the mouse wheel on the system tray icon or through the system tray menu.
+
+powerkit also supports the following commands that can be used for global shortcuts, scripts etc:
+
+*`powerkit --set-brightness-up`*
+: Set default display brightness up.
+
+*`powerkit --set-brightness-down`*
+: Set default display brightness down.
 
 ## HIBERNATE
 
@@ -139,6 +147,12 @@ cpack -G RPM
 
 *``--config``*
 : Launch configuration.
+
+*`--set-brightness-up`*
+: Set default display brightness up.
+
+*`--set-brightness-down`*
+: Set default display brightness down.
 
 # FILES
 
