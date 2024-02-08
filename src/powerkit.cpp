@@ -25,6 +25,10 @@ int main(int argc, char *argv[])
 
     QStringList args = QApplication::arguments();
     if (args.contains("--config")) {
+        if (!QDBusConnection::sessionBus().registerService(POWERKIT_CONFIG)) {
+            qWarning() << QObject::tr("A powerkit config instance is already running");
+            return 1;
+        }
         PowerKit::Dialog dialog;
         dialog.show();
         return a.exec();
