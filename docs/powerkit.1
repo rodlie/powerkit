@@ -7,6 +7,8 @@
 powerkit \f[I]\f[CI][--config]\f[I]\f[R]
 \f[I]\f[CI][--set-brightness-up]\f[I]\f[R]
 \f[I]\f[CI][--set-brightness-down]\f[I]\f[R]
+\f[I]\f[CI][--sleep]\f[I]\f[R] \f[I]\f[CI][--hibernate]\f[I]\f[R]
+\f[I]\f[CI][--lock]\f[I]\f[R]
 .SH DESCRIPTION
 Desktop independent power manager for use with alternative X11 desktop
 environments and window managers on Linux.
@@ -221,6 +223,19 @@ Set default display brightness up.
 .TP
 \f[I]\f[CI]--set-brightness-down\f[I]\f[R]
 Set default display brightness down.
+.TP
+\f[I]\f[CI]--sleep\f[I]\f[R]
+Suspend computer now.
+Can be combined with \f[I]\f[CI]--hibernate\f[I]\f[R] for suspend then
+hibernate after X amount of time.
+.TP
+\f[I]\f[CI]--hibernate\f[I]\f[R]
+Hibernate computer now.
+Can be combined with \f[I]\f[CI]--sleep\f[I]\f[R] for suspend then
+hibernate after X amount of time.
+.TP
+\f[I]\f[CI]--lock\f[I]\f[R]
+Lock screen.
 .SH FILES
 .TP
 \f[I]\f[CI]\[ti]/.config/powerkit/powerkit.conf\f[I]\f[R]

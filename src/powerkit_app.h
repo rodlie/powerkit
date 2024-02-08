@@ -53,7 +53,7 @@ namespace PowerKit
     private:
         TrayIcon *tray;
         PowerKit::Manager *man;
-        PowerManagement *pm;
+        PowerKit::PowerManagement *pm;
         PowerKit::ScreenSaver *ss;
         bool wasLowBattery;
         bool wasVeryLowBattery;
@@ -106,6 +106,7 @@ namespace PowerKit
         void handleVeryLow(double left);
         void handleCritical(double left);
         void drawBattery(double left);
+        void updateToolTip();
         void timeout();
         void resetTimer();
         void setInternalMonitor();

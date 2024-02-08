@@ -238,56 +238,24 @@ void App::checkDevices()
     if (!showTray &&
         tray->isVisible()) { tray->hide(); }
 
-    // get battery left and add tooltip
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
-    if (batteryLeft > 0 && man->HasBattery()) {
-        tray->setToolTip(QString("%1 %2%").arg(tr("Battery at")).arg(batteryLeft));
-        if (man->TimeToEmpty()>0 && man->OnBattery()) {
-            tray->setToolTip(tray->toolTip()
-                             .append(QString(", %1 %2")
-                             .arg(QDateTime::fromTime_t((uint)man->TimeToEmpty())
-                                                        .toUTC().toString("hh:mm")))
-                             .arg(tr("left")));
-        }
-        if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
-        if (!man->OnBattery() &&
-            man->BatteryLeft() <= 99) {
-            if (man->TimeToFull()>0) {
-                tray->setToolTip(tray->toolTip()
-                                 .append(QString(", %1 %2")
-                                 .arg(QDateTime::fromTime_t((uint)man->TimeToFull())
-                                                            .toUTC().toString("hh:mm")))
-                                 .arg(tr("left")));
-            }
-            tray->setToolTip(tray->toolTip().append(QString(" (%1)").arg(tr("Charging"))));
-        }
-    } else { tray->setToolTip(tr("On AC")); }
 
-    // draw battery systray
     drawBattery(batteryLeft);
+    updateToolTip();
 
-    // low battery?
     handleLow(batteryLeft);
-
-    // very low battery?
     handleVeryLow(batteryLeft);
-
-    // critical battery?
     handleCritical(batteryLeft);
-
-    // Register service if not already registered
-    if (!hasService) { registerService(); }
 }
 
-// what to do when user close lid
 void App::handleClosedLid()
 {
     qDebug() << "lid closed";
     lidWasClosed = true;
 
     int type = lidNone;
-    if (man->OnBattery()) {  // on battery
+    if (man->OnBattery()) {
         type = lidActionBattery;
     } else { // on ac
         type = lidActionAC;
@@ -324,7 +292,6 @@ void App::handleClosedLid()
     }
 }
 
-// what to do when user open lid
 void App::handleOpenedLid()
 {
     qDebug() << "lid is now open";
@@ -334,7 +301,6 @@ void App::handleOpenedLid()
     }
 }
 
-// do something when switched to battery power
 void App::handleOnBattery()
 {
     if (notifyOnBattery) {
@@ -343,24 +309,18 @@ void App::handleOnBattery()
     }
 
     // brightness
-    if (/*hasBacklight &&*/
-        backlightOnBattery &&
-        backlightBatteryValue>0) {
+    if (backlightOnBattery && backlightBatteryValue > 0) {
         qDebug() << "set brightness on battery";
         if (backlightBatteryDisableIfLower &&
-            backlightBatteryValue>Backlight::getCurrentBrightness(backlightDevice)) {
+            backlightBatteryValue > Backlight::getCurrentBrightness(backlightDevice)) {
             qDebug() << "brightness is lower than battery value, ignore";
             return;
         }
-        /*if (hasBacklight) {
-            Common::adjustBacklight(backlightDevice, backlightBatteryValue);
-        } else {*/
-        Backlight::setBrightness(backlightDevice, backlightBatteryValue);
-        //}
+        Backlight::setBrightness(backlightDevice,
+                                 backlightBatteryValue);
     }
 }
 
-// do something when switched to ac power
 void App::handleOnAC()
 {
     if (notifyOnAC) {
@@ -372,24 +332,18 @@ void App::handleOnAC()
     wasVeryLowBattery = false;
 
     // brightness
-    if (/*hasBacklight &&*/
-        backlightOnAC &&
-        backlightACValue>0) {
+    if (backlightOnAC && backlightACValue > 0) {
         qDebug() << "set brightness on ac";
         if (backlightACDisableIfHigher &&
-            backlightACValue<Backlight::getCurrentBrightness(backlightDevice)) {
+            backlightACValue < Backlight::getCurrentBrightness(backlightDevice)) {
             qDebug() << "brightness is higher than ac value, ignore";
             return;
         }
-        /*if (hasBacklight) {
-            Common::adjustBacklight(backlightDevice, backlightACValue);
-        } else {*/
-        Backlight::setBrightness(backlightDevice, backlightACValue);
-        //}
+        Backlight::setBrightness(backlightDevice,
+                                 backlightACValue);
     }
 }
 
-// load default settings
 void App::loadSettings()
 {
     qDebug() << "(re)load settings...";
@@ -504,42 +458,31 @@ void App::loadSettings()
     ss->Update();
 }
 
-// register session services
 void App::registerService()
 {
     if (hasService) { return; }
     if (!QDBusConnection::sessionBus().isConnected()) {
-        qWarning("Cannot connect to D-Bus.");
+        qWarning() << tr("Cannot connect to D-Bus.");
         return;
     }
     hasService = true;
 
+    // register org.freedesktop.PowerManagement
     bool hasDesktopPM = true;
     if (!QDBusConnection::sessionBus().registerService(PM_SERVICE)) {
         qWarning() << QDBusConnection::sessionBus().lastError().message();
         hasDesktopPM = false;
-    }
-    if (!QDBusConnection::sessionBus().registerObject(PM_PATH,
-                                                      pm,
-                                                      QDBusConnection::ExportAllSlots)) {
-        qWarning() << QDBusConnection::sessionBus().lastError().message();
-        hasDesktopPM = false;
-    }
-    if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH,
-                                                      pm,
-                                                      QDBusConnection::ExportAllSlots)) {
-        qWarning() << QDBusConnection::sessionBus().lastError().message();
-        hasDesktopPM = false;
-    }
-
-    new InhibitAdaptor(pm);
-    if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH_INHIBIT, pm)) {
-        qWarning() << QDBusConnection::sessionBus().lastError().message();
-        hasDesktopPM = false;
-    }
-    if (!QDBusConnection::sessionBus().registerService(PM_SERVICE_INHIBIT)) {
-        qWarning() << QDBusConnection::sessionBus().lastError().message();
-        hasDesktopPM = false;
+    } else {
+        if (!QDBusConnection::sessionBus().registerService(PM_SERVICE_INHIBIT)) {
+            qWarning() << QDBusConnection::sessionBus().lastError().message();
+            hasDesktopPM = false;
+        } else {
+            new InhibitAdaptor(pm);
+            if (!QDBusConnection::sessionBus().registerObject(PM_FULL_PATH_INHIBIT, pm)) {
+                qWarning() << QDBusConnection::sessionBus().lastError().message();
+                hasDesktopPM = false;
+            }
+        }
     }
     qWarning() << "Enabled org.freedesktop.PowerManagement" << hasDesktopPM;
 
@@ -582,7 +525,7 @@ void App::registerService()
 
     if (!hasDesktopPK || !hasDesktopPM || !hasScreenSaver) { hasService = false; }
 
-    if (!hasService) { handleWarning(tr("Failed to setup and/or connect required services!")); }
+    if (!hasService) { handleError(tr("Failed to setup and/or connect required services!")); }
 }
 
 // dbus session inhibit status handler
@@ -623,7 +566,6 @@ void App::handleVeryLow(double left)
     }
 }
 
-// handle critical battery
 void App::handleCritical(double left)
 {
     if (left<=0 ||
@@ -644,7 +586,6 @@ void App::handleCritical(double left)
     }
 }
 
-// draw battery tray icon
 void App::drawBattery(double left)
 {
     if (!showTray &&
@@ -682,6 +623,34 @@ void App::drawBattery(double left)
                                             QString(),
                                             colorBg,
                                             colorFg));
+}
+
+void App::updateToolTip()
+{
+    if (!tray->isSystemTrayAvailable() || !tray->isVisible()) { return; }
+    double batteryLeft = man->BatteryLeft();
+    if (batteryLeft > 0 && man->HasBattery()) {
+        tray->setToolTip(QString("%1 %2%").arg(tr("Battery at")).arg(batteryLeft));
+        if (man->TimeToEmpty()>0 && man->OnBattery()) {
+            tray->setToolTip(tray->toolTip()
+                                 .append(QString(", %1 %2")
+                                             .arg(QDateTime::fromTime_t((uint)man->TimeToEmpty())
+                                                      .toUTC().toString("hh:mm")))
+                                 .arg(tr("left")));
+        }
+        if (batteryLeft > 99) { tray->setToolTip(tr("Charged")); }
+        if (!man->OnBattery() &&
+            man->BatteryLeft() <= 99) {
+            if (man->TimeToFull()>0) {
+                tray->setToolTip(tray->toolTip()
+                                     .append(QString(", %1 %2")
+                                                 .arg(QDateTime::fromTime_t((uint)man->TimeToFull())
+                                                          .toUTC().toString("hh:mm")))
+                                     .arg(tr("left")));
+            }
+            tray->setToolTip(tray->toolTip().append(QString(" (%1)").arg(tr("Charging"))));
+        }
+    } else { tray->setToolTip(tr("On AC")); }
 }
 
 // timeout, check if idle
@@ -739,13 +708,11 @@ void App::timeout()
     }
 }
 
-// reset the idle timer
 void App::resetTimer()
 {
     timeouts = 0;
 }
 
-// set "internal" monitor
 void App::setInternalMonitor()
 {
     internalMonitor = ss->GetInternalDisplay();
@@ -753,7 +720,6 @@ void App::setInternalMonitor()
     qDebug() << ss->GetDisplays();
 }
 
-// is "internal" monitor connected?
 bool App::internalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(ss->GetDisplays());
@@ -767,7 +733,6 @@ bool App::internalMonitorIsConnected()
     return false;
 }
 
-// is "external" monitor(s) connected?
 bool App::externalMonitorIsConnected()
 {
     QMapIterator<QString, bool> i(ss->GetDisplays());
@@ -782,7 +747,6 @@ bool App::externalMonitorIsConnected()
     return false;
 }
 
-// handle new inhibits
 void App::handleNewInhibitScreenSaver(const QString &application,
                                       const QString &reason,
                                       quint32 cookie)
@@ -821,7 +785,6 @@ void App::handleDelInhibitPowerManagement(quint32 cookie)
     checkDevices();
 }
 
-// show notifications
 void App::showMessage(const QString &title,
                       const QString &msg,
                       bool critical)
@@ -842,14 +805,12 @@ void App::showMessage(const QString &title,
     }
 }
 
-// reload settings if conf changed
 void App::handleConfChanged(const QString &file)
 {
     Q_UNUSED(file)
     loadSettings();
 }
 
-// disable hibernate if enabled
 void App::disableHibernate()
 {
     if (criticalAction == criticalHibernate) {
@@ -884,7 +845,6 @@ void App::disableHibernate()
     }
 }
 
-// disable suspend if enabled
 void App::disableSuspend()
 {
     if (lidActionBattery == lidSleep) {
@@ -913,7 +873,6 @@ void App::disableSuspend()
     }
 }
 
-// prepare for suspend
 void App::handlePrepareForSuspend()
 {
     /*qDebug() << "prepare for suspend";
@@ -922,7 +881,6 @@ void App::handlePrepareForSuspend()
     qDebug() << "do nothing";
 }
 
-// prepare for resume
 void App::handlePrepareForResume()
 {
     qDebug() << "prepare for resume ...";
@@ -957,11 +915,9 @@ void App::handleTrayWheel(TrayIcon::WheelAction action)
     }
 }
 
-// check devices if changed
 void App::handleDeviceChanged(const QString &path)
 {
     Q_UNUSED(path)
-    qDebug() << "DEVICE CHANGED" << path;
     checkDevices();
 }
 
@@ -984,7 +940,6 @@ void App::handleWarning(const QString &message)
     showMessage(tr("Warning"), message, true);
 }
 
-// catch wheel events
 bool TrayIcon::event(QEvent *e)
 {
     if (e->type() == QEvent::Wheel) {

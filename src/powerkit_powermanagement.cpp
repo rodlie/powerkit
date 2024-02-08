@@ -16,6 +16,8 @@
 
 #include "powerkit_common.h"
 
+using namespace PowerKit;
+
 PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
 {
     timer.setInterval(PM_TIMEOUT);

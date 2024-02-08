@@ -12,9 +12,14 @@
 #include "powerkit_dialog.h"
 #include "powerkit_common.h"
 #include "powerkit_backlight.h"
+#include "powerkit_client.h"
 
+#define CMD_OPT_CONFIG "--config"
 #define CMD_OPT_BRIGHTNESS_UP "--set-brightness-up"
 #define CMD_OPT_BRIGHTNESS_DOWN "--set-brightness-down"
+#define CMD_OPT_SLEEP "--sleep"
+#define CMD_OPT_HIBERNATE "--hibernate"
+#define CMD_OPT_LOCK "--lock"
 
 int main(int argc, char *argv[])
 {
@@ -23,8 +28,15 @@ int main(int argc, char *argv[])
     QCoreApplication::setOrganizationDomain("org");
     QCoreApplication::setApplicationVersion(QString::fromUtf8(POWERKIT_VERSION));
 
-    QStringList args = QApplication::arguments();
-    if (args.contains("--config")) {
+    const auto args = QApplication::arguments();
+    bool openConfig = args.contains(CMD_OPT_CONFIG);
+    bool setBrightness = (args.contains(CMD_OPT_BRIGHTNESS_UP) ||
+                          args.contains(CMD_OPT_BRIGHTNESS_DOWN));
+    bool setSleep = args.contains(CMD_OPT_SLEEP);
+    bool setHibernate = args.contains(CMD_OPT_HIBERNATE);
+    bool setLock = args.contains(CMD_OPT_LOCK);
+
+    if (openConfig) {
         if (!QDBusConnection::sessionBus().registerService(POWERKIT_CONFIG)) {
             qWarning() << QObject::tr("A powerkit config instance is already running");
             return 1;
@@ -32,12 +44,30 @@ int main(int argc, char *argv[])
         PowerKit::Dialog dialog;
         dialog.show();
         return a.exec();
-    } else if (args.contains(CMD_OPT_BRIGHTNESS_UP) ||
-               args.contains(CMD_OPT_BRIGHTNESS_DOWN)) {
+    } else if (setBrightness) {
         int val = PowerKit::Backlight::getCurrentBrightness();
         if (args.contains(CMD_OPT_BRIGHTNESS_UP)) { val += BACKLIGHT_MOVE_VALUE; }
         else if (args.contains(CMD_OPT_BRIGHTNESS_DOWN)) { val -= BACKLIGHT_MOVE_VALUE; }
         return PowerKit::Backlight::setBrightness(val);
+    } else if (setSleep || setHibernate || setLock) {
+        QDBusInterface manager(POWERKIT_SERVICE,
+                               POWERKIT_PATH,
+                               POWERKIT_MANAGER,
+                               QDBusConnection::sessionBus());
+        if (!manager.isValid()) {
+            qWarning() << QObject::tr("Unable to connect to the powerkit service");
+            return 1;
+        }
+        if (setSleep && setHibernate) {
+            return PowerKit::Client::suspendThenHibernate(&manager);
+        } else if (setSleep) {
+            return PowerKit::Client::suspend(&manager);
+        } else if (setHibernate) {
+            return PowerKit::Client::hibernate(&manager);
+        } else if (setLock) {
+            return PowerKit::Client::lockScreen(&manager);
+        }
+        return 1;
     }
 
     QDBusInterface session(POWERKIT_SERVICE,

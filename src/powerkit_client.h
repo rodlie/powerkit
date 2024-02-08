@@ -26,9 +26,10 @@ namespace PowerKit
         static bool canRestart(QDBusInterface *iface);
         static bool canPowerOff(QDBusInterface *iface);
         static bool lidIsPresent(QDBusInterface *iface);
-        static void lockScreen(QDBusInterface *iface);
-        static void hibernate(QDBusInterface *iface);
-        static void suspend(QDBusInterface *iface);
+        static bool lockScreen(QDBusInterface *iface);
+        static bool hibernate(QDBusInterface *iface);
+        static bool suspend(QDBusInterface *iface);
+        static bool suspendThenHibernate(QDBusInterface *iface);
         static bool restart(QDBusInterface *iface);
         static bool poweroff(QDBusInterface *iface);
     };

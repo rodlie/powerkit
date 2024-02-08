@@ -4,7 +4,7 @@
 
 # SYNOPSIS
 
-powerkit *`[--config]`* *`[--set-brightness-up]`* *`[--set-brightness-down]`*
+powerkit *`[--config]`* *`[--set-brightness-up]`* *`[--set-brightness-down]`* *`[--sleep]`* *`[--hibernate]`* *`[--lock]`*
 
 # DESCRIPTION
 
@@ -174,6 +174,15 @@ cpack -G RPM
 
 *`--set-brightness-down`*
 : Set default display brightness down.
+
+*`--sleep`*
+: Suspend computer now. Can be combined with *`--hibernate`* for suspend then hibernate after X amount of time.
+
+*`--hibernate`*
+: Hibernate computer now. Can be combined with *`--sleep`* for suspend then hibernate after X amount of time.
+
+*`--lock`*
+: Lock screen.
 
 # FILES
 

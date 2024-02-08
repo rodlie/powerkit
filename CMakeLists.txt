@@ -55,7 +55,7 @@ qt_add_dbus_adaptor(
     ADAPTERS
     share/org.freedesktop.PowerManagement.Inhibit.xml
     ${PROJECT_NAME}_powermanagement.h
-    PowerManagement
+    PowerKit::PowerManagement
     InhibitAdaptor
 )
 

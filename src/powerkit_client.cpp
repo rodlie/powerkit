@@ -131,34 +131,36 @@ bool Client::lidIsPresent(QDBusInterface *iface)
     return  ok;
 }
 
-void Client::lockScreen(QDBusInterface *iface)
+bool Client::lockScreen(QDBusInterface *iface)
 {
-    if (!iface) { return; }
-    qDebug() << "lock screen";
-    if (!iface->isValid()) { return; }
-    QDBusMessage reply = iface->call("LockScreen");
-    bool ok = reply.errorMessage().isEmpty();
-    qDebug() << "locked screen?" << ok;
+    if (!iface) { return false; }
+    if (!iface->isValid()) { return false; }
+    const auto reply = iface->call("LockScreen");
+    return reply.errorMessage().isEmpty();
 }
 
-void Client::hibernate(QDBusInterface *iface)
+bool Client::hibernate(QDBusInterface *iface)
 {
-    if (!iface) { return; }
-    qDebug() << "hibernate";
-    if (!iface->isValid()) { return; }
-    QDBusMessage reply = iface->call("Hibernate");
-    bool ok = reply.errorMessage().isEmpty();
-    qDebug() << "reply" << ok;
+    if (!iface) { return false; }
+    if (!iface->isValid()) { return false; }
+    const auto reply = iface->call("Hibernate");
+    return reply.errorMessage().isEmpty();
 }
 
-void Client::suspend(QDBusInterface *iface)
+bool Client::suspend(QDBusInterface *iface)
 {
-    if (!iface) { return; }
-    qDebug() << "suspend";
-    if (!iface->isValid()) { return; }
-    QDBusMessage reply = iface->call("Suspend");
-    bool ok = reply.errorMessage().isEmpty();
-    qDebug() << "reply" << ok;
+    if (!iface) { return false; }
+    if (!iface->isValid()) { return false; }
+    const auto reply = iface->call("Suspend");
+    return reply.errorMessage().isEmpty();
+}
+
+bool Client::suspendThenHibernate(QDBusInterface *iface)
+{
+    if (!iface) { return false; }
+    if (!iface->isValid()) { return false; }
+    const auto reply = iface->call("SuspendThenHibernate");
+    return reply.errorMessage().isEmpty();
 }
 
 bool Client::restart(QDBusInterface *iface)
