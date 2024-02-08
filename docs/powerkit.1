@@ -2,14 +2,14 @@
 .\"
 .TH "POWERKIT" "1" "February 2024" "Version 2.0.0" "PowerKit Documentation"
 .SH NAME
-\f[I]powerkit\f[R] - Desktop independent Linux power manager
+\f[I]powerkit\f[R] - Desktop independent power manager for Linux
 .SH SYNOPSIS
 powerkit \f[I]\f[CI][--config]\f[I]\f[R]
 \f[I]\f[CI][--set-brightness-up]\f[I]\f[R]
 \f[I]\f[CI][--set-brightness-down]\f[I]\f[R]
 .SH DESCRIPTION
-Desktop independent Linux power manager for alternative X11 desktop
-environments and window managers.
+Desktop independent power manager for use with alternative X11 desktop
+environments and window managers on Linux.
 .IP \[bu] 2
 Implements \f[I]\f[CI]org.freedesktop.ScreenSaver\f[I]\f[R] service
 .IP \[bu] 2
@@ -111,8 +111,7 @@ work with powerkit.
 .PP
 Common use cases are audio playback, downloading, rendering and similar.
 .SS Google Chrome/Chromium does not inhibit the screen saver or power manager!?
-\f[I]Chrome (https://chrome.google.com)\f[R] does not use
-\f[I]org.freedesktop.ScreenSaver\f[R] or
+Chrome does not use \f[I]org.freedesktop.ScreenSaver\f[R] or
 \f[I]org.freedesktop.PowerManagement\f[R] until it detects a supported
 desktop environment.
 Add the following to \f[I]\f[CI]\[ti]/.bashrc\f[I]\f[R] or the
@@ -123,6 +122,14 @@ supported desktop environment:
 export DESKTOP_SESSION=xfce
 export XDG_CURRENT_DESKTOP=xfce
 .EE
+.SS Mozilla Firefox does not inhibit the power manager during audio playback and/or downloading!?
+This is an issue with Firefox (missing feature).
+Use a different browser or open a request on the Firefox issue tracker.
+.PP
+Firefox should inhibit the power manager during audio playback
+(regardless of video) and during download (active queue).
+Currently Firefox only inhibit the screen saver during video playback.
+Chrome/Chromium does this correctly.
 .SH REQUIREMENTS
 powerkit requires the following dependencies:
 .IP \[bu] 2
@@ -151,19 +158,25 @@ review the most common build options:
 \f[I]\f[CI]CMAKE_BUILD_TYPE=<Release/Debug>\f[I]\f[R] - Build type.
 \f[I]\f[CI]Release\f[I]\f[R] recommended
 .PP
-Now configure powerkit with CMake and build (\f[I]example for packaging
-purposes\f[R]).
+Now configure powerkit with CMake and build:
 .IP
 .EX
+mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
 make -j4
 .EE
+.PP
+All you need is the \f[I]\f[CI]powerkit\f[I]\f[R] binary located in the
+build directory, you can run it from any location.
+.SS Install
+Use regular \f[I]\f[CI]make install\f[I]\f[R] with optional
+\f[I]\f[CI]DESTDIR\f[I]\f[R]:
 .IP
 .EX
 make DESTDIR=<package_directory> install
 .EE
 .PP
-or
+or make a native package:
 .IP
 .EX
 cpack -G DEB
@@ -205,7 +218,8 @@ Set default display brightness down.
 \f[I]\f[CI]\[ti]/.config/powerkit/powerkit.conf\f[I]\f[R]
 Per user configuration file.
 .SH SEE ALSO
-\f[B]\f[CB]xsecurelock\f[B]\f[R](1), \f[B]\f[CB]UPower\f[B]\f[R](7)
+\f[B]\f[CB]xsecurelock\f[B]\f[R](1), \f[B]\f[CB]UPower\f[B]\f[R](7),
+\f[B]\f[CB]systemd-logind\f[B]\f[R](8)
 .SH BUGS
 See \f[B]https://github.com/rodlie/powerkit/issues\f[R].
 .SH COPYRIGHT

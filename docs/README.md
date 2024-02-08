@@ -1,6 +1,6 @@
 # NAME
 
-*powerkit* - Desktop independent Linux power manager
+*powerkit* - Desktop independent power manager for Linux
 
 # SYNOPSIS
 
@@ -8,7 +8,7 @@ powerkit *`[--config]`* *`[--set-brightness-up]`* *`[--set-brightness-down]`*
 
 # DESCRIPTION
 
-Desktop independent Linux power manager for alternative X11 desktop environments and window managers.
+Desktop independent power manager for use with alternative X11 desktop environments and window managers on Linux.
 
  * Implements *``org.freedesktop.ScreenSaver``* service
  * Implements *``org.freedesktop.PowerManagement.Inhibit``* service
@@ -85,12 +85,18 @@ Common use cases are audio playback, downloading, rendering and similar.
 
 ## Google Chrome/Chromium does not inhibit the screen saver or power manager!?
 
-*[Chrome](https://chrome.google.com)* does not use *org.freedesktop.ScreenSaver* or *org.freedesktop.PowerManagement* until it detects a supported desktop environment. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a supported desktop environment:
+Chrome does not use *org.freedesktop.ScreenSaver* or *org.freedesktop.PowerManagement* until it detects a supported desktop environment. Add the following to *``~/.bashrc``* or the *``google-chrome``* launcher if you don't run a supported desktop environment:
 
 ```
 export DESKTOP_SESSION=xfce
 export XDG_CURRENT_DESKTOP=xfce
 ```
+
+## Mozilla Firefox does not inhibit the power manager during audio playback and/or downloading!?
+
+This is an issue with Firefox (missing feature). Use a different browser or open a request on the Firefox issue tracker.
+
+Firefox should inhibit the power manager during audio playback (regardless of video) and during download (active queue). Currently Firefox only inhibit the screen saver during video playback. Chrome/Chromium does this correctly.
 
 # REQUIREMENTS
 
@@ -111,17 +117,25 @@ First make sure you have the required dependencies installed, then review the mo
  * *``CMAKE_INSTALL_PREFIX=</usr/local>``* - Install target. *``/usr``* recommended.
  * *``CMAKE_BUILD_TYPE=<Release/Debug>``* - Build type. *``Release``* recommended
 
-Now configure powerkit with CMake and build (*example for packaging purposes*).
+Now configure powerkit with CMake and build:
 
 ```
+mkdir build && cd build
 cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
 make -j4
 ```
 
+All you need is the *``powerkit``* binary located in the build directory, you can run it from any location.
+
+## Install
+
+Use regular *``make install``* with optional *``DESTDIR``*:
+
 ```
 make DESTDIR=<package_directory> install
 ```
-or
+
+or make a native package:
 
 ```
 cpack -G DEB
@@ -161,7 +175,7 @@ cpack -G RPM
 
 # SEE ALSO
 
-**``xsecurelock``**(1), **``UPower``**(7)
+**``xsecurelock``**(1), **``UPower``**(7), **``systemd-logind``**(8)
 
 # BUGS
 
