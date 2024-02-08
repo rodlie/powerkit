@@ -7,5 +7,5 @@ echo "% POWERKIT(1) Version ${VERSION} | PowerKit Documentation" > tmp.md
 echo "% Ole-André Rodlie" >> tmp.md
 echo "% ${MONTH} ${YEAR}" >> tmp.md
 cat docs/README.md >> tmp.md
-$PANDOC tmp.md -s -t man > share/powerkit.1
+$PANDOC tmp.md -s -t man > docs/powerkit.1
 rm tmp.md

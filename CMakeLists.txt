@@ -131,7 +131,7 @@ install(TARGETS
         DESTINATION
         ${CMAKE_INSTALL_BINDIR})
 install(FILES
-        share/${PROJECT_NAME}.1
+        docs/${PROJECT_NAME}.1
         DESTINATION
         ${CMAKE_INSTALL_MANDIR}/man1)
 install(FILES
