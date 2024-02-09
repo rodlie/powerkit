@@ -59,7 +59,7 @@ Dialog::Dialog(QWidget *parent,
     // setup dialog
     if (quitOnClose) { setAttribute(Qt::WA_QuitOnClose, true); }
     setWindowTitle(tr("Power Manager"));
-    setMinimumSize(QSize(390, 125));
+    setMinimumSize(QSize(680, 360));
 
     // setup cpu timer
     cpuTimer = new QTimer(this);
@@ -112,82 +112,81 @@ void Dialog::setupWidgets()
     // setup theme
     Theme::setAppTheme();
     Theme::setIconTheme();
+    setStyleSheet("QLabel { font-weight: bold; }");
     setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
 
     // setup widgets
-    QVBoxLayout *layout = new QVBoxLayout(this);
+    const auto layout = new QVBoxLayout(this);
     layout->setMargin(5);
     layout->setSpacing(0);
 
     // status widgets
-
-    const auto statusWidget = new QGroupBox(this);
-    statusWidget->setTitle(tr("Status"));
+    const auto statusWidget = new QWidget(this);
     statusWidget->setSizePolicy(QSizePolicy::Expanding,
-                                QSizePolicy::Expanding);
+                                QSizePolicy::Fixed);
     const auto statusLayout = new QHBoxLayout(statusWidget);
-    //statusLayout->setMargin(0);
-    //statusLayout->setSpacing(0);
 
     batteryStatusLabel = new QLabel(this);
-    batteryStatusLabel->setMaximumSize(64, 64);
-    batteryStatusLabel->setMinimumSize(64, 64);
+
+    int iconLabelSize = 64;
+    batteryStatusLabel->setMaximumSize(iconLabelSize, iconLabelSize);
+    batteryStatusLabel->setMinimumSize(iconLabelSize, iconLabelSize);
 
     cpuFreqLabel = new QLabel(this);
-    cpuFreqLabel->setMaximumSize(64, 64);
-    cpuFreqLabel->setMinimumSize(64, 64);
+    cpuFreqLabel->setMaximumSize(iconLabelSize, iconLabelSize);
+    cpuFreqLabel->setMinimumSize(iconLabelSize, iconLabelSize);
 
     cpuTempLabel = new QLabel(this);
-    cpuTempLabel->setMaximumSize(64, 64);
-    cpuTempLabel->setMinimumSize(64, 64);
+    cpuTempLabel->setMaximumSize(iconLabelSize, iconLabelSize);
+    cpuTempLabel->setMinimumSize(iconLabelSize, iconLabelSize);
 
     statusLayout->addWidget(batteryStatusLabel);
     statusLayout->addWidget(cpuFreqLabel);
     statusLayout->addWidget(cpuTempLabel);
 
     // battery
-    QGroupBox *batteryContainer = new QGroupBox(this);
+    const auto batteryContainer = new QGroupBox(this);
     batteryContainer->setTitle(tr("On Battery"));
     batteryContainer->setSizePolicy(QSizePolicy::Expanding,
                                     QSizePolicy::Expanding);
-    QVBoxLayout *batteryContainerLayout = new QVBoxLayout(batteryContainer);
-    batteryContainerLayout->setMargin(0);
+    const auto batteryContainerLayout = new QVBoxLayout(batteryContainer);
     batteryContainerLayout->setSpacing(0);
 
-    QWidget *lidActionBatteryContainer = new QWidget(this);
-    QHBoxLayout *lidActionBatteryContainerLayout = new QHBoxLayout(lidActionBatteryContainer);
+    const auto lidActionBatteryContainer = new QWidget(this);
+    const auto lidActionBatteryContainerLayout = new QHBoxLayout(lidActionBatteryContainer);
+    lidActionBatteryContainerLayout->setMargin(0);
+
     lidActionBattery = new QComboBox(this);
     lidActionBattery->setMaximumWidth(MAX_WIDTH);
     lidActionBattery->setMinimumWidth(MAX_WIDTH);
-    lidActionBatteryLabel = new QLabel(this);
 
-    QLabel *lidActionBatteryIcon = new QLabel(this);
-    lidActionBatteryIcon->setMaximumSize(48, 48);
-    lidActionBatteryIcon->setMinimumSize(48, 48);
-    lidActionBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON)
-                                    .pixmap(QSize(48, 48)));
-    lidActionBatteryLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                                   .arg(tr("Lid action")));
+    lidActionBatteryLabel = new QLabel(this);
+    lidActionBatteryLabel->setText(tr("Lid action"));
     lidActionBatteryLabel->setToolTip(tr("What to do when the lid is closed and running on battery."));
-    lidActionBatteryContainerLayout->addWidget(lidActionBatteryIcon);
+
     lidActionBatteryContainerLayout->addWidget(lidActionBatteryLabel);
     lidActionBatteryContainerLayout->addStretch();
     lidActionBatteryContainerLayout->addWidget(lidActionBattery);
-    batteryContainerLayout->addWidget(lidActionBatteryContainer);
 
-    QWidget *criticalBatteryContainer = new QWidget(this);
-    QHBoxLayout *criticalBatteryContainerLayout = new QHBoxLayout(criticalBatteryContainer);
+    const auto criticalBatteryContainer = new QWidget(this);
+    const auto criticalBatteryContainerLayout = new QHBoxLayout(criticalBatteryContainer);
+    criticalBatteryContainerLayout->setMargin(0);
+
     criticalBattery = new QSpinBox(this);
     criticalBattery->setMaximumWidth(MAX_WIDTH);
     criticalBattery->setMinimumWidth(MAX_WIDTH);
     criticalBattery->setMinimum(0);
     criticalBattery->setMaximum(99);
     criticalBattery->setSuffix(tr(" %"));
-    QLabel *criticalBatteryLabel = new QLabel(this);
+    criticalBattery->setPrefix(tr("At "));
 
-    QWidget *criticalActionBatteryContainer = new QWidget(this);
+    const auto criticalBatteryLabel = new QLabel(this);
+    const auto criticalActionBatteryContainer = new QWidget(this);
     criticalActionBatteryContainer->setContentsMargins(0, 0, 0, 0);
-    QVBoxLayout *criticalActionBatteryContainerLayout = new QVBoxLayout(criticalActionBatteryContainer);
+
+    const auto criticalActionBatteryContainerLayout = new QVBoxLayout(criticalActionBatteryContainer);
+    criticalActionBatteryContainerLayout->setMargin(0);
+
     criticalActionBatteryContainerLayout->setMargin(0);
     criticalActionBatteryContainerLayout->setSpacing(0);
     criticalActionBattery = new QComboBox(this);
@@ -196,32 +195,29 @@ void Dialog::setupWidgets()
     criticalActionBatteryContainerLayout->addWidget(criticalBattery);
     criticalActionBatteryContainerLayout->addWidget(criticalActionBattery);
 
-    QLabel *criticalBatteryIcon = new QLabel(this);
-    criticalBatteryIcon->setMaximumSize(48, 48);
-    criticalBatteryIcon->setMinimumSize(48, 48);
-    criticalBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_BATTERY_ICON_CRIT)
-                                   .pixmap(QSize(48, 48)));
-    criticalBatteryLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                                  .arg(tr("Critical battery")));
+    criticalBatteryLabel->setText(tr("Critical Action"));
     criticalBatteryLabel->setToolTip(tr("What to do when your battery is critical."));
-    criticalBatteryContainerLayout->addWidget(criticalBatteryIcon);
     criticalBatteryContainerLayout->addWidget(criticalBatteryLabel);
     criticalBatteryContainerLayout->addStretch();
     criticalBatteryContainerLayout->addWidget(criticalActionBatteryContainer);
 
-    QWidget *sleepBatteryContainer = new QWidget(this);
-    QHBoxLayout *sleepBatteryContainerLayout = new QHBoxLayout(sleepBatteryContainer);
+    const auto sleepBatteryContainer = new QWidget(this);
+    const auto sleepBatteryContainerLayout = new QHBoxLayout(sleepBatteryContainer);
+    sleepBatteryContainerLayout->setMargin(0);
+
     autoSleepBattery = new QSpinBox(this);
     autoSleepBattery->setMaximumWidth(MAX_WIDTH);
     autoSleepBattery->setMinimumWidth(MAX_WIDTH);
     autoSleepBattery->setMinimum(0);
     autoSleepBattery->setMaximum(1000);
     autoSleepBattery->setSuffix(QString(" %1").arg(tr("min")));
-    QLabel *sleepBatteryLabel = new QLabel(this);
+    autoSleepBattery->setPrefix(QString("%1 ").arg(tr("After")));
 
-    QWidget *sleepActionBatteryContainer = new QWidget(this);
+    const auto sleepBatteryLabel = new QLabel(this);
+    const auto sleepActionBatteryContainer = new QWidget(this);
+    const auto sleepActionBatteryContainerLayout = new QVBoxLayout(sleepActionBatteryContainer);
+
     sleepActionBatteryContainer->setContentsMargins(0, 0, 0, 0);
-    QVBoxLayout *sleepActionBatteryContainerLayout = new QVBoxLayout(sleepActionBatteryContainer);
     sleepActionBatteryContainerLayout->setMargin(0);
     sleepActionBatteryContainerLayout->setSpacing(0);
     autoSleepBatteryAction = new QComboBox(this);
@@ -230,15 +226,8 @@ void Dialog::setupWidgets()
     sleepActionBatteryContainerLayout->addWidget(autoSleepBattery);
     sleepActionBatteryContainerLayout->addWidget(autoSleepBatteryAction);
 
-    QLabel *sleepBatteryIcon = new QLabel(this);
-    sleepBatteryIcon->setMaximumSize(48, 48);
-    sleepBatteryIcon->setMinimumSize(48, 48);
-    sleepBatteryIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON)
-                                .pixmap(QSize(48, 48)));
-    sleepBatteryLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                               .arg(tr("Suspend after")));
+    sleepBatteryLabel->setText(tr("Suspend Action"));
     sleepBatteryLabel->setToolTip(tr("Enable automatically suspend when on battery."));
-    sleepBatteryContainerLayout->addWidget(sleepBatteryIcon);
     sleepBatteryContainerLayout->addWidget(sleepBatteryLabel);
     sleepBatteryContainerLayout->addStretch();
     sleepBatteryContainerLayout->addWidget(sleepActionBatteryContainer);
@@ -249,7 +238,6 @@ void Dialog::setupWidgets()
     backlightSliderBattery->setMinimum(1);
     backlightSliderBattery->setMaximum(1);
     backlightSliderBattery->setValue(0);
-    backlightSliderBattery->setMaximumWidth(MAX_WIDTH);
 
     backlightBatteryCheck = new QCheckBox(this);
     backlightBatteryCheck->setCheckable(true);
@@ -264,84 +252,90 @@ void Dialog::setupWidgets()
     backlightBatteryLowerCheck->setToolTip(tr("If your current brightness value is lower"
                                               " do not apply a brightness override (on battery)."));
 
-    QWidget *batteryBacklightOptContainer = new QWidget(this);
-    QVBoxLayout *batteryBacklightOptContainerLayout = new QVBoxLayout(batteryBacklightOptContainer);
+    const auto backlightSliderBatteryContainer = new QWidget(this);
+    const auto backlightSliderBatteryLayout = new QHBoxLayout(backlightSliderBatteryContainer);
+    backlightSliderBatteryContainer->setContentsMargins(0, 0, 0, 0);
+    backlightSliderBatteryLayout->setMargin(0);
+
+    backlightSliderBatteryLayout->addWidget(backlightBatteryCheck);
+    backlightSliderBatteryLayout->addWidget(backlightSliderBattery);
+
+    const auto batteryBacklightOptContainer = new QWidget(this);
+    const auto batteryBacklightOptContainerLayout = new QVBoxLayout(batteryBacklightOptContainer);
+
     batteryBacklightOptContainer->setContentsMargins(0, 0, 0, 0);
     batteryBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
+    batteryBacklightOptContainer->setMinimumWidth(MAX_WIDTH);
     batteryBacklightOptContainerLayout->setMargin(0);
     batteryBacklightOptContainerLayout->setContentsMargins(0, 0, 0, 0);
-    batteryBacklightOptContainerLayout->addWidget(backlightSliderBattery);
+    batteryBacklightOptContainerLayout->addWidget(backlightSliderBatteryContainer);
     batteryBacklightOptContainerLayout->addWidget(backlightBatteryLowerCheck);
 
-    QWidget *batteryBacklightContainer = new QWidget(this);
-    QHBoxLayout *batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
-    batteryBacklightLabel = new QLabel(this);
-    QLabel *batteryBacklightIcon = new QLabel(this);
+    const auto batteryBacklightContainer = new QWidget(this);
+    const auto batteryBacklightContainerLayout = new QHBoxLayout(batteryBacklightContainer);
+    batteryBacklightContainerLayout->setMargin(0);
 
-    batteryBacklightIcon->setMaximumSize(48, 48);
-    batteryBacklightIcon->setMinimumSize(48, 48);
-    batteryBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
-                                .pixmap(QSize(48, 48)));
-    batteryBacklightLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                                   .arg(tr("Brightness")));
+    batteryBacklightLabel = new QLabel(this);
+    batteryBacklightLabel->setText(tr("Brightness"));
     batteryBacklightLabel->setToolTip(tr("Override brightness when switched to battery power."));
-    batteryBacklightContainerLayout->addWidget(batteryBacklightIcon);
+
     batteryBacklightContainerLayout->addWidget(batteryBacklightLabel);
     batteryBacklightContainerLayout->addStretch();
-    batteryBacklightContainerLayout->addWidget(backlightBatteryCheck);
     batteryBacklightContainerLayout->addWidget(batteryBacklightOptContainer);
 
     // add battery widgets to container
+    batteryContainerLayout->addWidget(lidActionBatteryContainer);
+    batteryContainerLayout->addSpacing(10);
     batteryContainerLayout->addWidget(sleepBatteryContainer);
+    batteryContainerLayout->addSpacing(10);
     batteryContainerLayout->addWidget(criticalBatteryContainer);
-    batteryContainerLayout->addWidget(batteryBacklightContainer);
+    batteryContainerLayout->addSpacing(10);
     batteryContainerLayout->addStretch();
+    batteryContainerLayout->addWidget(batteryBacklightContainer);
 
     // AC
-    QGroupBox *acContainer = new QGroupBox(this);
+    const auto acContainer = new QGroupBox(this);
     acContainer->setTitle(tr("On AC"));
-    QVBoxLayout *acContainerLayout = new QVBoxLayout(acContainer);
-    acContainerLayout->setMargin(0);
+    const auto acContainerLayout = new QVBoxLayout(acContainer);
     acContainerLayout->setSpacing(0);
 
-    QWidget *lidActionACContainer = new QWidget(this);
-    QHBoxLayout *lidActionACContainerLayout = new QHBoxLayout(lidActionACContainer);
+    const auto lidActionACContainer = new QWidget(this);
+    const auto lidActionACContainerLayout = new QHBoxLayout(lidActionACContainer);
+    lidActionACContainerLayout->setMargin(0);
 
     lidActionAC = new QComboBox(this);
     lidActionAC->setMaximumWidth(MAX_WIDTH);
     lidActionAC->setMinimumWidth(MAX_WIDTH);
     lidActionACLabel = new QLabel(this);
 
-    QLabel *lidActionACIcon = new QLabel(this);
-    lidActionACIcon->setMaximumSize(48, 48);
-    lidActionACIcon->setMinimumSize(48, 48);
-    lidActionACIcon->setPixmap(QIcon::fromTheme(DEFAULT_VIDEO_ICON)
-                               .pixmap(QSize(48, 48)));
-    lidActionACLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                              .arg(tr("Lid action")));
+    lidActionACLabel->setText(tr("Lid action"));
     lidActionACLabel->setToolTip(tr("What to do when the lid is closed and running on AC."));
-    lidActionACContainerLayout->addWidget(lidActionACIcon);
     lidActionACContainerLayout->addWidget(lidActionACLabel);
     lidActionACContainerLayout->addStretch();
     lidActionACContainerLayout->addWidget(lidActionAC);
     acContainerLayout->addWidget(lidActionACContainer);
 
-    QWidget *sleepACContainer = new QWidget(this);
-    QHBoxLayout *sleepACContainerLayout = new QHBoxLayout(sleepACContainer);
+    const auto sleepACContainer = new QWidget(this);
+    const auto sleepACContainerLayout = new QHBoxLayout(sleepACContainer);
+    sleepACContainerLayout->setMargin(0);
+
     autoSleepAC = new QSpinBox(this);
     autoSleepAC->setMaximumWidth(MAX_WIDTH);
     autoSleepAC->setMinimumWidth(MAX_WIDTH);
     autoSleepAC->setMinimum(0);
     autoSleepAC->setMaximum(1000);
     autoSleepAC->setSuffix(QString(" %1").arg(tr("min")));
-    QLabel *sleepACLabel = new QLabel(this);
+    autoSleepAC->setPrefix(QString("%1 ").arg(tr("After")));
+
+    const auto sleepACLabel = new QLabel(this);
 
     sleepACContainerLayout->addWidget(sleepACLabel);
     acContainerLayout->addWidget(sleepACContainer);
 
-    QWidget *sleepActionACContainer = new QWidget(this);
+    const auto sleepActionACContainer = new QWidget(this);
+    const auto sleepActionACContainerLayout = new QVBoxLayout(sleepActionACContainer);
+
     sleepActionACContainer->setContentsMargins(0, 0, 0, 0);
-    QVBoxLayout *sleepActionACContainerLayout = new QVBoxLayout(sleepActionACContainer);
     sleepActionACContainerLayout->setMargin(0);
     sleepActionACContainerLayout->setSpacing(0);
     autoSleepACAction = new QComboBox(this);
@@ -350,15 +344,8 @@ void Dialog::setupWidgets()
     sleepActionACContainerLayout->addWidget(autoSleepAC);
     sleepActionACContainerLayout->addWidget(autoSleepACAction);
 
-    QLabel *sleepACIcon = new QLabel(this);
-    sleepACIcon->setMaximumSize(48, 48);
-    sleepACIcon->setMinimumSize(48, 48);
-    sleepACIcon->setPixmap(QIcon::fromTheme(DEFAULT_SUSPEND_ICON)
-                           .pixmap(QSize(48, 48)));
-    sleepACLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                          .arg(tr("Suspend after")));
+    sleepACLabel->setText(tr("Suspend Action"));
     sleepACLabel->setToolTip(tr("Enable automatically suspend when on AC."));
-    sleepACContainerLayout->addWidget(sleepACIcon);
     sleepACContainerLayout->addWidget(sleepACLabel);
     sleepACContainerLayout->addStretch();
     sleepACContainerLayout->addWidget(sleepActionACContainer);
@@ -369,7 +356,6 @@ void Dialog::setupWidgets()
     backlightSliderAC->setMinimum(1);
     backlightSliderAC->setMaximum(1);
     backlightSliderAC->setValue(0);
-    backlightSliderAC->setMaximumWidth(MAX_WIDTH);
 
     backlightACCheck = new QCheckBox(this);
     backlightACCheck->setCheckable(true);
@@ -384,143 +370,151 @@ void Dialog::setupWidgets()
     backlightACHigherCheck->setToolTip(tr("If your current brightness value is higher"
                                           " do not apply a brightness override (on AC)."));
 
-    QWidget *acBacklightOptContainer = new QWidget(this);
-    QVBoxLayout *acBacklightOptContainerLayout = new QVBoxLayout(acBacklightOptContainer);
+    const auto backlightSliderAcContainer = new QWidget(this);
+    const auto backlightSliderAcLayout = new QHBoxLayout(backlightSliderAcContainer);
+    backlightSliderAcContainer->setContentsMargins(0, 0, 0, 0);
+    backlightSliderAcLayout->setMargin(0);
+
+    backlightSliderAcLayout->addWidget(backlightACCheck);
+    backlightSliderAcLayout->addWidget(backlightSliderAC);
+
+    const auto acBacklightOptContainer = new QWidget(this);
+    const auto acBacklightOptContainerLayout = new QVBoxLayout(acBacklightOptContainer);
+
     acBacklightOptContainer->setContentsMargins(0, 0, 0, 0);
     acBacklightOptContainer->setMaximumWidth(MAX_WIDTH);
+    acBacklightOptContainer->setMinimumWidth(MAX_WIDTH);
     acBacklightOptContainerLayout->setMargin(0);
     acBacklightOptContainerLayout->setContentsMargins(0, 0, 0, 0);
-    acBacklightOptContainerLayout->addWidget(backlightSliderAC);
+    acBacklightOptContainerLayout->addWidget(backlightSliderAcContainer);
     acBacklightOptContainerLayout->addWidget(backlightACHigherCheck);
 
-    QWidget *acBacklightContainer = new QWidget(this);
-    QHBoxLayout *acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
+    const auto acBacklightContainer = new QWidget(this);
+    const auto acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
     acBacklightLabel = new QLabel(this);
-    QLabel *acBacklightIcon = new QLabel(this);
 
-    acBacklightIcon->setMaximumSize(48, 48);
-    acBacklightIcon->setMinimumSize(48, 48);
-    acBacklightIcon->setPixmap(QIcon::fromTheme(DEFAULT_BACKLIGHT_ICON)
-                                .pixmap(QSize(48, 48)));
-    acBacklightLabel->setText(QString("<h3 style=\"font-weight:normal;\">%1</h3>")
-                              .arg(tr("Brightness")));
+    acBacklightLabel->setText(tr("Brightness"));
     acBacklightLabel->setToolTip(tr("Override brightness when switched to AC power."));
-    acBacklightContainerLayout->addWidget(acBacklightIcon);
     acBacklightContainerLayout->addWidget(acBacklightLabel);
     acBacklightContainerLayout->addStretch();
-    acBacklightContainerLayout->addWidget(backlightACCheck);
     acBacklightContainerLayout->addWidget(acBacklightOptContainer);
 
     // add widgets to ac
+    acContainerLayout->addSpacing(10);
     acContainerLayout->addWidget(sleepACContainer);
+    acContainerLayout->addSpacing(10);
     acContainerLayout->addStretch();
     acContainerLayout->addWidget(acBacklightContainer);
 
     // common
-    QGroupBox *daemonContainer = new QGroupBox(this);
-    daemonContainer->setTitle(tr("Common"));
-    QVBoxLayout *daemonContainerLayout = new QVBoxLayout(daemonContainer);
+    const auto daemonContainer = new QGroupBox(this);
+    daemonContainer->setTitle(tr("Options"));
+    const auto daemonContainerLayout = new QVBoxLayout(daemonContainer);
 
     showSystemTray  = new QCheckBox(this);
-    showSystemTray->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
     showSystemTray->setText(tr("Show system tray"));
     showSystemTray->setToolTip(tr("Enable/Disable the system tray icon."
                                   " Note that notifications will not work when the systemtray is disabled."));
 
-    showNotifications = new QCheckBox(this);
-    showNotifications->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
-    showNotifications->setText(tr("Show notifications"));
-    showNotifications->setToolTip(tr("Show notifications for power related events."));
-
     disableLidAction = new QCheckBox(this);
-    disableLidAction->setIcon(QIcon::fromTheme(DEFAULT_VIDEO_ICON));
-    disableLidAction->setText(tr("Disable lid action if external"
-                                 "\nmonitor(s) is connected"));
+    disableLidAction->setText(tr("Disable lid action if external monitor connected"));
     disableLidAction->setToolTip(tr("Disable lid action if an external monitor is connected"
                                     " to your laptop."));
 
     backlightMouseWheel = new QCheckBox(this);
-    backlightMouseWheel->setIcon(QIcon::fromTheme(DEFAULT_TRAY_ICON));
-    backlightMouseWheel->setText(tr("Adjust backlight in system tray"));
-    backlightMouseWheel->setToolTip(tr("Adjust the display backlight with the mouse wheel on the system tray icon."));
+    backlightMouseWheel->setText(tr("Adjust brightness in system tray"));
+    backlightMouseWheel->setToolTip(tr("Adjust the display backlight brightness with the mouse wheel on the system tray icon."));
 
     daemonContainerLayout->addWidget(showSystemTray);
-    daemonContainerLayout->addWidget(showNotifications);
-    daemonContainerLayout->addWidget(disableLidAction);
     daemonContainerLayout->addWidget(backlightMouseWheel);
+    daemonContainerLayout->addWidget(disableLidAction);
+    daemonContainerLayout->addStretch();
 
     // screensaver
-    QGroupBox *ssContainer = new QGroupBox(this);
-    ssContainer->setTitle(tr("Screen saver"));
-    QHBoxLayout *ssContainerLayout = new QHBoxLayout(ssContainer);
+    const auto ssContainer = new QWidget(this);
+    const auto ssContainerLayout = new QHBoxLayout(ssContainer);
+    ssContainerLayout->setMargin(0);
 
-    const auto screensaverBlankLabel = new QLabel(tr("Timeout"), this);
+    const auto screensaverBlankLabel = new QLabel(tr("Screen Saver Timeout"), this);
     screensaverBlank = new QSpinBox(this);
     screensaverBlank->setMaximumWidth(MAX_WIDTH);
     screensaverBlank->setMinimumWidth(MAX_WIDTH);
     screensaverBlank->setMinimum(1);
     screensaverBlank->setMaximum(1000);
     screensaverBlank->setSuffix(QString(" %1").arg(tr("min")));
+    screensaverBlank->setPrefix(tr("After "));
 
     ssContainerLayout->addWidget(screensaverBlankLabel);
     ssContainerLayout->addWidget(screensaverBlank);
 
     // notify
-    QGroupBox *notifyContainer = new QGroupBox(this);
+    const auto notifyContainer = new QGroupBox(this);
     notifyContainer->setTitle(tr("Notifications"));
-    QVBoxLayout *notifyContainerLayout = new QVBoxLayout(notifyContainer);
+    const auto notifyContainerLayout = new QVBoxLayout(notifyContainer);
+
+    showNotifications = new QCheckBox(this);
+    showNotifications->setText(tr("Show notifications"));
+    showNotifications->setToolTip(tr("Show notifications for power related events."));
 
     warnOnLowBattery = new QCheckBox(this);
-    warnOnLowBattery->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
     warnOnLowBattery->setText(tr("Notify on low battery"));
     warnOnLowBattery->setToolTip(tr("Show a notification when on low battery (%1% over critical)")
                                  .arg(LOW_BATTERY));
 
     warnOnVeryLowBattery = new QCheckBox(this);
-    warnOnVeryLowBattery->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
     warnOnVeryLowBattery->setText(tr("Notify on very low battery"));
     warnOnVeryLowBattery->setToolTip(tr("Show a notification when on very low battery (1% over critical)"));
 
     notifyOnBattery = new QCheckBox(this);
-    notifyOnBattery->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
     notifyOnBattery->setText(tr("Notify on battery"));
     notifyOnBattery->setToolTip(tr("Notify when switched on battery power"));
 
     notifyOnAC = new QCheckBox(this);
-    notifyOnAC->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
     notifyOnAC->setText(tr("Notify on AC"));
     notifyOnAC->setToolTip(tr("Notify when switched on AC power"));
 
     notifyNewInhibitor = new QCheckBox(this);
-    notifyNewInhibitor->setIcon(QIcon::fromTheme(DEFAULT_NOTIFY_ICON));
-    notifyNewInhibitor->setText(tr("Notify new inhibitors"));
+    notifyNewInhibitor->setText(tr("Notify on new inhibitors"));
     notifyNewInhibitor->setToolTip(tr("Notify on new screensaver or power inhibitors"));
 
+    notifyContainerLayout->addWidget(showNotifications);
     notifyContainerLayout->addWidget(warnOnLowBattery);
     notifyContainerLayout->addWidget(warnOnVeryLowBattery);
     notifyContainerLayout->addWidget(notifyOnBattery);
     notifyContainerLayout->addWidget(notifyOnAC);
     notifyContainerLayout->addWidget(notifyNewInhibitor);
+    notifyContainerLayout->addStretch();
 
-    QWidget *settingsWidget = new QWidget(this);
-    QVBoxLayout *settingsLayout = new QVBoxLayout(settingsWidget);
-    QScrollArea *settingsContainerArea = new QScrollArea(this);
-    settingsContainerArea->setSizePolicy(QSizePolicy::Expanding,
-                                         QSizePolicy::Expanding);
-    settingsContainerArea->setStyleSheet("QScrollArea {border:0;}");
-    settingsContainerArea->setWidgetResizable(true);
-    settingsContainerArea->setWidget(settingsWidget);
+    const auto commonWidget = new QWidget(this);
+    const auto commonWidgetLayout = new QVBoxLayout(commonWidget);
 
-    // add widgets to settings
-    settingsLayout->addWidget(statusWidget);
-    settingsLayout->addWidget(batteryContainer);
-    settingsLayout->addWidget(acContainer);
-    settingsLayout->addWidget(daemonContainer);
-    settingsLayout->addWidget(ssContainer);
-    settingsLayout->addWidget(notifyContainer);
-    settingsLayout->addStretch();
+    const auto optContainer = new QWidget(this);
+    const auto optContainerLayout = new QHBoxLayout(optContainer);
+    optContainerLayout->setMargin(0);
 
-    layout->addWidget(settingsContainerArea);
+    const auto batteryAcContainer = new QWidget(this);
+    const auto batteryAcContainerLayout = new QHBoxLayout(batteryAcContainer);
+    batteryAcContainerLayout->setMargin(0);
+
+    batteryAcContainerLayout->addWidget(batteryContainer);
+    batteryAcContainerLayout->addWidget(acContainer);
+
+    optContainerLayout->addWidget(daemonContainer);
+    optContainerLayout->addWidget(notifyContainer);
+
+    commonWidgetLayout->addWidget(batteryAcContainer);
+    commonWidgetLayout->addWidget(optContainer);
+    commonWidgetLayout->addWidget(ssContainer);
+
+    const auto scrollArea = new QScrollArea(this);
+    scrollArea->setSizePolicy(QSizePolicy::Expanding,
+                              QSizePolicy::Expanding);
+    scrollArea->setWidgetResizable(true);
+    scrollArea->setStyleSheet("QScrollArea { border: 0; }");
+    scrollArea->setWidget(commonWidget);
+
+    layout->addWidget(statusWidget);
+    layout->addWidget(scrollArea);
 
     handleUpdatedDevices();
 }
@@ -529,74 +523,44 @@ void Dialog::setupWidgets()
 void Dialog::populateWidgets()
 {
     lidActionBattery->clear();
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
-                              tr("None"), lidNone);
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_LOCK_ICON),
-                              tr("Lock Screen"), lidLock);
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                              tr("Sleep"), lidSleep);
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
-                              tr("Hibernate"), lidHibernate);
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
-                              tr("Shutdown"), lidShutdown);
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                              tr("Hybrid Sleep"), lidHybridSleep);
-    lidActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                              tr("Sleep then Hibernate"), lidSleepHibernate);
+    lidActionBattery->addItem(tr("None"), lidNone);
+    lidActionBattery->addItem(tr("Lock Screen"), lidLock);
+    lidActionBattery->addItem(tr("Sleep"), lidSleep);
+    lidActionBattery->addItem(tr("Hibernate"), lidHibernate);
+    lidActionBattery->addItem(tr("Shutdown"), lidShutdown);
+    lidActionBattery->addItem(tr("Hybrid Sleep"), lidHybridSleep);
+    lidActionBattery->addItem(tr("Sleep then Hibernate"), lidSleepHibernate);
 
     lidActionAC->clear();
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
-                         tr("None"), lidNone);
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_LOCK_ICON),
-                         tr("Lock Screen"), lidLock);
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                         tr("Sleep"), lidSleep);
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
-                         tr("Hibernate"), lidHibernate);
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
-                         tr("Shutdown"), lidShutdown);
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                         tr("Hybrid Sleep"), lidHybridSleep);
-    lidActionAC->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                         tr("Sleep then Hibernate"), lidSleepHibernate);
+    lidActionAC->addItem(tr("None"), lidNone);
+    lidActionAC->addItem(tr("Lock Screen"), lidLock);
+    lidActionAC->addItem(tr("Sleep"), lidSleep);
+    lidActionAC->addItem(tr("Hibernate"), lidHibernate);
+    lidActionAC->addItem(tr("Shutdown"), lidShutdown);
+    lidActionAC->addItem(tr("Hybrid Sleep"), lidHybridSleep);
+    lidActionAC->addItem(tr("Sleep then Hibernate"), lidSleepHibernate);
 
     criticalActionBattery->clear();
-    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
-                                   tr("None"), criticalNone);
-    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                                   tr("Sleep"), criticalSuspend);
-    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
-                                   tr("Hibernate"), criticalHibernate);
-    criticalActionBattery->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
-                                   tr("Shutdown"), criticalShutdown);
+    criticalActionBattery->addItem(tr("None"), criticalNone);
+    criticalActionBattery->addItem(tr("Sleep"), criticalSuspend);
+    criticalActionBattery->addItem(tr("Hibernate"), criticalHibernate);
+    criticalActionBattery->addItem(tr("Shutdown"), criticalShutdown);
 
     autoSleepBatteryAction->clear();
-    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
-                                    tr("None"), suspendNone);
-    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                                    tr("Sleep"), suspendSleep);
-    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
-                                    tr("Hibernate"), suspendHibernate);
-    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
-                                    tr("Shutdown"), suspendShutdown);
-    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                                    tr("Hybrid Sleep"), suspendHybrid);
-    autoSleepBatteryAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                                    tr("Sleep then Hibernate"), suspendSleepHibernate);
+    autoSleepBatteryAction->addItem(tr("None"), suspendNone);
+    autoSleepBatteryAction->addItem(tr("Sleep"), suspendSleep);
+    autoSleepBatteryAction->addItem(tr("Hibernate"), suspendHibernate);
+    autoSleepBatteryAction->addItem(tr("Shutdown"), suspendShutdown);
+    autoSleepBatteryAction->addItem(tr("Hybrid Sleep"), suspendHybrid);
+    autoSleepBatteryAction->addItem(tr("Sleep then Hibernate"), suspendSleepHibernate);
 
     autoSleepACAction->clear();
-    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_NONE_ICON),
-                               tr("None"), suspendNone);
-    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                               tr("Sleep"), suspendSleep);
-    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_HIBERNATE_ICON),
-                               tr("Hibernate"), suspendHibernate);
-    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SHUTDOWN_ICON),
-                               tr("Shutdown"), suspendShutdown);
-    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                               tr("Hybrid Sleep"), suspendHybrid);
-    autoSleepACAction->addItem(QIcon::fromTheme(DEFAULT_SUSPEND_ICON),
-                               tr("Sleep then Hibernate"), suspendSleepHibernate);
+    autoSleepACAction->addItem(tr("None"), suspendNone);
+    autoSleepACAction->addItem(tr("Sleep"), suspendSleep);
+    autoSleepACAction->addItem(tr("Hibernate"), suspendHibernate);
+    autoSleepACAction->addItem(tr("Shutdown"), suspendShutdown);
+    autoSleepACAction->addItem(tr("Hybrid Sleep"), suspendHybrid);
+    autoSleepACAction->addItem(tr("Sleep then Hibernate"), suspendSleepHibernate);
 }
 
 void Dialog::connectWidgets()
