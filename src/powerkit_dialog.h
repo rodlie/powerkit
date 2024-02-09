@@ -77,6 +77,8 @@ namespace PowerKit
         QLabel *cpuFreqLabel;
         QLabel *cpuTempLabel;
 
+        QSpinBox *screensaverBlank;
+
         bool hasCpuCoreTemp;
         bool hasBattery;
 
@@ -124,6 +126,7 @@ namespace PowerKit
         void handleNotifyNewInhibitor(bool triggered);
         void enableLid(bool enabled);
         void handleBacklightMouseWheel(bool triggered);
+        void handleScreensaverBlank(int value);
     };
 }
 

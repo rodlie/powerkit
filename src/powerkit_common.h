@@ -160,5 +160,6 @@ namespace PowerKit
 #define PK_SCREENSAVER_SERVICE "org.freedesktop.ScreenSaver"
 #define PK_SCREENSAVER_PATH_ROOT "/ScreenSaver"
 #define PK_SCREENSAVER_PATH_FULL "/org/freedesktop/ScreenSaver"
+#define PK_SCREENSAVER_TIMEOUT_BLANK 300
 
 #endif // POWERKIT_COMMON_H

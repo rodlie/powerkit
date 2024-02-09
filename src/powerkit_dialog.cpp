@@ -52,6 +52,7 @@ Dialog::Dialog(QWidget *parent,
     , batteryStatusLabel(nullptr)
     , cpuFreqLabel(nullptr)
     , cpuTempLabel(nullptr)
+    , screensaverBlank(nullptr)
     , hasCpuCoreTemp(false)
     , hasBattery(false)
 {
@@ -451,7 +452,18 @@ void Dialog::setupWidgets()
     // screensaver
     QGroupBox *ssContainer = new QGroupBox(this);
     ssContainer->setTitle(tr("Screen saver"));
-    //QVBoxLayout *ssContainerLayout = new QVBoxLayout(ssContainer);
+    QHBoxLayout *ssContainerLayout = new QHBoxLayout(ssContainer);
+
+    const auto screensaverBlankLabel = new QLabel(tr("Timeout"), this);
+    screensaverBlank = new QSpinBox(this);
+    screensaverBlank->setMaximumWidth(MAX_WIDTH);
+    screensaverBlank->setMinimumWidth(MAX_WIDTH);
+    screensaverBlank->setMinimum(1);
+    screensaverBlank->setMaximum(1000);
+    screensaverBlank->setSuffix(QString(" %1").arg(tr("min")));
+
+    ssContainerLayout->addWidget(screensaverBlankLabel);
+    ssContainerLayout->addWidget(screensaverBlank);
 
     // notify
     QGroupBox *notifyContainer = new QGroupBox(this);
@@ -635,6 +647,8 @@ void Dialog::connectWidgets()
             this, SLOT(handleNotifyNewInhibitor(bool)));
     connect(backlightMouseWheel, SIGNAL(toggled(bool)),
             this, SLOT(handleBacklightMouseWheel(bool)));
+    connect(screensaverBlank, SIGNAL(valueChanged(int)),
+            this, SLOT(handleScreensaverBlank(int)));
 }
 
 // load settings and set defaults
@@ -791,6 +805,9 @@ void Dialog::loadSettings()
     enableLid(Client::lidIsPresent(dbus));
     hasCpuCoreTemp = Cpu::hasCoreTemp();
     if (!hasCpuCoreTemp) { cpuTempLabel->setVisible(false); }
+
+    screensaverBlank->setValue(Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
+                                                  PK_SCREENSAVER_TIMEOUT_BLANK).toInt() / 60);
 }
 
 void Dialog::saveSettings()
@@ -1162,4 +1179,9 @@ void Dialog::enableLid(bool enabled)
 void Dialog::handleBacklightMouseWheel(bool triggered)
 {
     Settings::setValue(CONF_BACKLIGHT_MOUSE_WHEEL, triggered);
+}
+
+void Dialog::handleScreensaverBlank(int value)
+{
+    Settings::setValue(CONF_SCREENSAVER_TIMEOUT_BLANK, value * 60);
 }
