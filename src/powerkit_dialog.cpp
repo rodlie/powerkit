@@ -391,6 +391,8 @@ void Dialog::setupWidgets()
 
     const auto acBacklightContainer = new QWidget(this);
     const auto acBacklightContainerLayout = new QHBoxLayout(acBacklightContainer);
+    acBacklightContainerLayout->setMargin(0);
+
     acBacklightLabel = new QLabel(this);
 
     acBacklightLabel->setText(tr("Brightness"));
