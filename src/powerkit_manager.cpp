@@ -280,34 +280,46 @@ void Manager::deviceChanged()
 
 void Manager::propertiesChanged()
 {
-    bool isLidClosed = LidIsClosed();
-    bool isOnBattery = OnBattery();
+    bool closed = LidIsClosed();
+    bool battery = OnBattery();
+    bool docked = IsDocked();
 
     qDebug() << "properties changed:"
-             << "lid closed?" << wasLidClosed << isLidClosed
-             << "on battery?" << wasOnBattery << isOnBattery;
+             << "lid closed?" << wasLidClosed << closed
+             << "on battery?" << wasOnBattery << battery
+             << "is docked?" << wasDocked << docked;
 
-    if (wasLidClosed != isLidClosed) {
-        if (!wasLidClosed && isLidClosed) {
+    if (wasLidClosed != closed) {
+        if (!wasLidClosed && closed) {
             qDebug() << "lid changed to closed";
             emit LidClosed();
-        } else if (wasLidClosed && !isLidClosed) {
+        } else if (wasLidClosed && !closed) {
             qDebug() << "lid changed to open";
             emit LidOpened();
         }
+        emit isLidClosedChanged(closed);
+        qDebug() << "is lid closed changed" << closed;
     }
-    wasLidClosed = isLidClosed;
+    wasLidClosed = closed;
 
-    if (wasOnBattery != isOnBattery) {
-        if (!wasOnBattery && isOnBattery) {
+    if (wasOnBattery != battery) {
+        if (!wasOnBattery && battery) {
             qDebug() << "switched to battery power";
             emit SwitchedToBattery();
-        } else if (wasOnBattery && !isOnBattery) {
+        } else if (wasOnBattery && !battery) {
             qDebug() << "switched to ac power";
             emit SwitchedToAC();
         }
+        qDebug() << "is on battery changed" << battery;
+        emit isOnBatteryChanged(battery);
     }
-    wasOnBattery = isOnBattery;
+    wasOnBattery = battery;
+
+    if (wasDocked != docked) {
+        qDebug() << "is docked changed" << docked;
+        emit isDockedChanged(docked);
+    }
+    wasDocked = docked;
 
     deviceChanged();
 }

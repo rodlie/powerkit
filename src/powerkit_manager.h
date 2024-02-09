@@ -64,6 +64,11 @@ namespace PowerKit
         void Error(const QString &message);
         void Warning(const QString &message);
 
+        void isDockedChanged(bool isDocked);
+        void isLidClosedChanged(bool isClosed);
+        void isOnBatteryChanged(bool onBattery);
+
+
     private slots:
         bool canLogind(const QString &method);
         const QDBusMessage callLogind(const QString &method);

@@ -107,6 +107,7 @@ namespace PowerKit
         void handleCritical(double left);
         void drawBattery(double left);
         void updateToolTip();
+        void updateTrayVisibility();
         void timeout();
         void resetTimer();
         void setInternalMonitor();

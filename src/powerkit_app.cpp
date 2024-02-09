@@ -79,7 +79,7 @@ App::App(QObject *parent)
             this,
             SLOT(handleTrayWheel(TrayIcon::WheelAction)));
 
-    // setup manager
+    // setup org.freedesktop.PowerKit.Manager
     man = new Manager(this);
     connect(man,
             SIGNAL(UpdatedDevices()),
@@ -191,7 +191,6 @@ App::App(QObject *parent)
         tray->setIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
     }
 
-    // load settings and register service
     loadSettings();
     registerService();
 
@@ -221,7 +220,6 @@ App::~App()
 {
 }
 
-// what to do when user clicks systray
 void App::trayActivated(QSystemTrayIcon::ActivationReason reason)
 {
     Q_UNUSED(reason)
@@ -231,12 +229,7 @@ void App::trayActivated(QSystemTrayIcon::ActivationReason reason)
 
 void App::checkDevices()
 {
-    // show/hide tray
-    if (tray->isSystemTrayAvailable() &&
-        !tray->isVisible() &&
-        showTray) { tray->show(); }
-    if (!showTray &&
-        tray->isVisible()) { tray->hide(); }
+    updateTrayVisibility();
 
     double batteryLeft = man->BatteryLeft();
     qDebug() << "battery at" << batteryLeft;
@@ -653,15 +646,20 @@ void App::updateToolTip()
     } else { tray->setToolTip(tr("On AC")); }
 }
 
-// timeout, check if idle
-// timeouts and xss must be >= user value and service has to be empty before suspend
-void App::timeout()
+void App::updateTrayVisibility()
 {
     if (!showTray &&
         tray->isVisible()) { tray->hide(); }
     if (tray->isSystemTrayAvailable() &&
         !tray->isVisible() &&
         showTray) { tray->show(); }
+}
+
+// timeout, check if idle
+// timeouts and xss must be >= user value and service has to be empty before suspend
+void App::timeout()
+{
+    updateTrayVisibility();
 
     int uIdle = ss->GetSessionIdleTime() / 60;
 
