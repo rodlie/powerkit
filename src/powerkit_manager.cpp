@@ -575,6 +575,8 @@ void Manager::LockScreen()
     QProcess::startDetached(Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
                                                PK_SCREENSAVER_LOCK_CMD).toString(),
                             QStringList());
+    QProcess::execute("xset",
+                      QStringList() << "dpms" << "force" << "off");
 }
 
 bool Manager::HasBattery()

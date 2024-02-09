@@ -119,6 +119,7 @@ void ScreenSaver::Lock()
     if (xlock.isEmpty()) { return; }
     qDebug() << "screensaver lock";
     QProcess::startDetached(xlock, QStringList());
+    setDisplaysOff(true);
 }
 
 void ScreenSaver::SimulateUserActivity()
@@ -205,4 +206,15 @@ const QString ScreenSaver::GetInternalDisplay()
     XRRFreeScreenResources(sr);
     XCloseDisplay(dpy);
     return result;
+}
+
+void ScreenSaver::setDisplaysOff(bool off)
+{
+    int xset = QProcess::execute("xset",
+                                QStringList() << "dpms" << "force" << (off ? "off" : "on"));
+    if (!off) {
+        QProcess::execute("xset",
+                          QStringList() << "s" << "reset");
+    }
+    qDebug() << "xset dpms force" << off << xset;
 }

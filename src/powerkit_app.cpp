@@ -883,7 +883,7 @@ void App::handlePrepareForResume()
 {
     qDebug() << "prepare for resume ...";
     resetTimer();
-    ss->SimulateUserActivity();
+    ss->setDisplaysOff(false);
 }
 
 // turn off/on monitor using xrandr
