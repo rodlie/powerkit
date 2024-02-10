@@ -25,6 +25,17 @@
 
 #define VIRTUAL_MONITOR "VIRTUAL"
 
+#define PK_SCREENSAVER_SERVICE "org.freedesktop.ScreenSaver"
+#define PK_SCREENSAVER_PATH_ROOT "/ScreenSaver"
+#define PK_SCREENSAVER_PATH_FULL "/org/freedesktop/ScreenSaver"
+
+#define PM_SERVICE_INHIBIT "org.freedesktop.PowerManagement.Inhibit"
+#define PM_FULL_PATH_INHIBIT "/org/freedesktop/PowerManagement/Inhibit"
+
+#define PM_SERVICE "org.freedesktop.PowerManagement"
+#define PM_FULL_PATH "/org/freedesktop/PowerManagement"
+#define POWERKIT_FULL_PATH "/org/freedesktop/PowerKit"
+
 using namespace PowerKit;
 
 App::App(QObject *parent)
@@ -35,21 +46,21 @@ App::App(QObject *parent)
     , ss(nullptr)
     , wasLowBattery(false)
     , wasVeryLowBattery(false)
-    , lowBatteryValue(LOW_BATTERY)
-    , critBatteryValue(CRITICAL_BATTERY)
+    , lowBatteryValue(POWERKIT_LOW_BATTERY)
+    , critBatteryValue(POWERKIT_CRITICAL_BATTERY)
     , hasService(false)
-    , lidActionBattery(LID_BATTERY_DEFAULT)
-    , lidActionAC(LID_AC_DEFAULT)
-    , criticalAction(CRITICAL_DEFAULT)
-    , autoSuspendBattery(AUTO_SLEEP_BATTERY)
+    , lidActionBattery(POWERKIT_LID_BATTERY_ACTION)
+    , lidActionAC(POWERKIT_LID_AC_ACTION)
+    , criticalAction(POWERKIT_CRITICAL_ACTION)
+    , autoSuspendBattery(POWERKIT_AUTO_SLEEP_BATTERY)
     , autoSuspendAC(0)
     , timer(nullptr)
     , timeouts(0)
     , showNotifications(true)
     , showTray(true)
     , disableLidOnExternalMonitors(false)
-    , autoSuspendBatteryAction(suspendSleep)
-    , autoSuspendACAction(suspendNone)
+    , autoSuspendBatteryAction(POWERKIT_SUSPEND_BATTERY_ACTION)
+    , autoSuspendACAction(POWERKIT_SUSPEND_AC_ACTION)
     , watcher(nullptr)
     , lidXrandr(false)
     , lidWasClosed(false)
@@ -188,7 +199,7 @@ App::App(QObject *parent)
     Theme::setAppTheme();
     Theme::setIconTheme();
     if (tray->icon().isNull()) {
-        tray->setIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
+        tray->setIcon(QIcon::fromTheme(POWERKIT_ICON));
     }
 
     loadSettings();
@@ -590,11 +601,6 @@ void App::drawBattery(double left)
         !tray->isVisible() &&
         showTray) { tray->show(); }
 
-    if (!man->HasBattery()) {
-        tray->setIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
-        return;
-    }
-
     QColor colorBg = Qt::green;
     QColor colorFg = Qt::white;
     int pixelSize = 22;
@@ -605,7 +611,8 @@ void App::drawBattery(double left)
             colorBg = Qt::red;
         }
     } else {
-        if (left == 100) { colorFg = Qt::green; }
+        if (!man->HasBattery()) { left = 100; }
+        else if (left == 100) { colorFg = Qt::green; }
     }
 
     tray->setIcon(Theme::drawCircleProgress(left,
@@ -903,11 +910,11 @@ void App::handleTrayWheel(TrayIcon::WheelAction action)
     switch (action) {
     case TrayIcon::WheelUp:
         Backlight::setBrightness(backlightDevice,
-                                 Backlight::getCurrentBrightness(backlightDevice)+BACKLIGHT_MOVE_VALUE);
+                                 Backlight::getCurrentBrightness(backlightDevice)+POWERKIT_BACKLIGHT_STEP);
         break;
     case TrayIcon::WheelDown:
         Backlight::setBrightness(backlightDevice,
-                                 Backlight::getCurrentBrightness(backlightDevice)-BACKLIGHT_MOVE_VALUE);
+                                 Backlight::getCurrentBrightness(backlightDevice)-POWERKIT_BACKLIGHT_STEP);
         break;
     default:;
     }

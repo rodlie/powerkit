@@ -17,8 +17,9 @@
 #include <QPainter>
 #include <QPen>
 
-#include "powerkit_common.h"
 #include "powerkit_settings.h"
+
+#define DEFAULT_THEME "Adwaita"
 
 using namespace PowerKit;
 
@@ -85,16 +86,6 @@ void Theme::setIconTheme()
     }
     qDebug() << "Using icon theme" << theme;
     QIcon::setThemeName(theme);
-#ifdef BUNDLE_ICONS
-    if (theme != DEFAULT_THEME) { // validate theme
-        QIcon testTheme = QIcon::fromTheme(DEFAULT_AC_ICON);
-        if (testTheme.isNull()) {
-            qDebug() << "icon theme is broken, use failsafe!";
-            QIcon::setThemeName(DEFAULT_THEME);
-            Common::saveSettings(CONF_ICON_THEME, DEFAULT_THEME);
-        }
-    }
-#endif
 }
 
 const QPixmap Theme::drawCircleProgress(const int &progress,

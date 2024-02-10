@@ -41,7 +41,7 @@ void SystemNotification::sendMessage(const QString& title,
 
     args << (qAppName())                 // appname
          << static_cast<unsigned int>(0) // id
-         << DEFAULT_NOTIFY_ICON          // icon
+         << POWERKIT_ICON                // icon
          << title                        // summary
          << text                         // body
          << QStringList()                // actions

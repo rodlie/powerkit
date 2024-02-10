@@ -106,7 +106,7 @@ bool Backlight::setCurrentBrightness(int value)
 bool Backlight::setBrightness(const QString &device,
                               int value)
 {
-    QDBusInterface iface(LOGIND_SERVICE,
+    QDBusInterface iface(POWERKIT_LOGIND_SERVICE,
                          LOGIND_PATH_SESSION,
                          LOGIND_SESSION,
                          QDBusConnection::systemBus());

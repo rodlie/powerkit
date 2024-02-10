@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
         return a.exec();
     } else if (setBrightness) {
         int val = PowerKit::Backlight::getCurrentBrightness();
-        if (args.contains(CMD_OPT_BRIGHTNESS_UP)) { val += BACKLIGHT_MOVE_VALUE; }
-        else if (args.contains(CMD_OPT_BRIGHTNESS_DOWN)) { val -= BACKLIGHT_MOVE_VALUE; }
+        if (args.contains(CMD_OPT_BRIGHTNESS_UP)) { val += POWERKIT_BACKLIGHT_STEP; }
+        else if (args.contains(CMD_OPT_BRIGHTNESS_DOWN)) { val -= POWERKIT_BACKLIGHT_STEP; }
         return PowerKit::Backlight::setBrightness(val);
     } else if (setSleep || setHibernate || setLock) {
         QDBusInterface manager(POWERKIT_SERVICE,

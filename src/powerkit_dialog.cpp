@@ -113,7 +113,7 @@ void Dialog::setupWidgets()
     Theme::setAppTheme();
     Theme::setIconTheme();
     setStyleSheet("QLabel { font-weight: bold; }");
-    setWindowIcon(QIcon::fromTheme(DEFAULT_AC_ICON));
+    setWindowIcon(QIcon::fromTheme(POWERKIT_ICON));
 
     // setup widgets
     const auto layout = new QVBoxLayout(this);
@@ -461,7 +461,7 @@ void Dialog::setupWidgets()
     warnOnLowBattery = new QCheckBox(this);
     warnOnLowBattery->setText(tr("Notify on low battery"));
     warnOnLowBattery->setToolTip(tr("Show a notification when on low battery (%1% over critical)")
-                                 .arg(LOW_BATTERY));
+                                 .arg(POWERKIT_LOW_BATTERY));
 
     warnOnVeryLowBattery = new QCheckBox(this);
     warnOnVeryLowBattery->setText(tr("Notify on very low battery"));
@@ -624,13 +624,13 @@ void Dialog::loadSettings()
         restoreGeometry(Settings::getValue(CONF_DIALOG_GEOMETRY).toByteArray());
     }
 
-    int defaultAutoSleepBattery = AUTO_SLEEP_BATTERY;
+    int defaultAutoSleepBattery = POWERKIT_AUTO_SLEEP_BATTERY;
     if (Settings::isValid(CONF_SUSPEND_BATTERY_TIMEOUT)) {
         defaultAutoSleepBattery = Settings::getValue(CONF_SUSPEND_BATTERY_TIMEOUT).toInt();
     }
     setDefaultAction(autoSleepBattery, defaultAutoSleepBattery);
 
-    int defaultAutoSleepBatteryAction = DEFAULT_SUSPEND_BATTERY_ACTION;
+    int defaultAutoSleepBatteryAction = POWERKIT_SUSPEND_BATTERY_ACTION;
     if (Settings::isValid(CONF_SUSPEND_BATTERY_ACTION)) {
         defaultAutoSleepBatteryAction = Settings::getValue(CONF_SUSPEND_BATTERY_ACTION).toInt();
     }
@@ -642,31 +642,31 @@ void Dialog::loadSettings()
     }
     setDefaultAction(autoSleepAC, defaultAutoSleepAC);
 
-    int defaultAutoSleepACAction = DEFAULT_SUSPEND_AC_ACTION;
+    int defaultAutoSleepACAction = POWERKIT_SUSPEND_AC_ACTION;
     if (Settings::isValid(CONF_SUSPEND_AC_ACTION)) {
         defaultAutoSleepACAction = Settings::getValue(CONF_SUSPEND_AC_ACTION).toInt();
     }
     setDefaultAction(autoSleepACAction, defaultAutoSleepACAction);
 
-    int defaultCriticalBattery = CRITICAL_BATTERY;
+    int defaultCriticalBattery = POWERKIT_CRITICAL_BATTERY;
     if (Settings::isValid(CONF_CRITICAL_BATTERY_TIMEOUT)) {
         defaultCriticalBattery = Settings::getValue(CONF_CRITICAL_BATTERY_TIMEOUT).toInt();
     }
     setDefaultAction(criticalBattery, defaultCriticalBattery);
 
-    int defaultLidActionBattery = LID_BATTERY_DEFAULT;
+    int defaultLidActionBattery = POWERKIT_LID_BATTERY_ACTION;
     if (Settings::isValid(CONF_LID_BATTERY_ACTION)) {
         defaultLidActionBattery = Settings::getValue(CONF_LID_BATTERY_ACTION).toInt();
     }
     setDefaultAction(lidActionBattery, defaultLidActionBattery);
 
-    int defaultLidActionAC = LID_AC_DEFAULT;
+    int defaultLidActionAC = POWERKIT_LID_AC_ACTION;
     if (Settings::isValid(CONF_LID_AC_ACTION)) {
         defaultLidActionAC = Settings::getValue(CONF_LID_AC_ACTION).toInt();
     }
     setDefaultAction(lidActionAC, defaultLidActionAC);
 
-    int defaultCriticalAction = CRITICAL_DEFAULT;
+    int defaultCriticalAction = POWERKIT_CRITICAL_ACTION;
     if (Settings::isValid(CONF_CRITICAL_BATTERY_ACTION)) {
         defaultCriticalAction = Settings::getValue(CONF_CRITICAL_BATTERY_ACTION).toInt();
     }
@@ -773,7 +773,7 @@ void Dialog::loadSettings()
     if (!hasCpuCoreTemp) { cpuTempLabel->setVisible(false); }
 
     screensaverBlank->setValue(Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
-                                                  PK_SCREENSAVER_TIMEOUT_BLANK).toInt() / 60);
+                                                  POWERKIT_SCREENSAVER_TIMEOUT_BLANK).toInt() / 60);
 }
 
 void Dialog::saveSettings()

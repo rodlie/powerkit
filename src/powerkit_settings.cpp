@@ -43,15 +43,15 @@ bool Settings::isValid(const QString &type)
 void Settings::saveDefault()
 {
     setValue(CONF_LID_BATTERY_ACTION,
-                      LID_BATTERY_DEFAULT);
+                      POWERKIT_LID_BATTERY_ACTION);
     setValue(CONF_LID_AC_ACTION,
-                      LID_AC_DEFAULT);
+                      POWERKIT_LID_AC_ACTION);
     setValue(CONF_CRITICAL_BATTERY_ACTION,
-                      CRITICAL_DEFAULT);
+                      POWERKIT_CRITICAL_ACTION);
     setValue(CONF_CRITICAL_BATTERY_TIMEOUT,
-                      CRITICAL_BATTERY);
+                      POWERKIT_CRITICAL_BATTERY);
     setValue(CONF_SUSPEND_BATTERY_TIMEOUT,
-                      AUTO_SLEEP_BATTERY);
+                      POWERKIT_AUTO_SLEEP_BATTERY);
     setValue(CONF_TRAY_NOTIFY,
                       true);
     setValue(CONF_TRAY_SHOW,

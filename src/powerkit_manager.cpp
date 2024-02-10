@@ -42,6 +42,7 @@
 #define DBUS_DEVICE_ADDED "DeviceAdded"
 #define DBUS_DEVICE_REMOVED "DeviceRemoved"
 #define DBUS_DEVICE_CHANGED "DeviceChanged"
+#define DBUS_PROPERTIES_CHANGED "PropertiesChanged"
 
 #define PK_PREPARE_FOR_SUSPEND "PrepareForSuspend"
 #define PK_PREPARE_FOR_SLEEP "PrepareForSleep"
@@ -117,7 +118,7 @@ const QDBusMessage Manager::callLogind(const QString &method)
 QStringList Manager::find()
 {
     QStringList result;
-    QDBusMessage call = QDBusMessage::createMethodCall(UPOWER_SERVICE,
+    QDBusMessage call = QDBusMessage::createMethodCall(POWERKIT_UPOWER_SERVICE,
                                                        QString("%1/devices").arg(UPOWER_PATH),
                                                        DBUS_INTROSPECTABLE,
                                                        "Introspect");
@@ -151,43 +152,43 @@ void Manager::setup()
         return;
     }
 
-    system.connect(UPOWER_SERVICE,
+    system.connect(POWERKIT_UPOWER_SERVICE,
                    UPOWER_PATH,
-                   UPOWER_SERVICE,
+                   POWERKIT_UPOWER_SERVICE,
                    DBUS_DEVICE_ADDED,
                    this,
                    SLOT(deviceAdded(QDBusObjectPath)));
-    system.connect(UPOWER_SERVICE,
+    system.connect(POWERKIT_UPOWER_SERVICE,
                    UPOWER_PATH,
-                   UPOWER_SERVICE,
+                   POWERKIT_UPOWER_SERVICE,
                    DBUS_DEVICE_ADDED,
                    this,
                    SLOT(deviceAdded(QString)));
-    system.connect(UPOWER_SERVICE,
+    system.connect(POWERKIT_UPOWER_SERVICE,
                    UPOWER_PATH,
-                   UPOWER_SERVICE,
+                   POWERKIT_UPOWER_SERVICE,
                    DBUS_DEVICE_REMOVED,
                    this,
                    SLOT(deviceRemoved(QDBusObjectPath)));
-    system.connect(UPOWER_SERVICE,
+    system.connect(POWERKIT_UPOWER_SERVICE,
                    UPOWER_PATH,
-                   UPOWER_SERVICE,
+                   POWERKIT_UPOWER_SERVICE,
                    DBUS_DEVICE_REMOVED,
                    this,
                    SLOT(deviceRemoved(QString)));
-    system.connect(UPOWER_SERVICE,
+    system.connect(POWERKIT_UPOWER_SERVICE,
                    UPOWER_PATH,
-                   DBUS_PROPERTIES,
+                   POWERKIT_DBUS_PROPERTIES,
                    DBUS_PROPERTIES_CHANGED,
                    this,
                    SLOT(propertiesChanged()));
 
-    upower = new QDBusInterface(UPOWER_SERVICE,
+    upower = new QDBusInterface(POWERKIT_UPOWER_SERVICE,
                                 UPOWER_PATH,
                                 UPOWER_MANAGER,
                                 system,
                                 this);
-    logind = new QDBusInterface(LOGIND_SERVICE,
+    logind = new QDBusInterface(POWERKIT_LOGIND_SERVICE,
                                 LOGIND_PATH,
                                 LOGIND_MANAGER,
                                 system,
@@ -573,7 +574,7 @@ void Manager::LockScreen()
 {
     qDebug() << "screen lock";
     QProcess::startDetached(Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
-                                               PK_SCREENSAVER_LOCK_CMD).toString(),
+                                               POWERKIT_SCREENSAVER_LOCK_CMD).toString(),
                             QStringList());
     QProcess::execute("xset",
                       QStringList() << "dpms" << "force" << "off");

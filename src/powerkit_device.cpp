@@ -30,6 +30,9 @@
 #define PROP_DEV_VENDOR "Vendor"
 #define PROP_DEV_NATIVEPATH "NativePath"
 
+#define DBUS_CHANGED "Changed"
+#define DBUS_DEVICE "Device"
+
 using namespace PowerKit;
 
 Device::Device(const QString block, QObject *parent)
@@ -51,25 +54,25 @@ Device::Device(const QString block, QObject *parent)
     , dbusp(nullptr)
 {
     QDBusConnection system = QDBusConnection::systemBus();
-    dbus = new QDBusInterface(UPOWER_SERVICE,
+    dbus = new QDBusInterface(POWERKIT_UPOWER_SERVICE,
                               path,
-                              QString("%1.%2").arg(UPOWER_SERVICE, DBUS_DEVICE),
+                              QString("%1.%2").arg(POWERKIT_UPOWER_SERVICE, DBUS_DEVICE),
                               system,
                               parent);
     system.connect(dbus->service(),
                    dbus->path(),
-                   QString("%1.%2").arg(UPOWER_SERVICE, DBUS_DEVICE),
+                   QString("%1.%2").arg(POWERKIT_UPOWER_SERVICE, DBUS_DEVICE),
                    DBUS_CHANGED,
                    this,
                    SLOT(updateDeviceProperties()));
-    dbusp = new QDBusInterface(UPOWER_SERVICE,
+    dbusp = new QDBusInterface(POWERKIT_UPOWER_SERVICE,
                                path,
-                               DBUS_PROPERTIES,
+                               POWERKIT_DBUS_PROPERTIES,
                                system,
                                parent);
     system.connect(dbusp->service(),
                    dbusp->path(),
-                   DBUS_PROPERTIES,
+                   POWERKIT_DBUS_PROPERTIES,
                    PROP_CHANGED,
                    this,
                    SLOT(updateDeviceProperties()));

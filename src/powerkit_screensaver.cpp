@@ -47,7 +47,7 @@ using namespace PowerKit;
 
 ScreenSaver::ScreenSaver(QObject *parent)
     : QObject(parent)
-    , blank(PK_SCREENSAVER_TIMEOUT_BLANK)
+    , blank(POWERKIT_SCREENSAVER_TIMEOUT_BLANK)
 {
     timer.setInterval(PK_SCREENSAVER_TIMER);
     connect(&timer, SIGNAL(timeout()),
@@ -99,9 +99,9 @@ void ScreenSaver::timeOut()
 void ScreenSaver::Update()
 {
     xlock = Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
-                               PK_SCREENSAVER_LOCK_CMD).toString();
+                               POWERKIT_SCREENSAVER_LOCK_CMD).toString();
     blank = Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
-                               PK_SCREENSAVER_TIMEOUT_BLANK).toInt();
+                               POWERKIT_SCREENSAVER_TIMEOUT_BLANK).toInt();
     int exe1 = QProcess::execute("xset",
                                  QStringList() << "-dpms");
     int exe2 = QProcess::execute("xset",

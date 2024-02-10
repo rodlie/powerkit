@@ -16,6 +16,9 @@
 
 #include "powerkit_common.h"
 
+#define PM_TIMEOUT 60000
+#define PM_MAX_INHIBIT 18000
+
 using namespace PowerKit;
 
 PowerManagement::PowerManagement(QObject *parent) : QObject(parent)
