@@ -13,6 +13,6 @@ VERSION=`cat ${CWD}/CMakeLists.txt | sed '/powerkit VERSION/!d;s/)//' | awk '{pr
 echo "% POWERKIT(1) Version ${VERSION} | PowerKit Documentation" > ${CWD}/tmp.md
 echo "% Ole-André Rodlie" >> ${CWD}/tmp.md
 echo "% ${MONTH} ${YEAR}" >> ${CWD}/tmp.md
-cat ${CWD}/docs/README.md >> ${CWD}/tmp.md
+cat ${CWD}/docs/powerkit.md >> ${CWD}/tmp.md
 ${PANDOC} ${CWD}/tmp.md -s -t man > ${CWD}/docs/powerkit.1
 rm ${CWD}/tmp.md
