@@ -428,10 +428,10 @@ const QPair<int, QString> Cpu::getCpuFreqLabel()
     int freqMin = Cpu::getMinFrequency();
     int freqMax = Cpu::getMaxFrequency();
     int progress;
-    if (freqMax > freqMin) {
-        progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
-    } else {
+    if (freqMax == freqMin) {
         progress = 100;
+    } else {
+        progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
     }
 
     result.first = progress;
