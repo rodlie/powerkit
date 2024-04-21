@@ -105,6 +105,8 @@ void ScreenSaver::Update()
 {
     xlock = Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
                                POWERKIT_SCREENSAVER_LOCK_CMD).toString();
+    blank_time = Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
+                               POWERKIT_SCREENSAVER_TIMEOUT_BLANK).toInt();
     lock_time = Settings::getValue(CONF_SCREENSAVER_TIMEOUT_LOCK,
                                POWERKIT_SCREENSAVER_TIMEOUT_LOCK).toInt();
     int exe1 = QProcess::execute("xset",
