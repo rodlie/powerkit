@@ -47,7 +47,8 @@ using namespace PowerKit;
 
 ScreenSaver::ScreenSaver(QObject *parent)
     : QObject(parent)
-    , blank(POWERKIT_SCREENSAVER_TIMEOUT_BLANK)
+    , blank_time(POWERKIT_SCREENSAVER_TIMEOUT_BLANK)
+    , lock_time(POWERKIT_SCREENSAVER_TIMEOUT_LOCK)
 {
     timer.setInterval(PK_SCREENSAVER_TIMER);
     connect(&timer, SIGNAL(timeout()),
@@ -91,23 +92,27 @@ void ScreenSaver::timeOut()
         SimulateUserActivity();
         return;
     }
-    int idle = GetSessionIdleTime();
-    qDebug() << "screensaver idle" << idle << blank;
-    if (idle >= blank) { Lock(); }
+    int idle_time = GetSessionIdleTime();
+    qDebug() << "screensaver idle" << idle_time << blank_time << lock_time;
+    if (idle_time >= lock_time) {
+        Lock();
+    } else if (idle_time >= blank_time) {
+        setDisplaysOff(true);
+    }
 }
 
 void ScreenSaver::Update()
 {
     xlock = Settings::getValue(CONF_SCREENSAVER_LOCK_CMD,
                                POWERKIT_SCREENSAVER_LOCK_CMD).toString();
-    blank = Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
-                               POWERKIT_SCREENSAVER_TIMEOUT_BLANK).toInt();
+    lock_time = Settings::getValue(CONF_SCREENSAVER_TIMEOUT_LOCK,
+                               POWERKIT_SCREENSAVER_TIMEOUT_LOCK).toInt();
     int exe1 = QProcess::execute("xset",
                                  QStringList() << "-dpms");
     int exe2 = QProcess::execute("xset",
                                  QStringList() << "s" << "on");
     int exe3 = QProcess::execute("xset",
-                                 QStringList() << "s" << QString::number(blank));
+                                 QStringList() << "s" << QString::number(lock_time));
     qDebug() << "screensaver update" << exe1 << exe2 << exe3;
     SimulateUserActivity();
 }
