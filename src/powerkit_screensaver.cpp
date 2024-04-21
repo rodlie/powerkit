@@ -96,7 +96,8 @@ void ScreenSaver::timeOut()
     qDebug() << "screensaver idle" << idle_time << blank_time << lock_time;
     if (idle_time >= lock_time) {
         Lock();
-    } else if (idle_time >= blank_time) {
+    }
+    if (idle_time >= blank_time) {
         setDisplaysOff(true);
     }
 }
@@ -116,6 +117,11 @@ void ScreenSaver::Update()
     int exe3 = QProcess::execute("xset",
                                  QStringList() << "s" << QString::number(lock_time));
     qDebug() << "screensaver update" << exe1 << exe2 << exe3;
+    if (lock_time < blank_time) {
+        int lock_before_blank = QProcess::execute("xset",
+                                 QStringList() << "s" << "noblank");
+        qDebug() << "screensaver update noblank" << lock_before_blank;
+    }
     SimulateUserActivity();
 }
 
@@ -124,7 +130,6 @@ void ScreenSaver::Lock()
     if (xlock.isEmpty()) { return; }
     qDebug() << "screensaver lock";
     QProcess::startDetached(xlock, QStringList());
-    setDisplaysOff(true);
 }
 
 void ScreenSaver::SimulateUserActivity()
