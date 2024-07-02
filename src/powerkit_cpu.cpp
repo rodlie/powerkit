@@ -427,7 +427,12 @@ const QPair<int, QString> Cpu::getCpuFreqLabel()
 
     int freqMin = Cpu::getMinFrequency();
     int freqMax = Cpu::getMaxFrequency();
-    int progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
+    int progress;
+    if (freqMax == freqMin) {
+        progress = 100;
+    } else {
+        progress = ((currentCpuFreq - freqMin) * 100) / (freqMax - freqMin);
+    }
 
     result.first = progress;
     result.second = QString("%1\nGhz").arg(QString::number(currentFancyFreq / 1000000, 'f', 2));
