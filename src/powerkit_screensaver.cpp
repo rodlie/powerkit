@@ -93,7 +93,9 @@ void ScreenSaver::timeOut()
         return;
     }
     int idle_time = GetSessionIdleTime();
-    qDebug() << "screensaver idle" << idle_time << blank_time << lock_time;
+    qDebug() << "screen idle" << idle_time;
+    qDebug() << "screen blank timeout" << blank_time;
+    qDebug() << "screen lock timeout" << lock_time;
     if (idle_time >= lock_time) {
         Lock();
     }
