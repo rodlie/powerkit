@@ -47,6 +47,7 @@
 #define CONF_KERNEL_BYPASS "kernel_cmd_bypass"
 #define CONF_SCREENSAVER_LOCK_CMD "screensaver_lock_cmd"
 #define CONF_SCREENSAVER_TIMEOUT_BLANK "screensaver_blank_timeout"
+#define CONF_SCREENSAVER_TIMEOUT_LOCK "screensaver_lock_timeout"
 
 namespace PowerKit
 {

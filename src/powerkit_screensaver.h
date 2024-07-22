@@ -27,7 +27,8 @@ namespace PowerKit
     private:
         QTimer timer;
         QMap<quint32, QTime> clients;
-        int blank;
+        int blank_time;
+        int lock_time;
         QString xlock;
 
     signals:

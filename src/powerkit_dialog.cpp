@@ -53,6 +53,7 @@ Dialog::Dialog(QWidget *parent,
     , cpuFreqLabel(nullptr)
     , cpuTempLabel(nullptr)
     , screensaverBlank(nullptr)
+    , screensaverLock(nullptr)
     , hasCpuCoreTemp(false)
     , hasBattery(false)
 {
@@ -437,7 +438,7 @@ void Dialog::setupWidgets()
     const auto ssContainerLayout = new QHBoxLayout(ssContainer);
     ssContainerLayout->setMargin(0);
 
-    const auto screensaverBlankLabel = new QLabel(tr("Screen Saver Timeout"), this);
+    const auto screensaverBlankLabel = new QLabel(tr("Blank screen"), this);
     screensaverBlank = new QSpinBox(this);
     screensaverBlank->setMaximumWidth(MAX_WIDTH);
     screensaverBlank->setMinimumWidth(MAX_WIDTH);
@@ -448,6 +449,18 @@ void Dialog::setupWidgets()
 
     ssContainerLayout->addWidget(screensaverBlankLabel);
     ssContainerLayout->addWidget(screensaverBlank);
+
+    const auto screensaverLockLabel = new QLabel(tr("Lock screen"), this);
+    screensaverLock = new QSpinBox(this);
+    screensaverLock->setMaximumWidth(MAX_WIDTH);
+    screensaverLock->setMinimumWidth(MAX_WIDTH);
+    screensaverLock->setMinimum(1);
+    screensaverLock->setMaximum(1000);
+    screensaverLock->setSuffix(QString(" %1").arg(tr("min")));
+    screensaverLock->setPrefix(tr("After "));
+
+    ssContainerLayout->addWidget(screensaverLockLabel);
+    ssContainerLayout->addWidget(screensaverLock);
 
     // notify
     const auto notifyContainer = new QGroupBox(this);
@@ -615,6 +628,8 @@ void Dialog::connectWidgets()
             this, SLOT(handleBacklightMouseWheel(bool)));
     connect(screensaverBlank, SIGNAL(valueChanged(int)),
             this, SLOT(handleScreensaverBlank(int)));
+    connect(screensaverLock, SIGNAL(valueChanged(int)),
+            this, SLOT(handleScreensaverLock(int)));
 }
 
 // load settings and set defaults
@@ -774,6 +789,9 @@ void Dialog::loadSettings()
 
     screensaverBlank->setValue(Settings::getValue(CONF_SCREENSAVER_TIMEOUT_BLANK,
                                                   POWERKIT_SCREENSAVER_TIMEOUT_BLANK).toInt() / 60);
+
+    screensaverLock->setValue(Settings::getValue(CONF_SCREENSAVER_TIMEOUT_LOCK,
+                                                  POWERKIT_SCREENSAVER_TIMEOUT_LOCK).toInt() / 60);
 }
 
 void Dialog::saveSettings()
@@ -1150,4 +1168,9 @@ void Dialog::handleBacklightMouseWheel(bool triggered)
 void Dialog::handleScreensaverBlank(int value)
 {
     Settings::setValue(CONF_SCREENSAVER_TIMEOUT_BLANK, value * 60);
+}
+
+void Dialog::handleScreensaverLock(int value)
+{
+    Settings::setValue(CONF_SCREENSAVER_TIMEOUT_LOCK, value * 60);
 }

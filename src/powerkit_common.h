@@ -70,5 +70,6 @@ namespace PowerKit
 #define POWERKIT_DBUS_PROPERTIES "org.freedesktop.DBus.Properties"
 #define POWERKIT_SCREENSAVER_LOCK_CMD "xsecurelock"
 #define POWERKIT_SCREENSAVER_TIMEOUT_BLANK 300
+#define POWERKIT_SCREENSAVER_TIMEOUT_LOCK 600
 
 #endif // POWERKIT_COMMON_H
